@@ -17,6 +17,12 @@ import {
   FileText,
   CreditCard,
   Wallet,
+  Target,
+  UserPlus,
+  DollarSign,
+  Warehouse,
+  ShoppingBag,
+  Calendar,
 } from 'lucide-react'
 
 const navigation = [
@@ -28,7 +34,7 @@ const navigation = [
       { name: 'Chart of Accounts', href: '/dashboard/finance/accounts', icon: FileText },
       { name: 'Invoices', href: '/dashboard/finance/invoices', icon: Receipt },
       { name: 'Bills', href: '/dashboard/finance/bills', icon: CreditCard },
-      { name: 'Payments', href: '/dashboard/finance/payments', icon: CreditCard },
+      { name: 'Payments', href: '/dashboard/finance/payments', icon: DollarSign },
     ]
   },
   { 
@@ -37,11 +43,40 @@ const navigation = [
     children: [
       { name: 'Customers', href: '/dashboard/crm/customers', icon: Building2 },
       { name: 'Vendors', href: '/dashboard/crm/vendors', icon: Truck },
+      { name: 'Leads', href: '/dashboard/crm/leads', icon: UserPlus },
+      { name: 'Opportunities', href: '/dashboard/crm/opportunities', icon: Target },
     ]
   },
-  { name: 'Inventory', href: '/dashboard/inventory', icon: Package },
-  { name: 'Sales', href: '/dashboard/sales', icon: ShoppingCart },
-  { name: 'HR', href: '/dashboard/hr', icon: UserCircle },
+  { 
+    name: 'Sales',
+    icon: ShoppingCart,
+    children: [
+      { name: 'Sales Orders', href: '/dashboard/sales/orders', icon: ShoppingCart },
+    ]
+  },
+  { 
+    name: 'Inventory',
+    icon: Package,
+    children: [
+      { name: 'Products', href: '/dashboard/inventory/products', icon: Package },
+      { name: 'Warehouses', href: '/dashboard/inventory/warehouses', icon: Warehouse },
+    ]
+  },
+  { 
+    name: 'Procurement',
+    icon: ShoppingBag,
+    children: [
+      { name: 'Purchase Orders', href: '/dashboard/procurement/purchase-orders', icon: ShoppingBag },
+    ]
+  },
+  { 
+    name: 'HR',
+    icon: UserCircle,
+    children: [
+      { name: 'Employees', href: '/dashboard/hr/employees', icon: Users },
+      { name: 'Leave', href: '/dashboard/hr/leave', icon: Calendar },
+    ]
+  },
   { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ]

@@ -43,6 +43,18 @@ model Organization {
   leads         Lead[]
   opportunities Opportunity[]
   activities    Activity[]
+  salesOrders   SalesOrder[]
+  deliveries    Delivery[]
+  returns       Return[]
+  products      Product[]
+  warehouses    Warehouse[]
+  stockLevels   StockLevel[]
+  stockMovements StockMovement[]
+  purchaseOrders PurchaseOrder[]
+  goodsReceipts  GoodsReceipt[]
+  leaveRequests  LeaveRequest[]
+  timesheets     Timesheet[]
+  payrollRecords PayrollRecord[]
 
   @@index([clerkOrgId])
   @@index([status])
@@ -182,6 +194,8 @@ model Customer {
   contacts     Contact[]
   opportunities Opportunity[]
   activities   Activity[]
+  salesOrders  SalesOrder[]
+  returns      Return[]
 
   @@unique([organizationId, customerNumber])
   @@index([organizationId])
@@ -215,6 +229,7 @@ model Vendor {
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   bills        Bill[]
+  purchaseOrders PurchaseOrder[]
 
   @@unique([organizationId, vendorNumber])
   @@index([organizationId])
@@ -426,12 +441,119 @@ model Employee {
   organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   manager       Employee?    @relation("EmployeeManager", fields: [managerId], references: [id])
   directReports Employee[]   @relation("EmployeeManager")
+  leaveRequests LeaveRequest[]
+  timesheets    Timesheet[]
+  payrollRecords PayrollRecord[]
 
   @@unique([organizationId, employeeNumber])
   @@index([organizationId])
   @@index([status])
   @@index([department])
   @@index([deletedAt])
+}
+
+// Leave Request - Employee time off
+model LeaveRequest {
+  id             String    @id @default(cuid())
+  organizationId String
+  employeeId     String
+  leaveType      String    // ANNUAL, SICK, UNPAID, MATERNITY, PATERNITY, OTHER
+  startDate      DateTime
+  endDate        DateTime
+  totalDays      Decimal   @db.Decimal(5, 1)
+  status         String    @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
+  reason         String?
+  approvedBy     String?
+  approvedAt     DateTime?
+  rejectionReason String?
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+
+  @@index([organizationId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([startDate])
+}
+
+// Timesheet - Track employee hours
+model Timesheet {
+  id             String   @id @default(cuid())
+  organizationId String
+  employeeId     String
+  weekStartDate  DateTime
+  status         String   @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED
+  totalHours     Decimal  @default(0) @db.Decimal(6, 2)
+  overtimeHours  Decimal  @default(0) @db.Decimal(6, 2)
+  notes          String?
+  submittedAt    DateTime?
+  approvedBy     String?
+  approvedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String
+
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee     Employee        @relation(fields: [employeeId], references: [id])
+  entries      TimesheetEntry[]
+
+  @@unique([employeeId, weekStartDate])
+  @@index([organizationId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([weekStartDate])
+}
+
+// Timesheet Entry - Daily time entries
+model TimesheetEntry {
+  id           String   @id @default(cuid())
+  timesheetId  String
+  date         DateTime
+  hoursWorked  Decimal  @db.Decimal(5, 2)
+  description  String?
+  project      String?
+
+  timesheet Timesheet @relation(fields: [timesheetId], references: [id], onDelete: Cascade)
+
+  @@index([timesheetId])
+  @@index([date])
+}
+
+// Payroll Record - Monthly/period payroll
+model PayrollRecord {
+  id             String   @id @default(cuid())
+  organizationId String
+  employeeId     String
+  payPeriodStart DateTime
+  payPeriodEnd   DateTime
+  status         String   @default("DRAFT") // DRAFT, PROCESSING, APPROVED, PAID
+  baseSalary     Decimal  @db.Decimal(15, 2)
+  overtimePay    Decimal  @default(0) @db.Decimal(15, 2)
+  bonus          Decimal  @default(0) @db.Decimal(15, 2)
+  deductions     Decimal  @default(0) @db.Decimal(15, 2)
+  taxWithheld    Decimal  @default(0) @db.Decimal(15, 2)
+  netPay         Decimal  @db.Decimal(15, 2)
+  currency       String   @default("USD")
+  notes          String?
+  paidAt         DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String
+  approvedBy     String?
+  approvedAt     DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId, payPeriodStart, payPeriodEnd])
+  @@index([organizationId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([payPeriodStart])
 }
 
 // ============================================
@@ -593,4 +715,404 @@ model Activity {
   @@index([contactId])
   @@index([assignedTo])
   @@index([deletedAt])
+}
+
+// ============================================
+// SALES & DISTRIBUTION MODELS
+// ============================================
+
+// Sales Order - Customer orders
+model SalesOrder {
+  id              String   @id @default(cuid())
+  organizationId  String
+  orderNumber     String
+  customerId      String
+  orderDate       DateTime @default(now())
+  expectedDeliveryDate DateTime?
+  status          String   @default("DRAFT") // DRAFT, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+  paymentStatus   String   @default("UNPAID") // UNPAID, PARTIAL, PAID
+  subtotal        Decimal  @db.Decimal(15, 2)
+  taxAmount       Decimal  @default(0) @db.Decimal(15, 2)
+  shippingAmount  Decimal  @default(0) @db.Decimal(15, 2)
+  discountAmount  Decimal  @default(0) @db.Decimal(15, 2)
+  totalAmount     Decimal  @db.Decimal(15, 2)
+  currency        String   @default("USD")
+  shippingAddress String?
+  shippingCity    String?
+  shippingState   String?
+  shippingCountry String?
+  shippingPostalCode String?
+  notes           String?
+  invoiceId       String?  // Link to generated invoice
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String
+  updatedBy       String?
+  deletedAt       DateTime?
+  deletedBy       String?
+
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customer     Customer          @relation(fields: [customerId], references: [id])
+  lineItems    SalesOrderItem[]
+  deliveries   Delivery[]
+  returns      Return[]
+
+  @@unique([organizationId, orderNumber])
+  @@index([organizationId])
+  @@index([customerId])
+  @@index([status])
+  @@index([orderDate])
+  @@index([deletedAt])
+}
+
+// Sales Order Line Items
+model SalesOrderItem {
+  id            String  @id @default(cuid())
+  salesOrderId  String
+  description   String
+  sku           String?
+  quantity      Decimal @db.Decimal(15, 2)
+  unitPrice     Decimal @db.Decimal(15, 2)
+  taxRate       Decimal @default(0) @db.Decimal(5, 2)
+  discountPercent Decimal @default(0) @db.Decimal(5, 2)
+  lineTotal     Decimal @db.Decimal(15, 2)
+  deliveredQty  Decimal @default(0) @db.Decimal(15, 2)
+  returnedQty   Decimal @default(0) @db.Decimal(15, 2)
+
+  salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+
+  @@index([salesOrderId])
+}
+
+// Delivery - Shipment tracking
+model Delivery {
+  id             String    @id @default(cuid())
+  organizationId String
+  deliveryNumber String
+  salesOrderId   String
+  deliveryDate   DateTime  @default(now())
+  status         String    @default("PENDING") // PENDING, IN_TRANSIT, DELIVERED, FAILED
+  carrier        String?
+  trackingNumber String?
+  shippingAddress String?
+  shippingCity   String?
+  shippingCountry String?
+  notes          String?
+  deliveredAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String
+  updatedBy      String?
+  deletedAt      DateTime?
+  deletedBy      String?
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  salesOrder   SalesOrder       @relation(fields: [salesOrderId], references: [id])
+  items        DeliveryItem[]
+
+  @@unique([organizationId, deliveryNumber])
+  @@index([organizationId])
+  @@index([salesOrderId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+// Delivery Line Items
+model DeliveryItem {
+  id          String  @id @default(cuid())
+  deliveryId  String
+  description String
+  sku         String?
+  quantity    Decimal @db.Decimal(15, 2)
+
+  delivery Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+
+  @@index([deliveryId])
+}
+
+// Returns - Handle customer returns
+model Return {
+  id             String    @id @default(cuid())
+  organizationId String
+  returnNumber   String
+  salesOrderId   String
+  customerId     String
+  returnDate     DateTime  @default(now())
+  status         String    @default("PENDING") // PENDING, APPROVED, RECEIVED, REFUNDED, REJECTED
+  reason         String    // DEFECTIVE, WRONG_ITEM, DAMAGED, NOT_SATISFIED, OTHER
+  description    String?
+  totalAmount    Decimal   @db.Decimal(15, 2)
+  refundAmount   Decimal   @default(0) @db.Decimal(15, 2)
+  refundMethod   String?   // ORIGINAL_PAYMENT, STORE_CREDIT, BANK_TRANSFER
+  notes          String?
+  approvedAt     DateTime?
+  approvedBy     String?
+  receivedAt     DateTime?
+  refundedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String
+  updatedBy      String?
+  deletedAt      DateTime?
+  deletedBy      String?
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  salesOrder   SalesOrder    @relation(fields: [salesOrderId], references: [id])
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  items        ReturnItem[]
+
+  @@unique([organizationId, returnNumber])
+  @@index([organizationId])
+  @@index([salesOrderId])
+  @@index([customerId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+// Return Line Items
+model ReturnItem {
+  id          String  @id @default(cuid())
+  returnId    String
+  description String
+  sku         String?
+  quantity    Decimal @db.Decimal(15, 2)
+  unitPrice   Decimal @db.Decimal(15, 2)
+  lineTotal   Decimal @db.Decimal(15, 2)
+
+  return Return @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  @@index([returnId])
+}
+
+// ============================================
+// INVENTORY MANAGEMENT MODELS
+// ============================================
+
+// Product/Item - Items in inventory
+model Product {
+  id             String   @id @default(cuid())
+  organizationId String
+  sku            String
+  name           String
+  description    String?
+  category       String?
+  type           String   @default("PHYSICAL") // PHYSICAL, SERVICE, DIGITAL
+  unit           String   @default("EACH") // EACH, KG, LB, L, M, etc.
+  costPrice      Decimal  @default(0) @db.Decimal(15, 2)
+  sellingPrice   Decimal  @default(0) @db.Decimal(15, 2)
+  taxRate        Decimal  @default(0) @db.Decimal(5, 2)
+  reorderLevel   Int      @default(0)
+  reorderQuantity Int     @default(0)
+  isActive       Boolean  @default(true)
+  isSellable     Boolean  @default(true)
+  isPurchasable  Boolean  @default(true)
+  barcode        String?
+  weight         Decimal? @db.Decimal(10, 3)
+  dimensions     String?  // JSON: {length, width, height}
+  imageUrl       String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String
+  updatedBy      String?
+  deletedAt      DateTime?
+  deletedBy      String?
+
+  organization  Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stockLevels   StockLevel[]
+  stockMovements StockMovement[]
+
+  @@unique([organizationId, sku])
+  @@index([organizationId])
+  @@index([category])
+  @@index([isActive])
+  @@index([deletedAt])
+}
+
+// Warehouse - Storage locations
+model Warehouse {
+  id             String   @id @default(cuid())
+  organizationId String
+  code           String
+  name           String
+  address        String?
+  city           String?
+  state          String?
+  country        String?
+  postalCode     String?
+  isDefault      Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String
+  updatedBy      String?
+  deletedAt      DateTime?
+  deletedBy      String?
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stockLevels    StockLevel[]
+  stockMovementsFrom StockMovement[] @relation("FromWarehouse")
+  stockMovementsTo   StockMovement[] @relation("ToWarehouse")
+  goodsReceipts  GoodsReceipt[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@index([isActive])
+  @@index([deletedAt])
+}
+
+// Stock Level - Current inventory by product and warehouse
+model StockLevel {
+  id             String   @id @default(cuid())
+  organizationId String
+  productId      String
+  warehouseId    String
+  quantity       Decimal  @default(0) @db.Decimal(15, 2)
+  reservedQty    Decimal  @default(0) @db.Decimal(15, 2) // Reserved for orders
+  availableQty   Decimal  @default(0) @db.Decimal(15, 2) // quantity - reserved
+  lastCountDate  DateTime?
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  product      Product      @relation(fields: [productId], references: [id])
+  warehouse    Warehouse    @relation(fields: [warehouseId], references: [id])
+
+  @@unique([productId, warehouseId])
+  @@index([organizationId])
+  @@index([productId])
+  @@index([warehouseId])
+}
+
+// Stock Movement - Track inventory changes
+model StockMovement {
+  id             String   @id @default(cuid())
+  organizationId String
+  movementNumber String
+  productId      String
+  type           String   // IN, OUT, TRANSFER, ADJUSTMENT
+  reason         String?  // PURCHASE, SALE, RETURN, DAMAGE, TRANSFER, COUNT_ADJUSTMENT
+  quantity       Decimal  @db.Decimal(15, 2)
+  fromWarehouseId String?
+  toWarehouseId   String?
+  referenceType  String?  // SALES_ORDER, PURCHASE_ORDER, RETURN, etc.
+  referenceId    String?  // ID of the related document
+  notes          String?
+  movementDate   DateTime @default(now())
+  createdAt      DateTime @default(now())
+  createdBy      String
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  product       Product      @relation(fields: [productId], references: [id])
+  fromWarehouse Warehouse?   @relation("FromWarehouse", fields: [fromWarehouseId], references: [id])
+  toWarehouse   Warehouse?   @relation("ToWarehouse", fields: [toWarehouseId], references: [id])
+
+  @@unique([organizationId, movementNumber])
+  @@index([organizationId])
+  @@index([productId])
+  @@index([type])
+  @@index([movementDate])
+}
+
+// ============================================
+// PROCUREMENT MODELS
+// ============================================
+
+// Purchase Order - Orders to vendors
+model PurchaseOrder {
+  id              String   @id @default(cuid())
+  organizationId  String
+  poNumber        String
+  vendorId        String
+  orderDate       DateTime @default(now())
+  expectedDate    DateTime?
+  status          String   @default("DRAFT") // DRAFT, SENT, CONFIRMED, PARTIAL, RECEIVED, CANCELLED
+  subtotal        Decimal  @db.Decimal(15, 2)
+  taxAmount       Decimal  @default(0) @db.Decimal(15, 2)
+  shippingAmount  Decimal  @default(0) @db.Decimal(15, 2)
+  totalAmount     Decimal  @db.Decimal(15, 2)
+  currency        String   @default("USD")
+  shippingAddress String?
+  notes           String?
+  billId          String?  // Link to generated bill
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String
+  updatedBy       String?
+  deletedAt       DateTime?
+  deletedBy       String?
+
+  organization  Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vendor        Vendor                @relation(fields: [vendorId], references: [id])
+  lineItems     PurchaseOrderItem[]
+  goodsReceipts GoodsReceipt[]
+
+  @@unique([organizationId, poNumber])
+  @@index([organizationId])
+  @@index([vendorId])
+  @@index([status])
+  @@index([orderDate])
+  @@index([deletedAt])
+}
+
+// Purchase Order Line Items
+model PurchaseOrderItem {
+  id              String  @id @default(cuid())
+  purchaseOrderId String
+  productId       String?
+  description     String
+  sku             String?
+  quantity        Decimal @db.Decimal(15, 2)
+  unitPrice       Decimal @db.Decimal(15, 2)
+  taxRate         Decimal @default(0) @db.Decimal(5, 2)
+  lineTotal       Decimal @db.Decimal(15, 2)
+  receivedQty     Decimal @default(0) @db.Decimal(15, 2)
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseOrderId])
+}
+
+// Goods Receipt - Receiving inventory from PO
+model GoodsReceipt {
+  id              String   @id @default(cuid())
+  organizationId  String
+  receiptNumber   String
+  purchaseOrderId String
+  warehouseId     String
+  receiptDate     DateTime @default(now())
+  status          String   @default("PENDING") // PENDING, INSPECTING, COMPLETED, REJECTED
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String
+  updatedBy       String?
+
+  organization  Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  purchaseOrder PurchaseOrder       @relation(fields: [purchaseOrderId], references: [id])
+  warehouse     Warehouse           @relation(fields: [warehouseId], references: [id])
+  items         GoodsReceiptItem[]
+
+  @@unique([organizationId, receiptNumber])
+  @@index([organizationId])
+  @@index([purchaseOrderId])
+  @@index([warehouseId])
+  @@index([status])
+}
+
+// Goods Receipt Line Items
+model GoodsReceiptItem {
+  id             String  @id @default(cuid())
+  goodsReceiptId String
+  productId      String?
+  description    String
+  orderedQty     Decimal @db.Decimal(15, 2)
+  receivedQty    Decimal @db.Decimal(15, 2)
+  acceptedQty    Decimal @db.Decimal(15, 2)
+  rejectedQty    Decimal @default(0) @db.Decimal(15, 2)
+  notes          String?
+
+  goodsReceipt GoodsReceipt @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
+
+  @@index([goodsReceiptId])
 }

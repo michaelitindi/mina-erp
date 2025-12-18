@@ -142,21 +142,21 @@ export default async function DashboardPage() {
         <h2 className="mb-4 text-lg font-semibold text-white">Quick Actions</h2>
         <div className="grid gap-4 md:grid-cols-4">
           <a
-            href="/dashboard/finance/invoices/new"
+            href="/dashboard/finance/invoices"
             className="flex items-center gap-3 rounded-lg border border-slate-600 bg-slate-700/50 p-4 transition-colors hover:bg-slate-700"
           >
             <Receipt className="h-5 w-5 text-blue-400" />
             <span className="text-white">Create Invoice</span>
           </a>
           <a
-            href="/dashboard/crm/customers/new"
+            href="/dashboard/crm/customers"
             className="flex items-center gap-3 rounded-lg border border-slate-600 bg-slate-700/50 p-4 transition-colors hover:bg-slate-700"
           >
             <Users className="h-5 w-5 text-purple-400" />
             <span className="text-white">Add Customer</span>
           </a>
           <a
-            href="/dashboard/finance/bills/new"
+            href="/dashboard/finance/bills"
             className="flex items-center gap-3 rounded-lg border border-slate-600 bg-slate-700/50 p-4 transition-colors hover:bg-slate-700"
           >
             <Receipt className="h-5 w-5 text-orange-400" />
