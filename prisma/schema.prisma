@@ -27,6 +27,8 @@ model Organization {
   timezone    String   @default("UTC")
   status      String   @default("ACTIVE") // ACTIVE, SUSPENDED, DELETED
   plan        String   @default("STARTER") // STARTER, PROFESSIONAL, ENTERPRISE
+  enabledModules     String[] @default(["FINANCE", "CRM", "SALES", "INVENTORY"])
+  onboardingComplete Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

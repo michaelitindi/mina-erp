@@ -21,24 +21,35 @@ import {
 } from 'lucide-react'
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Finance', href: '/dashboard/finance/accounts', icon: Wallet },
-  { name: 'CRM', href: '/dashboard/crm/customers', icon: Users },
-  { name: 'Sales', href: '/dashboard/sales/orders', icon: ShoppingCart },
-  { name: 'Inventory', href: '/dashboard/inventory/products', icon: Package },
-  { name: 'Procurement', href: '/dashboard/procurement/purchase-orders', icon: ShoppingBag },
-  { name: 'HR', href: '/dashboard/hr/employees', icon: UserCircle },
-  { name: 'Assets', href: '/dashboard/assets', icon: HardDrive },
-  { name: 'Projects', href: '/dashboard/projects', icon: FolderKanban },
-  { name: 'Documents', href: '/dashboard/documents', icon: FolderOpen },
-  { name: 'Manufacturing', href: '/dashboard/manufacturing', icon: Cog },
-  { name: 'E-Commerce', href: '/dashboard/ecommerce', icon: Store },
-  { name: 'Reports', href: '/dashboard/reports', icon: BarChart3 },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, moduleKey: null }, // Always visible
+  { name: 'Finance', href: '/dashboard/finance/accounts', icon: Wallet, moduleKey: 'FINANCE' },
+  { name: 'CRM', href: '/dashboard/crm/customers', icon: Users, moduleKey: 'CRM' },
+  { name: 'Sales', href: '/dashboard/sales/orders', icon: ShoppingCart, moduleKey: 'SALES' },
+  { name: 'Inventory', href: '/dashboard/inventory/products', icon: Package, moduleKey: 'INVENTORY' },
+  { name: 'Procurement', href: '/dashboard/procurement/purchase-orders', icon: ShoppingBag, moduleKey: 'PROCUREMENT' },
+  { name: 'HR', href: '/dashboard/hr/employees', icon: UserCircle, moduleKey: 'HR' },
+  { name: 'Assets', href: '/dashboard/assets', icon: HardDrive, moduleKey: 'ASSETS' },
+  { name: 'Projects', href: '/dashboard/projects', icon: FolderKanban, moduleKey: 'PROJECTS' },
+  { name: 'Documents', href: '/dashboard/documents', icon: FolderOpen, moduleKey: 'DOCUMENTS' },
+  { name: 'Manufacturing', href: '/dashboard/manufacturing', icon: Cog, moduleKey: 'MANUFACTURING' },
+  { name: 'E-Commerce', href: '/dashboard/ecommerce', icon: Store, moduleKey: 'ECOMMERCE' },
+  { name: 'Reports', href: '/dashboard/reports', icon: BarChart3, moduleKey: null }, // Always visible
+  { name: 'Settings', href: '/dashboard/settings', icon: Settings, moduleKey: null }, // Always visible
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  enabledModules?: string[]
+}
+
+export function Sidebar({ enabledModules }: SidebarProps) {
   const pathname = usePathname()
+
+  // Filter navigation based on enabled modules
+  const filteredNavigation = navigation.filter(item => 
+    item.moduleKey === null || // Always show items without moduleKey
+    !enabledModules || // Show all if no modules specified
+    enabledModules.includes(item.moduleKey)
+  )
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-slate-700 bg-slate-800/50 backdrop-blur-xl">
@@ -55,7 +66,7 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-          {navigation.map((item) => {
+          {filteredNavigation.map((item) => {
             // Check if current page is within this module's section
             const isActive = pathname === item.href || 
               (item.href !== '/dashboard' && pathname.startsWith(item.href.split('/').slice(0, 4).join('/')))
@@ -81,3 +92,4 @@ export function Sidebar() {
     </aside>
   )
 }
+
