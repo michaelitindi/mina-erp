@@ -1,4 +1,4 @@
-# ERP System
+# MinaERP
 
 A modern, full-featured Enterprise Resource Planning (ERP) system built with Next.js 16, designed for small to medium businesses. Features multi-tenant architecture, beautiful dark mode UI, and modular design allowing organizations to enable only the features they need.
 

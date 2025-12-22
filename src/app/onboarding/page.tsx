@@ -47,7 +47,7 @@ export default function OnboardingPage() {
             <Sparkles className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-            Welcome to Your ERP
+            Welcome to MinaERP
           </h1>
           <p className="text-lg text-slate-400 max-w-xl mx-auto">
             Choose the modules you need for your business. You can always change this later in Settings.

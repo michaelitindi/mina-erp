@@ -6,7 +6,7 @@ export default function SignUpPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
-          <p className="text-slate-400">Get started with your ERP system</p>
+          <p className="text-slate-400">Get started with MinaERP</p>
         </div>
         <SignUp 
           appearance={{

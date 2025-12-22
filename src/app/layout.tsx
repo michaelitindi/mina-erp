@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ERP System",
+  title: "MinaERP",
   description: "Enterprise Resource Planning System",
 };
 

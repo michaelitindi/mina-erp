@@ -104,7 +104,7 @@ export default async function DashboardPage() {
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-slate-400">Welcome to your ERP dashboard</p>
+        <p className="text-slate-400">Welcome to MinaERP</p>
       </div>
 
       {/* Stats Grid */}

@@ -354,7 +354,7 @@ export async function sendNewOrderNotification(data: NewOrderNotificationData) {
         <!-- Footer -->
         <div style="background: #f9fafb; padding: 24px; text-align: center; border-top: 1px solid #e5e7eb;">
           <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-            This is an automated notification from your ERP system.
+            This is an automated notification from MinaERP.
           </p>
         </div>
       </div>

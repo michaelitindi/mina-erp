@@ -63,9 +63,9 @@ export default async function HomePage() {
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
-                <span className="text-lg font-bold text-white">E</span>
+                <span className="text-lg font-bold text-white">M</span>
               </div>
-              <span className="text-xl font-semibold text-white">ERP System</span>
+              <span className="text-xl font-semibold text-white">MinaERP</span>
             </div>
             <div className="flex items-center gap-6">
               <Link
@@ -110,7 +110,7 @@ export default async function HomePage() {
               </span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-300">
-              A comprehensive multi-tenant SaaS ERP system designed to manage all aspects 
+              MinaERP is a comprehensive multi-tenant SaaS platform designed to manage all aspects 
               of your business operations including finance, HR, inventory, sales, and more.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
@@ -170,7 +170,7 @@ export default async function HomePage() {
               <Zap className="mx-auto h-12 w-12 text-white" />
               <h2 className="mt-4 text-3xl font-bold text-white">Ready to Get Started?</h2>
               <p className="mx-auto mt-4 max-w-xl text-lg text-blue-100">
-                Join thousands of businesses already using our ERP system to streamline their operations.
+                Join thousands of businesses already using MinaERP to streamline their operations.
               </p>
               <Link
                 href="/sign-up"
@@ -188,7 +188,7 @@ export default async function HomePage() {
       <footer className="border-t border-slate-700">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-slate-400">
-            © {new Date().getFullYear()} ERP System. All rights reserved.
+            © {new Date().getFullYear()} MinaERP. All rights reserved.
           </p>
         </div>
       </footer>

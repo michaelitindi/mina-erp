@@ -58,9 +58,9 @@ export function Sidebar({ enabledModules }: SidebarProps) {
         <div className="flex h-16 items-center border-b border-slate-700 px-6">
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
-              <span className="text-lg font-bold text-white">E</span>
+              <span className="text-lg font-bold text-white">M</span>
             </div>
-            <span className="text-xl font-semibold text-white">ERP System</span>
+            <span className="text-xl font-semibold text-white">MinaERP</span>
           </Link>
         </div>
 
