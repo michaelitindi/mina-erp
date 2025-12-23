@@ -87,7 +87,7 @@ NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
 # App URL (Required)
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
-# Email - Resend (Optional - for notifications)
+# Email - Resend (Required for build)
 RESEND_API_KEY="re_..."
 FROM_EMAIL="noreply@yourdomain.com"
 COMPANY_NAME="Your Company Name"
@@ -102,7 +102,7 @@ ADMIN_EMAIL="admin@yourdomain.com"
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | ✅ | Clerk public key |
 | `CLERK_SECRET_KEY` | ✅ | Clerk secret key |
 | `NEXT_PUBLIC_APP_URL` | ✅ | Full URL of your app |
-| `RESEND_API_KEY` | ❌ | For email notifications |
+| `RESEND_API_KEY` | ✅ | For email notifications |
 | `FROM_EMAIL` | ❌ | Sender email for notifications |
 | `COMPANY_NAME` | ❌ | Company name in emails |
 | `ADMIN_EMAIL` | ❌ | Receives e-commerce order alerts |
