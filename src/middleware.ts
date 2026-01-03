@@ -9,6 +9,7 @@ const isPublicRoute = createRouteMatcher([
   '/roadmap(.*)',
   '/store(.*)',
   '/organization-invitation(.*)', // Clerk org invitations
+  '/accept-invitation(.*)', // Custom invitation handler
 ])
 
 export default clerkMiddleware(async (auth, request) => {
