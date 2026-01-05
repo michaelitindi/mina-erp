@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { isAdmin, ADMIN_ONLY_MODULES } from '@/lib/roles'
 import {
   LayoutDashboard,
   Users,
@@ -18,6 +19,7 @@ import {
   FolderOpen,
   Cog,
   Store,
+  User2,
 } from 'lucide-react'
 
 const navigation = [
@@ -33,23 +35,33 @@ const navigation = [
   { name: 'Documents', href: '/dashboard/documents', icon: FolderOpen, moduleKey: 'DOCUMENTS' },
   { name: 'Manufacturing', href: '/dashboard/manufacturing', icon: Cog, moduleKey: 'MANUFACTURING' },
   { name: 'E-Commerce', href: '/dashboard/ecommerce', icon: Store, moduleKey: 'ECOMMERCE' },
-  { name: 'Reports', href: '/dashboard/reports', icon: BarChart3, moduleKey: null }, // Always visible
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings, moduleKey: null }, // Always visible
+  { name: 'Reports', href: '/dashboard/reports', icon: BarChart3, moduleKey: null }, // Admin only
+  { name: 'Settings', href: '/dashboard/settings', icon: Settings, moduleKey: null }, // Admin only
 ]
 
 interface SidebarProps {
   enabledModules?: string[]
+  userRole?: string | null
 }
 
-export function Sidebar({ enabledModules }: SidebarProps) {
+export function Sidebar({ enabledModules, userRole }: SidebarProps) {
   const pathname = usePathname()
+  const userIsAdmin = isAdmin(userRole)
 
-  // Filter navigation based on enabled modules
-  const filteredNavigation = navigation.filter(item => 
-    item.moduleKey === null || // Always show items without moduleKey
-    !enabledModules || // Show all if no modules specified
-    enabledModules.includes(item.moduleKey)
-  )
+  // Filter navigation based on enabled modules AND user role
+  const filteredNavigation = navigation.filter(item => {
+    // Check if admin-only module (Settings, Reports)
+    if (ADMIN_ONLY_MODULES.includes(item.name as typeof ADMIN_ONLY_MODULES[number])) {
+      if (!userIsAdmin) return false // Hide from non-admins
+    }
+    
+    // Check module enablement
+    return item.moduleKey === null || // Always show items without moduleKey (if passed role check)
+      !enabledModules || // Show all if no modules specified
+      enabledModules.includes(item.moduleKey)
+  })
+  
+  const isMyPortalActive = pathname.startsWith('/dashboard/my-portal')
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-slate-700 bg-slate-800/50 backdrop-blur-xl">
@@ -88,8 +100,25 @@ export function Sidebar({ enabledModules }: SidebarProps) {
             )
           })}
         </nav>
+        
+        {/* My Portal - Always visible at bottom */}
+        <div className="border-t border-slate-700 px-3 py-3">
+          <Link
+            href="/dashboard/my-portal"
+            className={cn(
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              isMyPortalActive
+                ? 'bg-purple-600/20 text-purple-400'
+                : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+            )}
+          >
+            <User2 className="h-5 w-5" />
+            My Portal
+          </Link>
+        </div>
       </div>
     </aside>
   )
 }
+
 

@@ -423,6 +423,7 @@ model BudgetLineItem {
 model Employee {
   id              String    @id @default(cuid())
   organizationId  String
+  clerkUserId     String?   // Link to Clerk user for self-service
   employeeNumber  String
   firstName       String
   lastName        String
@@ -439,6 +440,10 @@ model Employee {
   currency        String    @default("USD")
   payFrequency    String?   // WEEKLY, BI_WEEKLY, MONTHLY
   managerId       String?
+  // Self-service fields
+  address         String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   createdBy       String
@@ -446,15 +451,21 @@ model Employee {
   deletedAt       DateTime?
   deletedBy       String?
 
-  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  manager       Employee?    @relation("EmployeeManager", fields: [managerId], references: [id])
-  directReports Employee[]   @relation("EmployeeManager")
-  leaveRequests LeaveRequest[]
-  timesheets    Timesheet[]
-  payrollRecords PayrollRecord[]
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  manager         Employee?    @relation("EmployeeManager", fields: [managerId], references: [id])
+  directReports   Employee[]   @relation("EmployeeManager")
+  leaveRequests   LeaveRequest[]
+  timesheets      Timesheet[]
+  payrollRecords  PayrollRecord[]
+  certifications  EmployeeCertification[]
+  dependants      EmployeeDependant[]
+  bankDetails     EmployeeBankDetails?
+  resignations    ResignationRequest[]
 
   @@unique([organizationId, employeeNumber])
+  @@unique([organizationId, clerkUserId])
   @@index([organizationId])
+  @@index([clerkUserId])
   @@index([status])
   @@index([department])
   @@index([deletedAt])
@@ -562,6 +573,93 @@ model PayrollRecord {
   @@index([employeeId])
   @@index([status])
   @@index([payPeriodStart])
+}
+
+// ============================================
+// EMPLOYEE SELF-SERVICE MODELS
+// ============================================
+
+// Employee Certification - Degrees, certifications, skills
+model EmployeeCertification {
+  id           String    @id @default(cuid())
+  employeeId   String
+  name         String    // e.g., "AWS Solutions Architect", "MBA"
+  type         String    // CERTIFICATION, DEGREE, SKILL, LICENSE
+  issuer       String?   // e.g., "Amazon", "Harvard University"
+  issueDate    DateTime?
+  expiryDate   DateTime?
+  credentialId String?   // Credential/license number
+  documentUrl  String?   // Link to certificate/diploma
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([type])
+}
+
+// Employee Dependant - Family members for benefits
+model EmployeeDependant {
+  id           String    @id @default(cuid())
+  employeeId   String
+  firstName    String
+  lastName     String
+  relationship String    // SPOUSE, CHILD, PARENT, OTHER
+  dateOfBirth  DateTime?
+  gender       String?   // MALE, FEMALE, OTHER
+  isEmergencyContact Boolean @default(false)
+  phone        String?
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+}
+
+// Employee Bank Details - For salary payments
+model EmployeeBankDetails {
+  id            String   @id @default(cuid())
+  employeeId    String   @unique  // One bank account per employee
+  bankName      String
+  accountName   String   // Name on the account
+  accountNumber String
+  routingNumber String?  // For US banks
+  swiftCode     String?  // For international transfers
+  branchCode    String?
+  accountType   String   @default("CHECKING") // CHECKING, SAVINGS
+  isPrimary     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+}
+
+// Resignation Request - Employee resignation workflow
+model ResignationRequest {
+  id              String    @id @default(cuid())
+  organizationId  String
+  employeeId      String
+  requestDate     DateTime  @default(now())
+  lastWorkingDate DateTime
+  reason          String?
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED, WITHDRAWN
+  notes           String?
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([organizationId])
+  @@index([status])
 }
 
 // ============================================
