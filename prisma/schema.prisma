@@ -63,6 +63,10 @@ model Organization {
   billOfMaterials BillOfMaterials[]
   workOrders     WorkOrder[]
   onlineStores   OnlineStore[]
+  paymentProviders PaymentProvider[]
+  posTerminals   POSTerminal[]
+  posSessions    POSSession[]
+  posSales       POSSale[]
 
   @@index([clerkOrgId])
   @@index([status])
@@ -204,6 +208,7 @@ model Customer {
   activities   Activity[]
   salesOrders  SalesOrder[]
   returns      Return[]
+  posSales     POSSale[]
 
   @@unique([organizationId, customerNumber])
   @@index([organizationId])
@@ -1029,6 +1034,7 @@ model Product {
   organization  Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   stockLevels   StockLevel[]
   stockMovements StockMovement[]
+  posSaleItems  POSSaleItem[]
 
   @@unique([organizationId, sku])
   @@index([organizationId])
@@ -1729,3 +1735,134 @@ model FeedbackReply {
   @@index([createdAt])
 }
 
+// ============================================
+// PAYMENT PROVIDER INFRASTRUCTURE
+// ============================================
+
+model PaymentProvider {
+  id              String   @id @default(cuid())
+  organizationId  String
+  providerType    String   // STRIPE, PAYPAL, LEMONSQUEEZY, RAZORPAY, GPAY, MPESA, FLUTTERWAVE, INTASEND, CASH
+  displayName     String   // "Pay with Card", "M-Pesa", etc.
+  isActive        Boolean  @default(true)
+  forPOS          Boolean  @default(true)
+  forEcommerce    Boolean  @default(true)
+  config          Json?    // Encrypted: { apiKey, secretKey, webhookSecret }
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, providerType])
+  @@index([organizationId])
+  @@index([isActive])
+}
+
+// ============================================
+// POINT OF SALE (POS) MODULE
+// ============================================
+
+model POSTerminal {
+  id              String   @id @default(cuid())
+  organizationId  String
+  name            String   // "Register 1", "Front Counter"
+  location        String?  // Store/branch
+  status          String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sessions        POSSession[]
+  
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([status])
+}
+
+model POSSession {
+  id              String    @id @default(cuid())
+  organizationId  String
+  terminalId      String
+  cashierId       String    // Employee ID or Clerk user ID
+  cashierName     String
+  openedAt        DateTime  @default(now())
+  closedAt        DateTime?
+  openingCash     Decimal   @db.Decimal(15, 2)
+  closingCash     Decimal?  @db.Decimal(15, 2)
+  expectedCash    Decimal?  @db.Decimal(15, 2) // Calculated: openingCash + cash sales
+  cashDifference  Decimal?  @db.Decimal(15, 2) // closingCash - expectedCash
+  status          String    @default("OPEN") // OPEN, CLOSED
+  notes           String?
+  
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  terminal        POSTerminal  @relation(fields: [terminalId], references: [id])
+  sales           POSSale[]
+  
+  @@index([organizationId])
+  @@index([terminalId])
+  @@index([status])
+  @@index([openedAt])
+}
+
+model POSSale {
+  id              String   @id @default(cuid())
+  organizationId  String
+  sessionId       String
+  saleNumber      String   // POS-000001
+  customerId      String?
+  customerName    String?
+  subtotal        Decimal  @db.Decimal(15, 2)
+  taxAmount       Decimal  @db.Decimal(15, 2) @default(0)
+  discountAmount  Decimal  @db.Decimal(15, 2) @default(0)
+  discountType    String?  // PERCENT, FIXED
+  totalAmount     Decimal  @db.Decimal(15, 2)
+  status          String   @default("COMPLETED") // COMPLETED, REFUNDED, VOIDED
+  createdAt       DateTime @default(now())
+  createdBy       String
+  
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  session         POSSession   @relation(fields: [sessionId], references: [id])
+  customer        Customer?    @relation(fields: [customerId], references: [id])
+  items           POSSaleItem[]
+  payments        POSPayment[]
+  
+  @@unique([organizationId, saleNumber])
+  @@index([organizationId])
+  @@index([sessionId])
+  @@index([createdAt])
+  @@index([status])
+}
+
+model POSSaleItem {
+  id          String  @id @default(cuid())
+  saleId      String
+  productId   String
+  productName String
+  productSku  String?
+  quantity    Int
+  unitPrice   Decimal @db.Decimal(15, 2)
+  discount    Decimal @db.Decimal(15, 2) @default(0)
+  total       Decimal @db.Decimal(15, 2)
+  
+  sale        POSSale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product @relation(fields: [productId], references: [id])
+  
+  @@index([saleId])
+  @@index([productId])
+}
+
+model POSPayment {
+  id              String   @id @default(cuid())
+  saleId          String
+  providerType    String   // CASH, STRIPE, MPESA, etc.
+  method          String   // cash, card, mobile_money
+  amount          Decimal  @db.Decimal(15, 2)
+  reference       String?  // Transaction ID, card last 4
+  changeGiven     Decimal? @db.Decimal(15, 2) // For cash payments
+  receivedAt      DateTime @default(now())
+  
+  sale            POSSale  @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  
+  @@index([saleId])
+  @@index([providerType])
+}

@@ -10,6 +10,7 @@ export type ModuleType =
   | 'DOCUMENTS' 
   | 'MANUFACTURING' 
   | 'ECOMMERCE'
+  | 'POS'
 
 export const ALL_MODULES: { id: ModuleType; name: string; description: string; icon: string }[] = [
   { id: 'FINANCE', name: 'Finance', description: 'Invoices, bills, payments & budgets', icon: '💰' },
@@ -23,6 +24,7 @@ export const ALL_MODULES: { id: ModuleType; name: string; description: string; i
   { id: 'DOCUMENTS', name: 'Documents', description: 'Document storage', icon: '📄' },
   { id: 'MANUFACTURING', name: 'Manufacturing', description: 'BOM & work orders', icon: '🏭' },
   { id: 'ECOMMERCE', name: 'E-Commerce', description: 'Online stores', icon: '🏪' },
+  { id: 'POS', name: 'Point of Sale', description: 'Retail checkout & shifts', icon: '💳' },
 ]
 
 export const DEFAULT_MODULES: ModuleType[] = ['FINANCE', 'CRM', 'SALES', 'INVENTORY']

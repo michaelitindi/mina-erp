@@ -16,7 +16,7 @@ A modern, full-featured Enterprise Resource Planning (ERP) system built with Nex
 - Role-based access control
 - Customizable module selection per organization
 
-### 11 Core Modules
+### 12 Core Modules
 
 | Module | Description |
 |--------|-------------|
@@ -31,6 +31,7 @@ A modern, full-featured Enterprise Resource Planning (ERP) system built with Nex
 | **📄 Documents** | Document storage and management |
 | **🏭 Manufacturing** | Bill of materials, work orders |
 | **🏪 E-Commerce** | Online stores with multiple payment providers |
+| **💳 POS** | Point of sale, cash register, shift management |
 
 ### Additional Features
 - **Audit Logging** - Track all changes with full audit trail
@@ -197,7 +198,7 @@ src/
 Organizations can choose which modules to enable during onboarding:
 
 - **Default modules**: Finance, CRM, Sales, Inventory
-- **Optional modules**: Procurement, HR, Assets, Projects, Documents, Manufacturing, E-Commerce
+- **Optional modules**: Procurement, HR, Assets, Projects, Documents, Manufacturing, E-Commerce, POS
 - **Always visible**: Dashboard, Reports, Settings
 
 Module preferences are stored at the organization level, so all team members see the same modules.
@@ -216,6 +217,32 @@ Each organization can create online stores with:
   - LemonSqueezy
 
 Public storefronts are accessible at `/store/[slug]`
+
+---
+
+## 💳 Point of Sale (POS)
+
+Retail checkout system with:
+- **Sales Terminal** - Touch-friendly product grid, cart, quick search
+- **Payment Methods** - Cash (with change calculator) and Card
+- **Shift Management** - Open/close shifts with cash reconciliation
+- **Transaction History** - Daily summary and sales reports
+
+### Payment Providers (Plugin Architecture)
+
+Both POS and E-Commerce share a unified payment provider system:
+
+| Provider | Type | Region |
+|----------|------|--------|
+| Stripe | Card | Global |
+| PayPal | Card/Account | Global |
+| LemonSqueezy | Subscriptions | Global |
+| Razorpay | Card/UPI | India |
+| Google Pay | Wallet | Global |
+| M-Pesa | Mobile Money | Kenya |
+| Flutterwave | Multi | Africa |
+| IntaSend | M-Pesa + Card | Kenya |
+| Cash | Manual | POS only |
 
 ---
 
@@ -245,6 +272,8 @@ The Prisma schema includes 40+ models covering:
 - **Documents**: Document
 - **Manufacturing**: BillOfMaterials, WorkOrder
 - **E-Commerce**: OnlineStore, StoreProduct, StoreOrder
+- **POS**: POSTerminal, POSSession, POSSale, POSSaleItem, POSPayment
+- **Payments**: PaymentProvider
 - **Feedback**: Feedback, FeedbackVote, FeedbackReply
 
 ---

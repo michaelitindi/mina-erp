@@ -15,6 +15,7 @@
   "dependencies": {
     "@clerk/nextjs": "^6.36.3",
     "@prisma/client": "^5.22.0",
+    "@types/stripe": "^8.0.417",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.460.0",
@@ -22,6 +23,7 @@
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "resend": "^6.6.0",
+    "stripe": "^20.1.2",
     "svix": "^1.84.1",
     "tailwind-merge": "^2.5.5",
     "zod": "^3.23.8"
