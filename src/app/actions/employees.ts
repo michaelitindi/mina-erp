@@ -183,3 +183,49 @@ export async function updateLeaveStatus(id: string, status: string, rejectionRea
   revalidatePath('/dashboard/hr/leave')
   return leave
 }
+
+// Employee Module Access Management
+export async function getEmployeeById(id: string) {
+  const { orgId } = await getOrganization()
+  return prisma.employee.findFirst({
+    where: { id, organizationId: orgId, deletedAt: null },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      position: true,
+      department: true,
+      allowedModules: true,
+    }
+  })
+}
+
+export async function updateEmployeeModules(id: string, modules: string[]) {
+  const { userId, orgId } = await getOrganization()
+  const existing = await prisma.employee.findFirst({ 
+    where: { id, organizationId: orgId, deletedAt: null } 
+  })
+  if (!existing) throw new Error('Employee not found')
+
+  await prisma.employee.update({
+    where: { id },
+    data: { 
+      allowedModules: modules,
+      updatedBy: userId,
+    }
+  })
+
+  await logAudit({ 
+    organizationId: orgId, 
+    userId, 
+    action: 'UPDATE', 
+    entityType: 'Employee', 
+    entityId: id, 
+    oldValues: { allowedModules: existing.allowedModules }, 
+    newValues: { allowedModules: modules } 
+  })
+  revalidatePath('/dashboard/hr/employees')
+  return { success: true }
+}
+

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { deleteEmployee, updateEmployeeStatus } from '@/app/actions/employees'
+import { ModuleAccessButton } from './module-access-button'
 import { Trash2, UserX, UserCheck } from 'lucide-react'
 
 interface Employee {
@@ -17,6 +18,7 @@ interface Employee {
   status: string
   salary: number | { toNumber: () => number } | null
   manager: { firstName: string; lastName: string } | null
+  allowedModules: string[]
   _count?: { leaveRequests: number; timesheets: number }
 }
 
@@ -81,7 +83,12 @@ export function EmployeesTable({ employees }: { employees: Employee[] }) {
               <td className="px-6 py-4"><span className={`text-sm font-medium ${typeColors[emp.employmentType]}`}>{emp.employmentType.replace('_', '-')}</span></td>
               <td className="px-6 py-4"><span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[emp.status]}`}>{emp.status}</span></td>
               <td className="px-6 py-4 text-right">
-                <div className="flex justify-end gap-1">
+                <div className="flex justify-end gap-2">
+                  <ModuleAccessButton
+                    employeeId={emp.id}
+                    employeeName={`${emp.firstName} ${emp.lastName}`}
+                    currentModules={emp.allowedModules}
+                  />
                   {emp.status === 'ACTIVE' && (
                     <button onClick={() => handleStatusChange(emp.id, 'INACTIVE')} disabled={processingId === emp.id} className="rounded-lg p-1.5 text-slate-400 hover:bg-yellow-600/20 hover:text-yellow-400 transition-colors disabled:opacity-50" title="Deactivate">
                       <UserX className="h-4 w-4" />

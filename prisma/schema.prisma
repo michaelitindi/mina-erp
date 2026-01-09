@@ -444,6 +444,8 @@ model Employee {
   address         String?
   emergencyContactName  String?
   emergencyContactPhone String?
+  // Module access (for non-admins)
+  allowedModules  String[]  @default([]) // e.g., ["SALES", "CRM", "FINANCE"]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   createdBy       String

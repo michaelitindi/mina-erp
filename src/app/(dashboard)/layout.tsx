@@ -8,9 +8,21 @@ import { isAdmin } from '@/lib/roles'
 async function getOrganizationData(clerkOrgId: string) {
   const org = await prisma.organization.findUnique({
     where: { clerkOrgId },
-    select: { enabledModules: true, onboardingComplete: true }
+    select: { id: true, enabledModules: true, onboardingComplete: true }
   })
   return org
+}
+
+async function getEmployeeModules(orgId: string, clerkUserId: string) {
+  const employee = await prisma.employee.findFirst({
+    where: { 
+      organizationId: orgId, 
+      clerkUserId,
+      deletedAt: null 
+    },
+    select: { allowedModules: true }
+  })
+  return employee?.allowedModules || []
 }
 
 export default async function DashboardLayout({
@@ -78,9 +90,23 @@ export default async function DashboardLayout({
     }
   }
 
+  // Determine which modules to show
+  let modulesToShow: string[] = []
+  
+  if (userIsAdmin) {
+    // Admins see all enabled organization modules
+    modulesToShow = org?.enabledModules || []
+  } else {
+    // Members see only their allowed modules (intersection with org enabled)
+    const employeeModules = org ? await getEmployeeModules(org.id, userId) : []
+    const orgModules = org?.enabledModules || []
+    // Only show modules that are both allowed for employee AND enabled for org
+    modulesToShow = employeeModules.filter(m => orgModules.includes(m))
+  }
+
   return (
     <div className="min-h-screen bg-slate-900">
-      <Sidebar enabledModules={org?.enabledModules} userRole={orgRole} />
+      <Sidebar enabledModules={modulesToShow} userRole={orgRole} />
       <div className="ml-64">
         <Header />
         <main>
@@ -90,5 +116,6 @@ export default async function DashboardLayout({
     </div>
   )
 }
+
 
 

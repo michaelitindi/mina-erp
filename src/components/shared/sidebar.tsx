@@ -72,16 +72,7 @@ export function Sidebar({ enabledModules, userRole }: SidebarProps) {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
               <span className="text-lg font-bold text-white">M</span>
             </div>
-            <div>
-              <span className="text-xl font-semibold text-white">MinaERP</span>
-              {/* Debug: Show current role */}
-              <div className={cn(
-                "text-xs px-1.5 py-0.5 rounded",
-                userIsAdmin ? "bg-red-500/20 text-red-400" : "bg-green-500/20 text-green-400"
-              )}>
-                {userRole || 'no role'}
-              </div>
-            </div>
+            <span className="text-xl font-semibold text-white">MinaERP</span>
           </Link>
         </div>
 
