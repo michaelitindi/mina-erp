@@ -5,12 +5,13 @@ import { CreateEmployeeButton } from '@/components/hr/employee-buttons'
 import { Users, UserCheck, Briefcase, Clock } from 'lucide-react'
 
 export default async function EmployeesPage() {
-  const [employees, stats, org] = await Promise.all([
+  const [employeesResult, stats, org] = await Promise.all([
     getEmployees(),
     getEmployeeStats(),
     getOrganizationWithModules()
   ])
   
+  const employees = employeesResult.items
   const orgModules = org?.enabledModules || []
 
   return (

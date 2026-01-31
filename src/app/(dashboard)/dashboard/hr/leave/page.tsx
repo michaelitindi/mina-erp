@@ -4,10 +4,11 @@ import { CreateLeaveButton } from '@/components/hr/leave-buttons'
 import { Calendar, Clock, CheckCircle, XCircle } from 'lucide-react'
 
 export default async function LeavePage() {
-  const [leaves, employees] = await Promise.all([
+  const [leaves, employeesResult] = await Promise.all([
     getLeaveRequests(),
     getEmployees()
   ])
+  const employees = employeesResult.items
 
   const pending = leaves.filter(l => l.status === 'PENDING').length
   const approved = leaves.filter(l => l.status === 'APPROVED').length

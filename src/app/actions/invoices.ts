@@ -46,26 +46,47 @@ async function generateInvoiceNumber(orgId: string): Promise<string> {
   return `INV-${String(lastNum + 1).padStart(6, '0')}`
 }
 
-export async function getInvoices() {
+export async function getInvoices(page: number = 1, limit: number = 50) {
   const { orgId } = await getOrganization()
 
-  const invoices = await prisma.invoice.findMany({
-    where: {
-      organizationId: orgId,
-      deletedAt: null,
-    },
-    orderBy: { invoiceDate: 'desc' },
-    include: {
-      customer: {
-        select: { companyName: true, email: true }
-      },
-      _count: {
-        select: { lineItems: true, payments: true }
-      }
-    }
-  })
+  const skip = (page - 1) * limit
+  const take = Math.min(limit, 100) // Cap at 100
 
-  return invoices
+  const [invoices, total] = await Promise.all([
+    prisma.invoice.findMany({
+      where: {
+        organizationId: orgId,
+        deletedAt: null,
+      },
+      orderBy: { invoiceDate: 'desc' },
+      skip,
+      take,
+      include: {
+        customer: {
+          select: { companyName: true, email: true }
+        },
+        _count: {
+          select: { lineItems: true, payments: true }
+        }
+      }
+    }),
+    prisma.invoice.count({
+      where: {
+        organizationId: orgId,
+        deletedAt: null,
+      }
+    })
+  ])
+
+  return {
+    items: invoices,
+    pagination: {
+      page,
+      limit: take,
+      total,
+      pages: Math.ceil(total / take),
+    }
+  }
 }
 
 export async function getInvoice(id: string) {

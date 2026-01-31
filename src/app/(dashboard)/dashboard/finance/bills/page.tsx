@@ -5,7 +5,8 @@ import { CreateBillButton } from '@/components/finance/bill-buttons'
 import { CreditCard, DollarSign, Clock, CheckCircle } from 'lucide-react'
 
 export default async function BillsPage() {
-  const [bills, vendors] = await Promise.all([getBills(), getVendors()])
+  const [bills, vendorsResult] = await Promise.all([getBills(), getVendors()])
+  const vendors = vendorsResult.items
 
   const stats = {
     total: bills.length,

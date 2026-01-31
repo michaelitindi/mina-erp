@@ -8,12 +8,13 @@ import { Cog, FileCode, PlayCircle, Package } from 'lucide-react'
 
 export default async function ManufacturingPage() {
   await checkModuleAccess('MANUFACTURING')
-  const [boms, workOrders, stats, products] = await Promise.all([
+  const [boms, workOrders, stats, productsResult] = await Promise.all([
     getBOMs(), 
     getWorkOrders(), 
     getManufacturingStats(),
     getProducts()
   ])
+  const products = productsResult.items
 
   return (
     <div className="space-y-6">

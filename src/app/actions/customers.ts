@@ -45,23 +45,39 @@ async function generateCustomerNumber(orgId: string): Promise<string> {
   return `CUST-${String(lastNum + 1).padStart(6, '0')}`
 }
 
-export async function getCustomers() {
+export async function getCustomers(page: number = 1, limit: number = 50) {
   const { orgId } = await getOrganization()
 
-  const customers = await prisma.customer.findMany({
-    where: {
-      organizationId: orgId,
-      deletedAt: null,
-    },
-    orderBy: { companyName: 'asc' },
-    include: {
-      _count: {
-        select: { invoices: true }
-      }
-    }
-  })
+  const skip = (page - 1) * limit
+  const take = Math.min(limit, 100)
 
-  return customers
+  const [customers, total] = await Promise.all([
+    prisma.customer.findMany({
+      where: {
+        organizationId: orgId,
+        deletedAt: null,
+      },
+      orderBy: { companyName: 'asc' },
+      skip,
+      take,
+      include: {
+        _count: {
+          select: { invoices: true }
+        }
+      }
+    }),
+    prisma.customer.count({
+      where: {
+        organizationId: orgId,
+        deletedAt: null,
+      }
+    })
+  ])
+
+  return {
+    items: customers,
+    pagination: { page, limit: take, total, pages: Math.ceil(total / take) }
+  }
 }
 
 export async function getCustomer(id: string) {

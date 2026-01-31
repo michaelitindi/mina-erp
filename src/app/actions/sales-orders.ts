@@ -54,16 +54,32 @@ async function generateOrderNumber(orgId: string): Promise<string> {
   return `SO-${String(lastNum + 1).padStart(6, '0')}`
 }
 
-export async function getSalesOrders() {
+export async function getSalesOrders(page: number = 1, limit: number = 50) {
   const { orgId } = await getOrganization()
-  return prisma.salesOrder.findMany({
-    where: { organizationId: orgId, deletedAt: null },
-    orderBy: { createdAt: 'desc' },
-    include: { 
-      customer: { select: { companyName: true } },
-      _count: { select: { lineItems: true, deliveries: true } }
-    }
-  })
+  
+  const skip = (page - 1) * limit
+  const take = Math.min(limit, 100)
+
+  const [orders, total] = await Promise.all([
+    prisma.salesOrder.findMany({
+      where: { organizationId: orgId, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+      include: { 
+        customer: { select: { companyName: true } },
+        _count: { select: { lineItems: true, deliveries: true } }
+      }
+    }),
+    prisma.salesOrder.count({
+      where: { organizationId: orgId, deletedAt: null }
+    })
+  ])
+
+  return {
+    items: orders,
+    pagination: { page, limit: take, total, pages: Math.ceil(total / take) }
+  }
 }
 
 export async function getSalesOrder(id: string) {

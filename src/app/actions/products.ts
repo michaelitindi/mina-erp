@@ -37,13 +37,29 @@ async function getOrganization() {
   return { userId, orgId: org.id }
 }
 
-export async function getProducts() {
+export async function getProducts(page: number = 1, limit: number = 50) {
   const { orgId } = await getOrganization()
-  return prisma.product.findMany({
-    where: { organizationId: orgId, deletedAt: null },
-    orderBy: { name: 'asc' },
-    include: { stockLevels: { include: { warehouse: { select: { name: true } } } } }
-  })
+  
+  const skip = (page - 1) * limit
+  const take = Math.min(limit, 100)
+
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      where: { organizationId: orgId, deletedAt: null },
+      orderBy: { name: 'asc' },
+      skip,
+      take,
+      include: { stockLevels: { include: { warehouse: { select: { name: true } } } } }
+    }),
+    prisma.product.count({
+      where: { organizationId: orgId, deletedAt: null }
+    })
+  ])
+
+  return {
+    items: products,
+    pagination: { page, limit: take, total, pages: Math.ceil(total / take) }
+  }
 }
 
 export async function getProduct(id: string) {

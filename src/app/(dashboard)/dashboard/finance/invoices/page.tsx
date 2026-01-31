@@ -5,13 +5,16 @@ import { CreateInvoiceButton } from '@/components/finance/invoice-buttons'
 import { Receipt, DollarSign, Clock, CheckCircle } from 'lucide-react'
 
 export default async function InvoicesPage() {
-  const [invoices, customers] = await Promise.all([
+  const [invoicesResult, customersResult] = await Promise.all([
     getInvoices(),
     getCustomers()
   ])
 
+  const invoices = invoicesResult.items
+  const customers = customersResult.items
+
   const stats = {
-    total: invoices.length,
+    total: invoicesResult.pagination.total,
     draft: invoices.filter(i => i.status === 'DRAFT').length,
     sent: invoices.filter(i => i.status === 'SENT').length,
     paid: invoices.filter(i => i.status === 'PAID').length,

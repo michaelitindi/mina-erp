@@ -4,10 +4,12 @@ import { CreateProductButton } from '@/components/inventory/product-buttons'
 import { Package, AlertTriangle, CheckCircle, DollarSign } from 'lucide-react'
 
 export default async function ProductsPage() {
-  const [products, stats] = await Promise.all([
+  const [productsResult, stats] = await Promise.all([
     getProducts(),
     getProductStats()
   ])
+
+  const products = productsResult.items
 
   const totalValue = products.reduce((sum, p) => {
     const stockQty = p.stockLevels.reduce((s, sl) => s + Number(sl.quantity), 0)

@@ -5,11 +5,12 @@ import { CreatePOButton } from '@/components/procurement/po-buttons'
 import { ShoppingBag, Send, Package, CheckCircle } from 'lucide-react'
 
 export default async function PurchaseOrdersPage() {
-  const [orders, stats, vendors] = await Promise.all([
+  const [orders, stats, vendorsResult] = await Promise.all([
     getPurchaseOrders(),
     getPOStats(),
     getVendors()
   ])
+  const vendors = vendorsResult.items
 
   return (
     <div className="space-y-6">

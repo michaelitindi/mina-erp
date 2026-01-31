@@ -45,23 +45,39 @@ async function generateVendorNumber(orgId: string): Promise<string> {
   return `VND-${String(lastNum + 1).padStart(6, '0')}`
 }
 
-export async function getVendors() {
+export async function getVendors(page: number = 1, limit: number = 50) {
   const { orgId } = await getOrganization()
 
-  const vendors = await prisma.vendor.findMany({
-    where: {
-      organizationId: orgId,
-      deletedAt: null,
-    },
-    orderBy: { companyName: 'asc' },
-    include: {
-      _count: {
-        select: { bills: true }
-      }
-    }
-  })
+  const skip = (page - 1) * limit
+  const take = Math.min(limit, 100)
 
-  return vendors
+  const [vendors, total] = await Promise.all([
+    prisma.vendor.findMany({
+      where: {
+        organizationId: orgId,
+        deletedAt: null,
+      },
+      orderBy: { companyName: 'asc' },
+      skip,
+      take,
+      include: {
+        _count: {
+          select: { bills: true }
+        }
+      }
+    }),
+    prisma.vendor.count({
+      where: {
+        organizationId: orgId,
+        deletedAt: null,
+      }
+    })
+  ])
+
+  return {
+    items: vendors,
+    pagination: { page, limit: take, total, pages: Math.ceil(total / take) }
+  }
 }
 
 export async function createVendor(input: CreateVendorInput) {

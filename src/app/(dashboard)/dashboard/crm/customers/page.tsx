@@ -4,7 +4,7 @@ import { CreateCustomerButton } from '@/components/crm/customer-buttons'
 import { Users, Building2 } from 'lucide-react'
 
 export default async function CustomersPage() {
-  const customers = await getCustomers()
+  const { items: customers, pagination } = await getCustomers()
 
   const activeCustomers = customers.filter(c => c.status === 'ACTIVE')
   const totalInvoices = customers.reduce((sum, c) => sum + (c._count?.invoices || 0), 0)
@@ -29,7 +29,7 @@ export default async function CustomersPage() {
             </div>
             <div>
               <p className="text-sm text-slate-400">Total Customers</p>
-              <p className="text-2xl font-bold text-white">{customers.length}</p>
+              <p className="text-2xl font-bold text-white">{pagination.total}</p>
             </div>
           </div>
         </div>

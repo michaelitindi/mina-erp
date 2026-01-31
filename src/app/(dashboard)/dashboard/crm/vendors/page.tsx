@@ -4,7 +4,7 @@ import { CreateVendorButton } from '@/components/crm/vendor-buttons'
 import { Truck, Building2 } from 'lucide-react'
 
 export default async function VendorsPage() {
-  const vendors = await getVendors()
+  const { items: vendors, pagination } = await getVendors()
 
   const activeVendors = vendors.filter(v => v.status === 'ACTIVE')
   const totalBills = vendors.reduce((sum, v) => sum + (v._count?.bills || 0), 0)

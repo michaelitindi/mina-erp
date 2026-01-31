@@ -5,11 +5,14 @@ import { CreateSalesOrderButton } from '@/components/sales/sales-order-buttons'
 import { ShoppingCart, Package, Truck, CheckCircle } from 'lucide-react'
 
 export default async function SalesOrdersPage() {
-  const [orders, stats, customers] = await Promise.all([
+  const [ordersResult, stats, customersResult] = await Promise.all([
     getSalesOrders(),
     getSalesOrderStats(),
     getCustomers()
   ])
+
+  const orders = ordersResult.items
+  const customers = customersResult.items
 
   return (
     <div className="space-y-6">

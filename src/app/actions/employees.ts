@@ -46,16 +46,32 @@ async function generateEmployeeNumber(orgId: string): Promise<string> {
   return `EMP-${String(lastNum + 1).padStart(6, '0')}`
 }
 
-export async function getEmployees() {
+export async function getEmployees(page: number = 1, limit: number = 50) {
   const { orgId } = await getOrganization()
-  return prisma.employee.findMany({
-    where: { organizationId: orgId, deletedAt: null },
-    orderBy: { lastName: 'asc' },
-    include: { 
-      manager: { select: { firstName: true, lastName: true } },
-      _count: { select: { leaveRequests: true, timesheets: true } }
-    }
-  })
+  
+  const skip = (page - 1) * limit
+  const take = Math.min(limit, 100)
+
+  const [employees, total] = await Promise.all([
+    prisma.employee.findMany({
+      where: { organizationId: orgId, deletedAt: null },
+      orderBy: { lastName: 'asc' },
+      skip,
+      take,
+      include: { 
+        manager: { select: { firstName: true, lastName: true } },
+        _count: { select: { leaveRequests: true, timesheets: true } }
+      }
+    }),
+    prisma.employee.count({
+      where: { organizationId: orgId, deletedAt: null }
+    })
+  ])
+
+  return {
+    items: employees,
+    pagination: { page, limit: take, total, pages: Math.ceil(total / take) }
+  }
 }
 
 export async function createEmployee(input: CreateEmployeeInput) {
