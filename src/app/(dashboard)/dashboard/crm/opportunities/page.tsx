@@ -5,11 +5,13 @@ import { CreateOpportunityButton } from '@/components/crm/opportunity-buttons'
 import { Target, DollarSign, TrendingUp, Trophy } from 'lucide-react'
 
 export default async function OpportunitiesPage() {
-  const [opportunities, pipeline, customers] = await Promise.all([
+  const [opportunities, pipeline, customersResult] = await Promise.all([
     getOpportunities(),
     getOpportunityPipeline(),
     getCustomers()
   ])
+
+  const customers = customersResult.items
 
   const openOpps = opportunities.filter(o => !['CLOSED_WON', 'CLOSED_LOST'].includes(o.stage))
   const wonOpps = opportunities.filter(o => o.stage === 'CLOSED_WON')

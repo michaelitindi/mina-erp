@@ -1,0 +1,233 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MinaERP API",
+    "description": "Enterprise Resource Planning API for managing customers, invoices, inventory, HR, and more.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "email": "support@example.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Development server"
+    },
+    {
+      "url": "https://your-domain.com/api",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    { "name": "Health", "description": "System health checks" },
+    { "name": "Search", "description": "Global search functionality" },
+    { "name": "Webhooks", "description": "Webhook endpoints" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "description": "Returns the health status of the application and database",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Unhealthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/clerk": {
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "Clerk webhook",
+        "description": "Receives webhook events from Clerk for user/organization management",
+        "operationId": "clerkWebhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Webhook processed" },
+          "400": { "description": "Invalid webhook" }
+        }
+      }
+    },
+    "/webhooks/stripe": {
+      "post": {
+        "tags": ["Webhooks"],
+        "summary": "Stripe webhook",
+        "description": "Receives payment events from Stripe",
+        "operationId": "stripeWebhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Webhook processed" },
+          "400": { "description": "Invalid webhook" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["healthy", "unhealthy"]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uptime": {
+            "type": "number",
+            "description": "Uptime in seconds"
+          },
+          "version": {
+            "type": "string"
+          },
+          "checks": {
+            "type": "object",
+            "properties": {
+              "database": {
+                "type": "string",
+                "enum": ["connected", "disconnected"]
+              }
+            }
+          }
+        }
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "integer", "minimum": 1 },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100 },
+          "total": { "type": "integer" },
+          "pages": { "type": "integer" }
+        }
+      },
+      "SearchResult": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["customer", "product", "invoice", "employee", "vendor", "opportunity"]
+          },
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "subtitle": { "type": "string" },
+          "link": { "type": "string" }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "customerNumber": { "type": "string" },
+          "companyName": { "type": "string" },
+          "contactPerson": { "type": "string", "nullable": true },
+          "email": { "type": "string", "format": "email" },
+          "phone": { "type": "string", "nullable": true },
+          "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "sku": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "costPrice": { "type": "number" },
+          "sellingPrice": { "type": "number" },
+          "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE", "DISCONTINUED"] },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Invoice": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "invoiceNumber": { "type": "string" },
+          "customerId": { "type": "string", "format": "uuid" },
+          "invoiceDate": { "type": "string", "format": "date" },
+          "dueDate": { "type": "string", "format": "date" },
+          "subtotal": { "type": "number" },
+          "taxAmount": { "type": "number" },
+          "totalAmount": { "type": "number" },
+          "status": { "type": "string", "enum": ["DRAFT", "SENT", "PAID", "OVERDUE", "VOID"] },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Employee": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "employeeNumber": { "type": "string" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "department": { "type": "string", "nullable": true },
+          "jobTitle": { "type": "string", "nullable": true },
+          "status": { "type": "string", "enum": ["ACTIVE", "ON_LEAVE", "TERMINATED"] },
+          "hireDate": { "type": "string", "format": "date" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "code": { "type": "string" },
+          "statusCode": { "type": "integer" }
+        }
+      }
+    },
+    "securitySchemes": {
+      "clerkAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Clerk JWT token"
+      }
+    }
+  },
+  "security": [
+    { "clerkAuth": [] }
+  ]
+}

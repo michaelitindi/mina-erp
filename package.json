@@ -12,7 +12,9 @@
     "test:coverage": "vitest run --coverage",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:backup": "npx ts-node scripts/backup-db.ts",
+    "db:backup:list": "npx ts-node scripts/backup-db.ts list"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.3",

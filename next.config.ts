@@ -5,18 +5,16 @@ const nextConfig: NextConfig = {
   /* config options here */
 };
 
-export default withSentryConfig(nextConfig, {
-  // Suppress source map upload warnings in development
-  silent: true,
-  
-  // Upload source maps to Sentry
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  
-  // Hide source maps from built bundles
-  hideSourceMaps: true,
-  
-  // Disable expanding route groups into different pages
-  disableServerWebpackPlugin: !process.env.SENTRY_DSN,
-  disableClientWebpackPlugin: !process.env.NEXT_PUBLIC_SENTRY_DSN,
-});
+// Only wrap with Sentry in production or if DSN is set
+const sentryEnabled = process.env.NODE_ENV === "production" || !!process.env.SENTRY_DSN;
+
+export default sentryEnabled
+  ? withSentryConfig(nextConfig, {
+      // Suppress logs during build
+      silent: true,
+      
+      // For source maps upload
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+    })
+  : nextConfig;

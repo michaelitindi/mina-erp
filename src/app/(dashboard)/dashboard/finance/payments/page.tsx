@@ -6,11 +6,13 @@ import { CreatePaymentButton } from '@/components/finance/payment-buttons'
 import { CreditCard, ArrowDownCircle, ArrowUpCircle, DollarSign } from 'lucide-react'
 
 export default async function PaymentsPage() {
-  const [payments, invoices, bills] = await Promise.all([
+  const [payments, invoicesResult, bills] = await Promise.all([
     getPayments(),
     getInvoices(),
     getBills()
   ])
+
+  const invoices = invoicesResult.items
 
   // Filter unpaid invoices and bills for the create payment modal
   const unpaidInvoices = invoices.filter(i => i.status !== 'PAID' && i.status !== 'VOID')
