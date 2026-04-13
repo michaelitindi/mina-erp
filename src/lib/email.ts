@@ -1,9 +1,9 @@
 import { Resend } from 'resend'
 
-// Initialize Resend - will use RESEND_API_KEY from env
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Initialize Resend - handle missing key during build
+const resend = new Resend(process.env.RESEND_API_KEY || 're_123456789')
 
-const FROM_EMAIL = process.env.FROM_EMAIL || 'orders@resend.dev'
+const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev'
 const COMPANY_NAME = process.env.COMPANY_NAME || 'ERP Store'
 
 // ================================

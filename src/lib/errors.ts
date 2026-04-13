@@ -1,5 +1,3 @@
-'use server'
-
 /**
  * Structured Error Classes for MinaERP
  * 
