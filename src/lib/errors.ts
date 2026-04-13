@@ -90,6 +90,13 @@ export class ServiceUnavailableError extends AppError {
   }
 }
 
+// 500 - Internal server error
+export class InternalError extends AppError {
+  constructor(message: string = 'An unexpected error occurred') {
+    super(message, 500, 'INTERNAL_ERROR')
+  }
+}
+
 /**
  * Type guard to check if error is an AppError
  */
@@ -107,8 +114,9 @@ export type ActionResult<T = void> =
 
 /**
  * Wrap a server action with error handling
+ * Always returns a failure result
  */
-export function handleActionError(error: unknown): ActionResult<never> {
+export function handleActionError(error: unknown): Extract<ActionResult<never>, { success: false }> {
   if (isAppError(error)) {
     return {
       success: false,
