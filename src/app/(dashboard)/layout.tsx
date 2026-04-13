@@ -40,13 +40,13 @@ export default async function DashboardLayout({
   // If user is signed in but has no organization, they need to create/join one
   if (!orgId) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="text-center max-w-md p-8">
-          <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 mb-6">
+          <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 mb-6 shadow-lg shadow-blue-500/20">
             <span className="text-2xl font-bold text-white">M</span>
           </div>
           <h1 className="text-2xl font-bold text-white mb-4">Welcome to MinaERP</h1>
-          <p className="text-slate-400 mb-6">
+          <p className="text-zinc-400 mb-6">
             Please select or create an organization to continue.
           </p>
           <div className="flex justify-center">
@@ -75,13 +75,13 @@ export default async function DashboardLayout({
     // Member: if org doesn't exist or onboarding not complete, show waiting message
     if (!org || !org.onboardingComplete) {
       return (
-        <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
           <div className="text-center max-w-md p-8">
-            <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 mb-6">
+            <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 mb-6 shadow-lg shadow-blue-500/20">
               <span className="text-2xl font-bold text-white">M</span>
             </div>
             <h1 className="text-2xl font-bold text-white mb-4">Almost There!</h1>
-            <p className="text-slate-400 mb-6">
+            <p className="text-zinc-400 mb-6">
               Your organization admin is setting up MinaERP. Please check back shortly.
             </p>
           </div>
@@ -92,7 +92,6 @@ export default async function DashboardLayout({
 
   // Determine which modules to show
   let modulesToShow: string[] = []
-  let employeeModules: string[] = []
   
   if (userIsAdmin) {
     // Admins see all enabled organization modules
@@ -106,11 +105,11 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-zinc-950">
       <Sidebar enabledModules={modulesToShow} userRole={orgRole} />
       <div className="ml-64">
         <Header />
-        <main>
+        <main className="min-h-[calc(100vh-4rem)] bg-zinc-950">
           {children}
         </main>
       </div>

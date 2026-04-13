@@ -5,15 +5,15 @@ import { Bell, Search } from 'lucide-react'
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-700 bg-slate-800/50 px-6 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-zinc-800 bg-zinc-950/50 px-6 backdrop-blur-xl">
       {/* Search */}
       <div className="flex items-center gap-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
           <input
             type="text"
             placeholder="Search..."
-            className="h-10 w-80 rounded-lg border border-slate-600 bg-slate-700/50 pl-10 pr-4 text-sm text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="h-10 w-80 rounded-lg border border-zinc-800 bg-zinc-900/50 pl-10 pr-4 text-sm text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
           />
         </div>
       </div>
@@ -25,11 +25,11 @@ export function Header() {
           appearance={{
             elements: {
               rootBox: 'flex items-center',
-              organizationSwitcherTrigger: 'bg-slate-700 border-slate-600 hover:bg-slate-600 rounded-lg px-3 py-2',
+              organizationSwitcherTrigger: 'bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-lg px-3 py-2 transition-colors',
               organizationPreviewTextContainer: 'text-white',
-              organizationSwitcherTriggerIcon: 'text-slate-300',
-              organizationPreviewMainIdentifier: 'text-white',
-              organizationPreviewSecondaryIdentifier: 'text-slate-400',
+              organizationSwitcherTriggerIcon: 'text-zinc-400',
+              organizationPreviewMainIdentifier: 'text-white font-medium',
+              organizationPreviewSecondaryIdentifier: 'text-zinc-500',
             }
           }}
           afterCreateOrganizationUrl="/dashboard"
@@ -38,9 +38,9 @@ export function Header() {
         />
 
         {/* Notifications */}
-        <button className="relative rounded-lg p-2 text-slate-400 hover:bg-slate-700 hover:text-white">
+        <button className="relative rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors">
           <Bell className="h-5 w-5" />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></span>
+          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-zinc-950"></span>
         </button>
 
         {/* User Button */}
@@ -48,7 +48,7 @@ export function Header() {
           afterSignOutUrl="/"
           appearance={{
             elements: {
-              avatarBox: 'h-9 w-9',
+              avatarBox: 'h-9 w-9 ring-2 ring-zinc-800 hover:ring-blue-500 transition-all',
             }
           }}
         />

@@ -39,17 +39,17 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 mb-6 shadow-lg shadow-blue-500/20">
             <Sparkles className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 text-shadow-sm">
             Welcome to MinaERP
           </h1>
-          <p className="text-lg text-slate-400 max-w-xl mx-auto">
+          <p className="text-lg text-zinc-400 max-w-xl mx-auto">
             Choose the modules you need for your business. You can always change this later in Settings.
           </p>
         </div>
@@ -66,21 +66,21 @@ export default function OnboardingPage() {
                   relative group p-5 rounded-xl border-2 transition-all duration-300 text-left
                   ${isSelected 
                     ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20' 
-                    : 'border-slate-700 bg-slate-800/50 hover:border-slate-600 hover:bg-slate-800'
+                    : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-700 hover:bg-zinc-900'
                   }
                 `}
               >
                 {/* Checkmark */}
                 {isSelected && (
-                  <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                  <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center shadow-md">
                     <Check className="h-4 w-4 text-white" />
                   </div>
                 )}
                 
                 {/* Icon */}
                 <div className={`
-                  w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3 transition-transform group-hover:scale-110
-                  ${isSelected ? 'bg-blue-500/20' : 'bg-slate-700/50'}
+                  w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-3 transition-transform group-hover:scale-110 shadow-inner
+                  ${isSelected ? 'bg-blue-500/20' : 'bg-zinc-800/50'}
                 `}>
                   {module.icon}
                 </div>
@@ -89,7 +89,7 @@ export default function OnboardingPage() {
                 <h3 className={`font-semibold mb-1 ${isSelected ? 'text-blue-400' : 'text-white'}`}>
                   {module.name}
                 </h3>
-                <p className="text-sm text-slate-400 line-clamp-2">
+                <p className="text-sm text-zinc-400 line-clamp-2">
                   {module.description}
                 </p>
               </button>
@@ -99,7 +99,7 @@ export default function OnboardingPage() {
 
         {/* Error */}
         {error && (
-          <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/50 text-red-400 text-center">
+          <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/50 text-red-400 text-center shadow-lg shadow-red-500/10">
             {error}
           </div>
         )}
@@ -109,7 +109,7 @@ export default function OnboardingPage() {
           <button
             onClick={handleSubmit}
             disabled={isLoading || selectedModules.length === 0}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold text-lg shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold text-lg shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
           >
             {isLoading ? (
               <>
@@ -123,7 +123,7 @@ export default function OnboardingPage() {
               </>
             )}
           </button>
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 text-sm text-zinc-500">
             {selectedModules.length} module{selectedModules.length !== 1 ? 's' : ''} selected
           </p>
         </div>

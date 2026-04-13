@@ -56,13 +56,13 @@ export default async function HomePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950">
       {/* Navigation */}
-      <nav className="border-b border-slate-700/50">
+      <nav className="border-b border-zinc-800/50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/20">
                 <span className="text-lg font-bold text-white">M</span>
               </div>
               <span className="text-xl font-semibold text-white">MinaERP</span>
@@ -70,27 +70,27 @@ export default async function HomePage() {
             <div className="flex items-center gap-6">
               <Link
                 href="/feedback"
-                className="flex items-center gap-1.5 text-sm text-slate-300 hover:text-white transition-colors"
+                className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors"
               >
                 <MessageSquare className="h-4 w-4" />
                 Feedback
               </Link>
               <Link
                 href="/roadmap"
-                className="flex items-center gap-1.5 text-sm text-slate-300 hover:text-white transition-colors"
+                className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors"
               >
                 <Map className="h-4 w-4" />
                 Roadmap
               </Link>
               <Link
                 href="/sign-in"
-                className="text-sm text-slate-300 hover:text-white transition-colors"
+                className="text-sm text-zinc-400 hover:text-white transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 href="/sign-up"
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
               >
                 Get Started
               </Link>
@@ -109,21 +109,21 @@ export default async function HomePage() {
                 Made Simple
               </span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-300">
+            <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-400">
               MinaERP is a comprehensive multi-tenant SaaS platform designed to manage all aspects 
               of your business operations including finance, HR, inventory, sales, and more.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
               <Link
                 href="/sign-up"
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-base font-medium text-white hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-base font-medium text-white hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
               >
                 Get Started
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
                 href="/sign-in"
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-600 bg-slate-800/50 px-6 py-3 text-base font-medium text-white hover:bg-slate-700 transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/50 px-6 py-3 text-base font-medium text-white hover:bg-zinc-800 transition-colors"
               >
                 Sign In
               </Link>
@@ -132,8 +132,8 @@ export default async function HomePage() {
         </div>
 
         {/* Background decoration */}
-        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-purple-500/20 blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-blue-500/10 blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-purple-500/10 blur-3xl"></div>
       </section>
 
       {/* Features Section */}
@@ -141,7 +141,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl font-bold text-white">Everything You Need</h2>
-            <p className="mt-4 text-lg text-slate-400">
+            <p className="mt-4 text-lg text-zinc-400">
               Comprehensive modules to run your entire business
             </p>
           </div>
@@ -149,13 +149,13 @@ export default async function HomePage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="group rounded-xl border border-slate-700 bg-slate-800/30 p-6 backdrop-blur-sm transition-colors hover:border-slate-600 hover:bg-slate-800/50"
+                className="group rounded-xl border border-zinc-800 bg-zinc-900/30 p-6 backdrop-blur-sm transition-all hover:border-zinc-700 hover:bg-zinc-900/50"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/20">
                   <feature.icon className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="mt-4 text-xl font-semibold text-white">{feature.title}</h3>
-                <p className="mt-2 text-slate-400">{feature.description}</p>
+                <p className="mt-2 text-zinc-400">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -165,7 +165,7 @@ export default async function HomePage() {
       {/* CTA Section */}
       <section className="py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 p-8 md:p-12">
+          <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 p-8 md:p-12 shadow-2xl shadow-blue-600/20">
             <div className="text-center">
               <Zap className="mx-auto h-12 w-12 text-white" />
               <h2 className="mt-4 text-3xl font-bold text-white">Ready to Get Started?</h2>
@@ -174,7 +174,7 @@ export default async function HomePage() {
               </p>
               <Link
                 href="/sign-up"
-                className="mt-8 inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 text-base font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                className="mt-8 inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 text-base font-medium text-blue-600 hover:bg-blue-50 transition-colors shadow-lg"
               >
                 Create Free Account
                 <ArrowRight className="h-5 w-5" />
@@ -185,9 +185,9 @@ export default async function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-700">
+      <footer className="border-t border-zinc-800">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-slate-400">
+          <p className="text-center text-sm text-zinc-500">
             © {new Date().getFullYear()} MinaERP. All rights reserved.
           </p>
         </div>

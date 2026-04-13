@@ -64,12 +64,12 @@ export function Sidebar({ enabledModules, userRole }: SidebarProps) {
   const isMyPortalActive = pathname.startsWith('/dashboard/my-portal')
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-slate-700 bg-slate-800/50 backdrop-blur-xl">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-zinc-800 bg-zinc-950/50 backdrop-blur-xl">
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-16 items-center border-b border-slate-700 px-6">
+        <div className="flex h-16 items-center border-b border-zinc-800 px-6">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/20">
               <span className="text-lg font-bold text-white">M</span>
             </div>
             <span className="text-xl font-semibold text-white">MinaERP</span>
@@ -88,10 +88,10 @@ export function Sidebar({ enabledModules, userRole }: SidebarProps) {
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
                   isActive
-                    ? 'bg-blue-600/20 text-blue-400'
-                    : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                    ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20'
+                    : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white border border-transparent'
                 )}
               >
                 <item.icon className="h-5 w-5" />
@@ -102,14 +102,14 @@ export function Sidebar({ enabledModules, userRole }: SidebarProps) {
         </nav>
         
         {/* My Portal - Always visible at bottom */}
-        <div className="border-t border-slate-700 px-3 py-3">
+        <div className="border-t border-zinc-800 px-3 py-3">
           <Link
             href="/dashboard/my-portal"
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
               isMyPortalActive
-                ? 'bg-purple-600/20 text-purple-400'
-                : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                ? 'bg-purple-600/10 text-purple-400 border border-purple-500/20'
+                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white border border-transparent'
             )}
           >
             <User2 className="h-5 w-5" />
