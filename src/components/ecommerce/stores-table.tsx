@@ -29,13 +29,13 @@ export function StoresTable({ stores }: { stores: Store[] }) {
   }
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800/50 overflow-hidden">
-      <div className="border-b border-slate-700 p-4">
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+      <div className="border-b border-zinc-800 p-4">
         <h2 className="text-lg font-semibold text-white">Online Stores</h2>
       </div>
       <div className="grid gap-4 p-4 md:grid-cols-2 lg:grid-cols-3">
         {stores.map((store) => (
-          <div key={store.id} className="rounded-xl border border-slate-700 bg-slate-700/30 p-4">
+          <div key={store.id} className="rounded-xl border border-zinc-800 bg-zinc-800/30 p-4">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div 
@@ -46,7 +46,7 @@ export function StoresTable({ stores }: { stores: Store[] }) {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">{store.name}</p>
-                  <p className="text-xs text-slate-400">/{store.slug}</p>
+                  <p className="text-xs text-zinc-500">/{store.slug}</p>
                 </div>
               </div>
               <button
@@ -55,7 +55,7 @@ export function StoresTable({ stores }: { stores: Store[] }) {
                 className={`rounded-lg p-1.5 transition-colors disabled:opacity-50 ${
                   store.isActive 
                     ? 'text-green-400 hover:bg-green-600/20' 
-                    : 'text-slate-400 hover:bg-slate-600/30'
+                    : 'text-zinc-500 hover:bg-zinc-700/30'
                 }`}
                 title={store.isActive ? 'Deactivate' : 'Activate'}
               >
@@ -64,10 +64,10 @@ export function StoresTable({ stores }: { stores: Store[] }) {
             </div>
             
             {store.description && (
-              <p className="text-xs text-slate-400 mb-3 line-clamp-2">{store.description}</p>
+              <p className="text-xs text-zinc-500 mb-3 line-clamp-2">{store.description}</p>
             )}
 
-            <div className="flex items-center gap-4 text-xs text-slate-400">
+            <div className="flex items-center gap-4 text-xs text-zinc-500">
               <span className="flex items-center gap-1">
                 <Package className="h-3 w-3" />
                 {store._count?.products || 0} products
@@ -78,10 +78,10 @@ export function StoresTable({ stores }: { stores: Store[] }) {
               </span>
             </div>
 
-            <div className="mt-3 pt-3 border-t border-slate-600 flex items-center justify-between">
-              <span className="text-xs text-slate-400">{store.currency}</span>
+            <div className="mt-3 pt-3 border-t border-zinc-700 flex items-center justify-between">
+              <span className="text-xs text-zinc-500">{store.currency}</span>
               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                store.isActive ? 'text-green-400 bg-green-400/10' : 'text-slate-400 bg-slate-400/10'
+                store.isActive ? 'text-green-400 bg-green-400/10' : 'text-zinc-500 bg-zinc-500/10'
               }`}>
                 {store.isActive ? 'Active' : 'Inactive'}
               </span>

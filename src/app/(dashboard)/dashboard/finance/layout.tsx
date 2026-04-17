@@ -11,7 +11,7 @@ export default async function FinanceLayout({
   return (
     <div className="space-y-0">
       <FinanceModuleNav />
-      <div className="p-6">
+      <div>
         {children}
       </div>
     </div>

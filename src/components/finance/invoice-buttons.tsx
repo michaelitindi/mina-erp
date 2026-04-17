@@ -96,12 +96,12 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-3xl rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-3xl rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">Create Invoice</h2>
               <button
                 onClick={() => setIsOpen(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-700 hover:text-white"
+                className="rounded-lg p-1 text-zinc-500 hover:bg-zinc-800 hover:text-white"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -117,13 +117,13 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
               {/* Customer & Dates */}
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">
                     Customer *
                   </label>
                   <select
                     name="customerId"
                     required
-                    className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="">Select customer...</option>
                     {customers.map(customer => (
@@ -134,7 +134,7 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">
                     Invoice Date *
                   </label>
                   <input
@@ -142,11 +142,11 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
                     type="date"
                     required
                     defaultValue={today}
-                    className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">
                     Due Date *
                   </label>
                   <input
@@ -154,7 +154,7 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
                     type="date"
                     required
                     defaultValue={defaultDueDate}
-                    className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -162,7 +162,7 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
               {/* Line Items */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <label className="text-sm font-medium text-slate-300">Line Items</label>
+                  <label className="text-sm font-medium text-zinc-400">Line Items</label>
                   <button
                     type="button"
                     onClick={addLineItem}
@@ -179,7 +179,7 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
                           placeholder="Description"
                           value={item.description}
                           onChange={(e) => updateLineItem(index, 'description', e.target.value)}
-                          className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </div>
                       <div className="col-span-2">
@@ -189,7 +189,7 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
                           min="1"
                           value={item.quantity}
                           onChange={(e) => updateLineItem(index, 'quantity', e.target.value)}
-                          className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </div>
                       <div className="col-span-2">
@@ -200,7 +200,7 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
                           step="0.01"
                           value={item.unitPrice}
                           onChange={(e) => updateLineItem(index, 'unitPrice', e.target.value)}
-                          className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </div>
                       <div className="col-span-2">
@@ -211,7 +211,7 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
                           max="100"
                           value={item.taxRate}
                           onChange={(e) => updateLineItem(index, 'taxRate', e.target.value)}
-                          className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </div>
                       <div className="col-span-1">
@@ -219,7 +219,7 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
                           type="button"
                           onClick={() => removeLineItem(index)}
                           disabled={lineItems.length === 1}
-                          className="rounded-lg p-2 text-slate-400 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-30"
+                          className="rounded-lg p-2 text-zinc-500 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-30"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -230,18 +230,18 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
               </div>
 
               {/* Totals */}
-              <div className="border-t border-slate-700 pt-4">
+              <div className="border-t border-zinc-800 pt-4">
                 <div className="flex justify-end">
                   <div className="w-64 space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">Subtotal</span>
+                      <span className="text-zinc-500">Subtotal</span>
                       <span className="text-white">${subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-400">Tax</span>
+                      <span className="text-zinc-500">Tax</span>
                       <span className="text-white">${taxTotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-lg font-semibold border-t border-slate-700 pt-2">
+                    <div className="flex justify-between text-lg font-semibold border-t border-zinc-800 pt-2">
                       <span className="text-white">Total</span>
                       <span className="text-white">${total.toFixed(2)}</span>
                     </div>
@@ -251,13 +251,13 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">
+                <label className="block text-sm font-medium text-zinc-400 mb-1">
                   Notes (Optional)
                 </label>
                 <textarea
                   name="notes"
                   rows={2}
-                  className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="Additional notes for the invoice..."
                 />
               </div>
@@ -266,7 +266,7 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="flex-1 rounded-lg border border-slate-600 bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 transition-colors"
+                  className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
                 >
                   Cancel
                 </button>

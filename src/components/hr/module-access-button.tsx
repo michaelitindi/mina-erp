@@ -60,26 +60,26 @@ export function ModuleAccessButton({
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-lg font-semibold text-white">Module Access</h2>
-                <p className="text-sm text-slate-400">{employeeName}</p>
+                <p className="text-sm text-zinc-500">{employeeName}</p>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-700 hover:text-white"
+                className="rounded-lg p-1 text-zinc-500 hover:bg-zinc-800 hover:text-white"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <p className="text-sm text-slate-400 mb-4">
+            <p className="text-sm text-zinc-500 mb-4">
               Select which modules this employee can access. They will always have access to My Portal.
             </p>
 
             {availableModules.length === 0 ? (
-              <div className="text-center py-6 text-slate-400">
+              <div className="text-center py-6 text-zinc-500">
                 No modules enabled for this organization yet.
               </div>
             ) : (
@@ -92,13 +92,13 @@ export function ModuleAccessButton({
                     className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors ${
                       selectedModules.includes(module.id)
                         ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-slate-700 bg-slate-700/30 hover:bg-slate-700/50'
+                        : 'border-zinc-800 bg-zinc-800/30 hover:bg-zinc-800/50'
                     }`}
                   >
                     <span className="text-xl">{module.icon}</span>
                     <div className="flex-1 text-left">
                       <div className="text-sm font-medium text-white">{module.name}</div>
-                      <div className="text-xs text-slate-400">{module.description}</div>
+                      <div className="text-xs text-zinc-500">{module.description}</div>
                     </div>
                     {selectedModules.includes(module.id) && (
                       <Check className="h-5 w-5 text-blue-400" />
@@ -112,7 +112,7 @@ export function ModuleAccessButton({
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="flex-1 rounded-lg border border-slate-600 bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 transition-colors"
+                className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
               >
                 Cancel
               </button>

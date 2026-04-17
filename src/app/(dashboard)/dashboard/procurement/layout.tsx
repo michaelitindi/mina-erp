@@ -11,7 +11,7 @@ export default async function ProcurementLayout({
   return (
     <div className="space-y-0">
       <ProcurementModuleNav />
-      <div className="p-6">
+      <div>
         {children}
       </div>
     </div>

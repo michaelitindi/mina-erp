@@ -50,10 +50,10 @@ export function CreateVendorButton() {
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl">
+          <div className="w-full max-w-lg rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">Create Vendor</h2>
-              <button onClick={() => setIsOpen(false)} className="rounded-lg p-1 text-slate-400 hover:bg-slate-700 hover:text-white">
+              <button onClick={() => setIsOpen(false)} className="rounded-lg p-1 text-zinc-500 hover:bg-zinc-800 hover:text-white">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -65,24 +65,24 @@ export function CreateVendorButton() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Company Name *</label>
-                  <input name="companyName" required className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none" placeholder="Supplier Co." />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Company Name *</label>
+                  <input name="companyName" required className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none" placeholder="Supplier Co." />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Contact Person</label>
-                  <input name="contactPerson" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none" placeholder="Jane Smith" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Contact Person</label>
+                  <input name="contactPerson" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none" placeholder="Jane Smith" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Email *</label>
-                  <input name="email" type="email" required className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none" placeholder="vendor@example.com" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Email *</label>
+                  <input name="email" type="email" required className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none" placeholder="vendor@example.com" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Phone</label>
-                  <input name="phone" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none" placeholder="+1 234 567 8900" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Phone</label>
+                  <input name="phone" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none" placeholder="+1 234 567 8900" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Payment Terms</label>
-                  <select name="paymentTerms" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Payment Terms</label>
+                  <select name="paymentTerms" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
                     <option value="">Select...</option>
                     <option value="IMMEDIATE">Immediate</option>
                     <option value="NET_15">Net 15</option>
@@ -91,21 +91,21 @@ export function CreateVendorButton() {
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Address</label>
-                  <input name="address" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none" placeholder="123 Supplier Lane" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Address</label>
+                  <input name="address" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none" placeholder="123 Supplier Lane" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">City</label>
-                  <input name="city" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none" placeholder="Chicago" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">City</label>
+                  <input name="city" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none" placeholder="Chicago" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Country</label>
-                  <input name="country" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white placeholder:text-slate-400 focus:border-blue-500 focus:outline-none" placeholder="USA" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Country</label>
+                  <input name="country" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none" placeholder="USA" />
                 </div>
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 rounded-lg border border-slate-600 bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 transition-colors">Cancel</button>
+                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors">Cancel</button>
                 <button type="submit" disabled={isLoading} className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors disabled:opacity-50">{isLoading ? 'Creating...' : 'Create Vendor'}</button>
               </div>
             </form>

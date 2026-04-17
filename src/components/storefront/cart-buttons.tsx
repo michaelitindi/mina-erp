@@ -95,16 +95,16 @@ export function AddToCartButton({ product, currency, size = 'small' }: { product
   if (size === 'large') {
     return (
       <div className="flex gap-3">
-        <div className="flex items-center border border-slate-600 rounded-xl">
-          <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-4 py-3 text-slate-400 hover:text-white">-</button>
+        <div className="flex items-center border border-zinc-700 rounded-xl">
+          <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-4 py-3 text-zinc-500 hover:text-white">-</button>
           <span className="px-4 py-3 text-white font-medium">{quantity}</span>
-          <button onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))} className="px-4 py-3 text-slate-400 hover:text-white">+</button>
+          <button onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))} className="px-4 py-3 text-zinc-500 hover:text-white">+</button>
         </div>
         <button
           onClick={handleAdd}
           disabled={isOutOfStock || added}
           className={`flex-1 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
-            added ? 'bg-green-600 text-white' : isOutOfStock ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+            added ? 'bg-green-600 text-white' : isOutOfStock ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}
         >
           {added ? (
@@ -128,7 +128,7 @@ export function AddToCartButton({ product, currency, size = 'small' }: { product
       onClick={handleAdd}
       disabled={isOutOfStock || added}
       className={`w-full py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-        added ? 'bg-green-600/20 text-green-400' : isOutOfStock ? 'bg-slate-700 text-slate-500 cursor-not-allowed' : 'bg-slate-700 text-white hover:bg-slate-600'
+        added ? 'bg-green-600/20 text-green-400' : isOutOfStock ? 'bg-zinc-800 text-zinc-600 cursor-not-allowed' : 'bg-zinc-800 text-white hover:bg-zinc-700'
       }`}
     >
       {added ? (

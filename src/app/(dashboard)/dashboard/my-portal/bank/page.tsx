@@ -54,7 +54,7 @@ export default function BankDetailsPage() {
   }
   
   if (loading) {
-    return <div className="text-slate-400">Loading...</div>
+    return <div className="text-zinc-500">Loading...</div>
   }
   
   return (
@@ -74,59 +74,59 @@ export default function BankDetailsPage() {
         </button>
       </div>
       
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-zinc-500">
         Your bank details are used for salary payments. This information is kept secure and confidential.
       </p>
       
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-slate-400 mb-1">
+          <label className="block text-sm font-medium text-zinc-500 mb-1">
             Bank Name <span className="text-red-400">*</span>
           </label>
           <div className="relative">
-            <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
             <input
               type="text"
               value={form.bankName}
               onChange={(e) => setForm({ ...form, bankName: e.target.value })}
-              className="w-full rounded-lg border border-slate-600 bg-slate-700/50 pl-10 pr-3 py-2 text-white placeholder:text-slate-500"
+              className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 pl-10 pr-3 py-2.5 text-white placeholder:text-zinc-600 focus:border-blue-500 focus:outline-none transition-all shadow-inner"
               placeholder="e.g., Chase Bank"
             />
           </div>
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-slate-400 mb-1">
+          <label className="block text-sm font-medium text-zinc-500 mb-1">
             Account Name <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
             value={form.accountName}
             onChange={(e) => setForm({ ...form, accountName: e.target.value })}
-            className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white placeholder:text-slate-500"
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white placeholder:text-zinc-600"
             placeholder="Name on the account"
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-slate-400 mb-1">
+          <label className="block text-sm font-medium text-zinc-500 mb-1">
             Account Number <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
             value={form.accountNumber}
             onChange={(e) => setForm({ ...form, accountNumber: e.target.value })}
-            className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white placeholder:text-slate-500"
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white placeholder:text-zinc-600"
             placeholder="Your account number"
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-slate-400 mb-1">Account Type</label>
+          <label className="block text-sm font-medium text-zinc-500 mb-1">Account Type</label>
           <select
             value={form.accountType}
             onChange={(e) => setForm({ ...form, accountType: e.target.value as 'CHECKING' | 'SAVINGS' })}
-            className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white"
           >
             <option value="CHECKING">Checking</option>
             <option value="SAVINGS">Savings</option>
@@ -134,34 +134,34 @@ export default function BankDetailsPage() {
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-slate-400 mb-1">Routing Number</label>
+          <label className="block text-sm font-medium text-zinc-500 mb-1">Routing Number</label>
           <input
             type="text"
             value={form.routingNumber}
             onChange={(e) => setForm({ ...form, routingNumber: e.target.value })}
-            className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white placeholder:text-slate-500"
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white placeholder:text-zinc-600"
             placeholder="For US banks"
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-slate-400 mb-1">SWIFT Code</label>
+          <label className="block text-sm font-medium text-zinc-500 mb-1">SWIFT Code</label>
           <input
             type="text"
             value={form.swiftCode}
             onChange={(e) => setForm({ ...form, swiftCode: e.target.value })}
-            className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white placeholder:text-slate-500"
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white placeholder:text-zinc-600"
             placeholder="For international transfers"
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-slate-400 mb-1">Branch Code</label>
+          <label className="block text-sm font-medium text-zinc-500 mb-1">Branch Code</label>
           <input
             type="text"
             value={form.branchCode}
             onChange={(e) => setForm({ ...form, branchCode: e.target.value })}
-            className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white placeholder:text-slate-500"
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white placeholder:text-zinc-600"
             placeholder="Optional"
           />
         </div>

@@ -20,9 +20,9 @@ export function ModuleNav({ moduleName, items }: ModuleNavProps) {
   const pathname = usePathname()
 
   return (
-    <div className="border-b border-slate-700 bg-slate-800/30 backdrop-blur-sm">
+    <div className="border-b border-zinc-800 bg-zinc-950/50 backdrop-blur-xl">
       <div className="flex items-center gap-1 px-6 py-2">
-        <span className="mr-4 text-sm font-medium text-slate-400">{moduleName}</span>
+        <span className="mr-4 text-sm font-bold uppercase tracking-wider text-zinc-500">{moduleName}</span>
         <nav className="flex items-center gap-1">
           {items.map((item) => {
             const isActive = pathname === item.href
@@ -34,8 +34,8 @@ export function ModuleNav({ moduleName, items }: ModuleNavProps) {
                 className={cn(
                   'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
                   isActive
-                    ? 'bg-blue-600/20 text-blue-400 shadow-sm'
-                    : 'text-slate-400 hover:bg-slate-700/50 hover:text-white'
+                    ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-sm'
+                    : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white border border-transparent'
                 )}
               >
                 <Icon className="h-4 w-4" />

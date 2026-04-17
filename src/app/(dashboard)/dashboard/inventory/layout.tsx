@@ -11,7 +11,7 @@ export default async function InventoryLayout({
   return (
     <div className="space-y-0">
       <InventoryModuleNav />
-      <div className="p-6">
+      <div>
         {children}
       </div>
     </div>

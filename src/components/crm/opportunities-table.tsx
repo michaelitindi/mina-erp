@@ -26,7 +26,7 @@ export function OpportunitiesTable({ opportunities }: { opportunities: Opportuni
   const getAmount = (amt: number | { toNumber: () => number }): number => typeof amt === 'number' ? amt : amt?.toNumber?.() || 0
 
   const stageColors: Record<string, string> = {
-    PROSPECTING: 'text-slate-400 bg-slate-400/10',
+    PROSPECTING: 'text-zinc-500 bg-zinc-500/10',
     QUALIFICATION: 'text-blue-400 bg-blue-400/10',
     PROPOSAL: 'text-purple-400 bg-purple-400/10',
     NEGOTIATION: 'text-orange-400 bg-orange-400/10',
@@ -71,37 +71,37 @@ export function OpportunitiesTable({ opportunities }: { opportunities: Opportuni
   }
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800/50 overflow-hidden">
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-slate-700 bg-slate-800">
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Opportunity</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Customer</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase">Amount</th>
-            <th className="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase">Probability</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Expected Close</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Stage</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase">Actions</th>
+          <tr className="border-b border-zinc-800 bg-zinc-900">
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Opportunity</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Customer</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase">Amount</th>
+            <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase">Probability</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Expected Close</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Stage</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-700">
+        <tbody className="divide-y divide-zinc-800">
           {opportunities.map((opp) => {
             const isClosed = opp.stage.startsWith('CLOSED')
             const canAdvance = !isClosed && stageOrder.indexOf(opp.stage) < 4
             
             return (
-              <tr key={opp.id} className="hover:bg-slate-700/30 transition-colors">
+              <tr key={opp.id} className="hover:bg-zinc-800/30 transition-colors">
                 <td className="px-6 py-4">
                   <p className="text-sm font-medium text-white">{opp.name}</p>
-                  <p className="text-xs text-slate-400 font-mono">{opp.opportunityNumber}</p>
+                  <p className="text-xs text-zinc-500 font-mono">{opp.opportunityNumber}</p>
                 </td>
-                <td className="px-6 py-4"><span className="text-sm text-slate-300">{opp.customer.companyName}</span></td>
+                <td className="px-6 py-4"><span className="text-sm text-zinc-400">{opp.customer.companyName}</span></td>
                 <td className="px-6 py-4 text-right"><span className="text-sm text-white font-mono">${getAmount(opp.amount).toLocaleString()}</span></td>
                 <td className="px-6 py-4 text-center">
-                  <span className={`text-sm font-medium ${opp.probability >= 70 ? 'text-green-400' : opp.probability >= 40 ? 'text-yellow-400' : 'text-slate-400'}`}>{opp.probability}%</span>
+                  <span className={`text-sm font-medium ${opp.probability >= 70 ? 'text-green-400' : opp.probability >= 40 ? 'text-yellow-400' : 'text-zinc-500'}`}>{opp.probability}%</span>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-sm text-slate-300">{opp.expectedCloseDate ? new Date(opp.expectedCloseDate).toLocaleDateString() : '—'}</span>
+                  <span className="text-sm text-zinc-400">{opp.expectedCloseDate ? new Date(opp.expectedCloseDate).toLocaleDateString() : '—'}</span>
                 </td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${stageColors[opp.stage]}`}>{opp.stage.replace('_', ' ')}</span>
@@ -109,21 +109,21 @@ export function OpportunitiesTable({ opportunities }: { opportunities: Opportuni
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-1">
                     {canAdvance && (
-                      <button onClick={() => handleAdvanceStage(opp.id, opp.stage)} disabled={processingId === opp.id} className="rounded-lg p-1.5 text-slate-400 hover:bg-blue-600/20 hover:text-blue-400 transition-colors disabled:opacity-50" title="Advance Stage">
+                      <button onClick={() => handleAdvanceStage(opp.id, opp.stage)} disabled={processingId === opp.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-blue-600/20 hover:text-blue-400 transition-colors disabled:opacity-50" title="Advance Stage">
                         <ArrowRight className="h-4 w-4" />
                       </button>
                     )}
                     {!isClosed && (
                       <>
-                        <button onClick={() => handleWin(opp.id)} disabled={processingId === opp.id} className="rounded-lg p-1.5 text-slate-400 hover:bg-green-600/20 hover:text-green-400 transition-colors disabled:opacity-50" title="Mark Won">
+                        <button onClick={() => handleWin(opp.id)} disabled={processingId === opp.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-green-600/20 hover:text-green-400 transition-colors disabled:opacity-50" title="Mark Won">
                           <Trophy className="h-4 w-4" />
                         </button>
-                        <button onClick={() => handleLose(opp.id)} disabled={processingId === opp.id} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Mark Lost">
+                        <button onClick={() => handleLose(opp.id)} disabled={processingId === opp.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Mark Lost">
                           <XCircle className="h-4 w-4" />
                         </button>
                       </>
                     )}
-                    <button onClick={() => handleDelete(opp.id)} disabled={processingId === opp.id} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Delete">
+                    <button onClick={() => handleDelete(opp.id)} disabled={processingId === opp.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Delete">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>

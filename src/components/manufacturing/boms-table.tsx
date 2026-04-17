@@ -25,7 +25,7 @@ export function BOMsTable({ boms }: { boms: BOM[] }) {
   }
 
   const statusColors: Record<string, string> = {
-    DRAFT: 'text-slate-400 bg-slate-400/10',
+    DRAFT: 'text-zinc-500 bg-zinc-500/10',
     ACTIVE: 'text-green-400 bg-green-400/10',
     OBSOLETE: 'text-red-400 bg-red-400/10',
   }
@@ -33,22 +33,22 @@ export function BOMsTable({ boms }: { boms: BOM[] }) {
   return (
     <div className="space-y-3">
       {boms.slice(0, 10).map(bom => (
-        <div key={bom.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50">
+        <div key={bom.id} className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50">
           <div>
             <p className="text-sm font-medium text-white">{bom.name}</p>
-            <p className="text-xs text-slate-400 font-mono">{bom.bomNumber}</p>
+            <p className="text-xs text-zinc-500 font-mono">{bom.bomNumber}</p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-400">{bom._count?.components || 0} components</span>
+            <span className="text-xs text-zinc-500">{bom._count?.components || 0} components</span>
             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[bom.status]}`}>{bom.status}</span>
             <div className="flex gap-1">
               {bom.status === 'DRAFT' && (
-                <button onClick={() => handleStatusChange(bom.id, 'ACTIVE')} disabled={processingId === bom.id} className="p-1 text-slate-400 hover:text-green-400 disabled:opacity-50" title="Activate">
+                <button onClick={() => handleStatusChange(bom.id, 'ACTIVE')} disabled={processingId === bom.id} className="p-1 text-zinc-500 hover:text-green-400 disabled:opacity-50" title="Activate">
                   <CheckCircle className="h-4 w-4" />
                 </button>
               )}
               {bom.status === 'ACTIVE' && (
-                <button onClick={() => handleStatusChange(bom.id, 'OBSOLETE')} disabled={processingId === bom.id} className="p-1 text-slate-400 hover:text-red-400 disabled:opacity-50" title="Mark Obsolete">
+                <button onClick={() => handleStatusChange(bom.id, 'OBSOLETE')} disabled={processingId === bom.id} className="p-1 text-zinc-500 hover:text-red-400 disabled:opacity-50" title="Mark Obsolete">
                   <XCircle className="h-4 w-4" />
                 </button>
               )}

@@ -77,10 +77,10 @@ export function SubmitFeedbackButton() {
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-xl border border-slate-700 bg-slate-800 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-slate-700">
+          <div className="w-full max-w-lg rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-zinc-800">
               <h2 className="text-xl font-semibold text-white">Submit Feedback</h2>
-              <button onClick={() => setIsOpen(false)} className="rounded-lg p-1 text-slate-400 hover:bg-slate-700 hover:text-white">
+              <button onClick={() => setIsOpen(false)} className="rounded-lg p-1 text-zinc-500 hover:bg-zinc-800 hover:text-white">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -94,7 +94,7 @@ export function SubmitFeedbackButton() {
 
               {/* Category Selection */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-3">Category</label>
+                <label className="block text-sm font-medium text-zinc-400 mb-3">Category</label>
                 <div className="grid grid-cols-2 gap-2">
                   {categories.map(cat => {
                     const Icon = cat.icon
@@ -106,13 +106,13 @@ export function SubmitFeedbackButton() {
                         className={`flex items-start gap-3 p-3 rounded-lg border text-left transition-all ${
                           selectedCategory === cat.key
                             ? 'border-blue-500 bg-blue-500/10 ring-1 ring-blue-500'
-                            : 'border-slate-600 bg-slate-700 hover:border-slate-500'
+                            : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
                         }`}
                       >
-                        <Icon className={`h-5 w-5 mt-0.5 ${selectedCategory === cat.key ? 'text-blue-400' : 'text-slate-400'}`} />
+                        <Icon className={`h-5 w-5 mt-0.5 ${selectedCategory === cat.key ? 'text-blue-400' : 'text-zinc-500'}`} />
                         <div>
                           <p className="font-medium text-white text-sm">{cat.label}</p>
-                          <p className="text-xs text-slate-400">{cat.description}</p>
+                          <p className="text-xs text-zinc-500">{cat.description}</p>
                         </div>
                       </button>
                     )
@@ -122,20 +122,20 @@ export function SubmitFeedbackButton() {
 
               {/* Title */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Title *</label>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Title *</label>
                 <input
                   name="title"
                   required
                   minLength={5}
                   maxLength={200}
                   placeholder="Brief summary of your feedback"
-                  className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-2.5 text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Description *</label>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Description *</label>
                 <textarea
                   name="description"
                   required
@@ -143,7 +143,7 @@ export function SubmitFeedbackButton() {
                   maxLength={5000}
                   rows={4}
                   placeholder="Describe your idea or issue in detail..."
-                  className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-2.5 text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
                 />
               </div>
 
@@ -151,31 +151,31 @@ export function SubmitFeedbackButton() {
               {!user && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Your Name *</label>
+                    <label className="block text-sm font-medium text-zinc-400 mb-1">Your Name *</label>
                     <input
                       name="name"
                       required
                       defaultValue={savedName}
                       placeholder="John Doe"
-                      className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-2.5 text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                      className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Email *</label>
+                    <label className="block text-sm font-medium text-zinc-400 mb-1">Email *</label>
                     <input
                       name="email"
                       type="email"
                       required
                       defaultValue={savedEmail}
                       placeholder="you@example.com"
-                      className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-2.5 text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+                      className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
                     />
                   </div>
                 </div>
               )}
 
               {user && (
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-zinc-500">
                   Posting as <span className="text-white font-medium">{user.firstName} {user.lastName}</span>
                 </p>
               )}
@@ -185,7 +185,7 @@ export function SubmitFeedbackButton() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="flex-1 rounded-lg border border-slate-600 bg-slate-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-600 transition-colors"
+                  className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 transition-colors"
                 >
                   Cancel
                 </button>

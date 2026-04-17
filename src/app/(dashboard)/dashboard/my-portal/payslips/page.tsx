@@ -29,7 +29,7 @@ export default function PayslipsPage() {
   }, [])
   
   if (loading) {
-    return <div className="text-slate-400">Loading...</div>
+    return <div className="text-zinc-500">Loading...</div>
   }
   
   return (
@@ -39,56 +39,57 @@ export default function PayslipsPage() {
         <h2 className="text-lg font-semibold text-white">My Payslips</h2>
       </div>
       
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-zinc-500">
         View your salary history and download payslips.
       </p>
       
       {payslips.length === 0 ? (
-        <div className="text-center py-8 text-slate-400">
+        <div className="text-center py-8 text-zinc-500">
           <DollarSign className="h-12 w-12 mx-auto mb-3 opacity-50" />
           <p>No payslips available yet.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {payslips.map((slip) => (
-            <div key={slip.id} className="p-4 rounded-lg border border-slate-700 bg-slate-800/50">
-              <div className="flex items-center justify-between mb-3">
+            <div key={slip.id} className="p-5 rounded-xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 transition-all shadow-sm group">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-zinc-800/50">
                 <div>
-                  <div className="text-white font-medium">
+                  <div className="text-white font-bold flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-zinc-500" />
                     {new Date(slip.payPeriodStart).toLocaleDateString()} - {new Date(slip.payPeriodEnd).toLocaleDateString()}
                   </div>
                   {slip.paidAt && (
-                    <div className="text-xs text-slate-500">
+                    <div className="text-[10px] text-zinc-500 uppercase tracking-widest font-black mt-1">
                       Paid on {new Date(slip.paidAt).toLocaleDateString()}
                     </div>
                   )}
                 </div>
-                <button className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm">
+                <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white transition-all text-xs font-bold">
                   <Download className="h-4 w-4" />
-                  Download
+                  Download PDF
                 </button>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
-                <div>
-                  <div className="text-slate-400">Base Salary</div>
-                  <div className="text-white">{slip.currency} {parseFloat(slip.baseSalary.toString()).toLocaleString()}</div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="p-3 rounded-lg bg-zinc-950/50 border border-zinc-800/50">
+                  <p className="text-[10px] text-zinc-500 uppercase font-black tracking-tighter mb-1">Base Salary</p>
+                  <p className="text-sm font-bold text-white">{slip.currency} {parseFloat(slip.baseSalary.toString()).toLocaleString()}</p>
                 </div>
-                <div>
-                  <div className="text-slate-400">Bonus</div>
-                  <div className="text-green-400">+{slip.currency} {parseFloat(slip.bonus.toString()).toLocaleString()}</div>
+                <div className="p-3 rounded-lg bg-zinc-950/50 border border-zinc-800/50">
+                  <p className="text-[10px] text-zinc-500 uppercase font-black tracking-tighter mb-1">Bonus</p>
+                  <p className="text-sm font-bold text-green-400">+{slip.currency} {parseFloat(slip.bonus.toString()).toLocaleString()}</p>
                 </div>
-                <div>
-                  <div className="text-slate-400">Deductions</div>
-                  <div className="text-red-400">-{slip.currency} {parseFloat(slip.deductions.toString()).toLocaleString()}</div>
+                <div className="p-3 rounded-lg bg-zinc-950/50 border border-zinc-800/50">
+                  <p className="text-[10px] text-zinc-500 uppercase font-black tracking-tighter mb-1">Deductions</p>
+                  <p className="text-sm font-bold text-red-400">-{slip.currency} {parseFloat(slip.deductions.toString()).toLocaleString()}</p>
                 </div>
-                <div>
-                  <div className="text-slate-400">Tax</div>
-                  <div className="text-red-400">-{slip.currency} {parseFloat(slip.taxWithheld.toString()).toLocaleString()}</div>
+                <div className="p-3 rounded-lg bg-zinc-950/50 border border-zinc-800/50">
+                  <p className="text-[10px] text-zinc-500 uppercase font-black tracking-tighter mb-1">Tax</p>
+                  <p className="text-sm font-bold text-red-400">-{slip.currency} {parseFloat(slip.taxWithheld.toString()).toLocaleString()}</p>
                 </div>
-                <div>
-                  <div className="text-slate-400">Net Pay</div>
-                  <div className="text-emerald-400 font-semibold">{slip.currency} {parseFloat(slip.netPay.toString()).toLocaleString()}</div>
+                <div className="p-3 rounded-lg bg-emerald-600/10 border border-emerald-500/20">
+                  <p className="text-[10px] text-emerald-500/70 uppercase font-black tracking-tighter mb-1">Net Pay</p>
+                  <p className="text-lg font-black text-emerald-400">{slip.currency} {parseFloat(slip.netPay.toString()).toLocaleString()}</p>
                 </div>
               </div>
             </div>

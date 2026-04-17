@@ -12,7 +12,7 @@ export default async function CRMLayout({
   return (
     <div className="space-y-0">
       <CRMModuleNav />
-      <div className="p-6">
+      <div>
         {children}
       </div>
     </div>

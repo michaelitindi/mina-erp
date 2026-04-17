@@ -79,33 +79,33 @@ export function ShipmentsTable({ deliveries }: { deliveries: Delivery[] }) {
   }
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800/50 overflow-hidden">
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-slate-700 bg-slate-800">
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Delivery #</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Order</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Destination</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Tracking</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Status</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase">Actions</th>
+          <tr className="border-b border-zinc-800 bg-zinc-900">
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Delivery #</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Order</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Destination</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Tracking</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Status</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-700">
+        <tbody className="divide-y divide-zinc-800">
           {deliveries.map((d) => {
             const trackingUrl = getTrackingUrl(d.carrier, d.trackingNumber)
             return (
-              <tr key={d.id} className="hover:bg-slate-700/30 transition-colors">
+              <tr key={d.id} className="hover:bg-zinc-800/30 transition-colors">
                 <td className="px-6 py-4">
                   <p className="text-sm font-medium text-white font-mono">{d.deliveryNumber}</p>
-                  <p className="text-xs text-slate-400">{d._count?.items || 0} items</p>
+                  <p className="text-xs text-zinc-500">{d._count?.items || 0} items</p>
                 </td>
                 <td className="px-6 py-4">
                   <p className="text-sm text-white">{d.salesOrder.orderNumber}</p>
-                  <p className="text-xs text-slate-400">{d.salesOrder.customer.companyName}</p>
+                  <p className="text-xs text-zinc-500">{d.salesOrder.customer.companyName}</p>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-sm text-slate-300 flex items-center gap-1">
+                  <span className="text-sm text-zinc-400 flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
                     {[d.shippingCity, d.shippingCountry].filter(Boolean).join(', ') || '—'}
                   </span>
@@ -113,22 +113,22 @@ export function ShipmentsTable({ deliveries }: { deliveries: Delivery[] }) {
                 <td className="px-6 py-4">
                   {editingId === d.id ? (
                     <div className="flex gap-2">
-                      <select value={carrier} onChange={e => setCarrier(e.target.value)} className="rounded-lg border border-slate-600 bg-slate-700 px-2 py-1 text-xs text-white">
+                      <select value={carrier} onChange={e => setCarrier(e.target.value)} className="rounded-lg border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-white">
                         <option value="">Carrier</option>
                         <option value="UPS">UPS</option>
                         <option value="FedEx">FedEx</option>
                         <option value="DHL">DHL</option>
                         <option value="USPS">USPS</option>
                       </select>
-                      <input value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)} placeholder="Tracking #" className="w-28 rounded-lg border border-slate-600 bg-slate-700 px-2 py-1 text-xs text-white" />
+                      <input value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)} placeholder="Tracking #" className="w-28 rounded-lg border border-zinc-700 bg-zinc-800 px-2 py-1 text-xs text-white" />
                       <button onClick={() => handleSaveTracking(d.id)} className="text-xs text-green-400 hover:text-green-300">Save</button>
-                      <button onClick={() => setEditingId(null)} className="text-xs text-slate-400 hover:text-white">Cancel</button>
+                      <button onClick={() => setEditingId(null)} className="text-xs text-zinc-500 hover:text-white">Cancel</button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
                       {d.carrier && d.trackingNumber ? (
                         <>
-                          <span className="text-sm text-slate-300">{d.carrier}: <span className="font-mono">{d.trackingNumber}</span></span>
+                          <span className="text-sm text-zinc-400">{d.carrier}: <span className="font-mono">{d.trackingNumber}</span></span>
                           {trackingUrl && (
                             <a href={trackingUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">
                               <ExternalLink className="h-3 w-3" />
@@ -145,16 +145,16 @@ export function ShipmentsTable({ deliveries }: { deliveries: Delivery[] }) {
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-1">
                     {d.status === 'PENDING' && (
-                      <button onClick={() => handleStatusChange(d.id, 'IN_TRANSIT')} disabled={processingId === d.id} className="rounded-lg p-1.5 text-slate-400 hover:bg-purple-600/20 hover:text-purple-400 transition-colors disabled:opacity-50" title="Ship">
+                      <button onClick={() => handleStatusChange(d.id, 'IN_TRANSIT')} disabled={processingId === d.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-purple-600/20 hover:text-purple-400 transition-colors disabled:opacity-50" title="Ship">
                         <Truck className="h-4 w-4" />
                       </button>
                     )}
                     {d.status === 'IN_TRANSIT' && (
-                      <button onClick={() => handleStatusChange(d.id, 'DELIVERED')} disabled={processingId === d.id} className="rounded-lg p-1.5 text-slate-400 hover:bg-green-600/20 hover:text-green-400 transition-colors disabled:opacity-50" title="Mark Delivered">
+                      <button onClick={() => handleStatusChange(d.id, 'DELIVERED')} disabled={processingId === d.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-green-600/20 hover:text-green-400 transition-colors disabled:opacity-50" title="Mark Delivered">
                         <CheckCircle className="h-4 w-4" />
                       </button>
                     )}
-                    <button onClick={() => handleDelete(d.id)} disabled={processingId === d.id} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Delete">
+                    <button onClick={() => handleDelete(d.id)} disabled={processingId === d.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Delete">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>

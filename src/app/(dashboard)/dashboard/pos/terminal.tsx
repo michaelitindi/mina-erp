@@ -152,26 +152,26 @@ export function POSTerminal({ session, terminals, products }: POSTerminalProps) 
   if (showOpenShift) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-8 max-w-md w-full">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 max-w-md w-full shadow-2xl">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-3 bg-blue-500/10 rounded-lg">
               <Clock className="h-6 w-6 text-blue-400" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Open Shift</h2>
-              <p className="text-slate-400 text-sm">Start your POS session</p>
+              <p className="text-zinc-500 text-sm">Start your POS session</p>
             </div>
           </div>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-400 mb-2">
                 Select Terminal
               </label>
               <select
                 value={selectedTerminal}
                 onChange={(e) => setSelectedTerminal(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               >
                 <option value="">Choose terminal...</option>
                 {terminals.map(t => (
@@ -181,17 +181,17 @@ export function POSTerminal({ session, terminals, products }: POSTerminalProps) 
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-400 mb-2">
                 Opening Cash Amount
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-3.5 text-slate-400">$</span>
+                <span className="absolute left-4 top-3.5 text-zinc-500">$</span>
                 <input
                   type="number"
                   value={openingCash}
                   onChange={(e) => setOpeningCash(e.target.value)}
                   placeholder="0.00"
-                  className="w-full pl-8 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-8 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
             </div>
@@ -382,41 +382,41 @@ function PaymentModal({
   const quickCash = [10, 20, 50, 100]
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-lg p-6">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-lg p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">Payment</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white">
+          <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors">
             <X className="h-6 w-6" />
           </button>
         </div>
         
-        <div className="text-center mb-6">
-          <p className="text-slate-400">Total Amount</p>
-          <p className="text-4xl font-bold text-white">${total.toFixed(2)}</p>
+        <div className="text-center mb-8 p-6 bg-zinc-800/50 rounded-xl border border-zinc-800">
+          <p className="text-zinc-500 text-sm mb-1 uppercase tracking-widest font-bold">Total Amount</p>
+          <p className="text-5xl font-black text-white">${total.toFixed(2)}</p>
         </div>
         
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-2 gap-4 mb-8">
           <button
             onClick={() => setMethod('cash')}
-            className={`py-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
+            className={`py-4 rounded-xl font-bold flex flex-col items-center justify-center gap-2 border-2 transition-all ${
               method === 'cash' 
-                ? 'bg-emerald-600 text-white' 
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                ? 'bg-blue-600/10 border-blue-500 text-blue-400 shadow-lg shadow-blue-500/10' 
+                : 'bg-zinc-800/50 border-zinc-800 text-zinc-500 hover:bg-zinc-800 hover:border-zinc-700'
             }`}
           >
-            <Banknote className="h-5 w-5" />
+            <Banknote className="h-6 w-6" />
             Cash
           </button>
           <button
             onClick={() => setMethod('card')}
-            className={`py-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
+            className={`py-4 rounded-xl font-bold flex flex-col items-center justify-center gap-2 border-2 transition-all ${
               method === 'card' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                ? 'bg-blue-600/10 border-blue-500 text-blue-400 shadow-lg shadow-blue-500/10' 
+                : 'bg-zinc-800/50 border-zinc-800 text-zinc-500 hover:bg-zinc-800 hover:border-zinc-700'
             }`}
           >
-            <CreditCard className="h-5 w-5" />
+            <CreditCard className="h-6 w-6" />
             Card
           </button>
         </div>
@@ -424,17 +424,17 @@ function PaymentModal({
         {method === 'cash' && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-400 mb-2">
                 Cash Received
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-3.5 text-slate-400">$</span>
+                <span className="absolute left-4 top-3.5 text-zinc-500 font-bold">$</span>
                 <input
                   type="number"
                   value={cashReceived}
                   onChange={(e) => setCashReceived(e.target.value)}
                   placeholder="0.00"
-                  className="w-full pl-8 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white text-xl font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full pl-8 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-2xl font-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
                   autoFocus
                 />
               </div>
@@ -445,44 +445,40 @@ function PaymentModal({
                 <button
                   key={amount}
                   onClick={() => setCashReceived(String(amount))}
-                  className="py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium"
+                  className="py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-bold border border-zinc-700 transition-colors"
                 >
                   ${amount}
                 </button>
               ))}
-            </div>
-            
-            <div className="flex justify-between py-2 text-lg">
-              <span className="text-slate-400">Exact</span>
               <button 
                 onClick={() => setCashReceived(total.toFixed(2))}
-                className="text-emerald-400 font-medium hover:underline"
+                className="py-3 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 rounded-lg font-black border border-emerald-500/20 transition-all"
               >
-                ${total.toFixed(2)}
+                Exact
               </button>
             </div>
             
             {parseFloat(cashReceived) >= total && (
-              <div className="bg-emerald-600/20 border border-emerald-500/30 rounded-lg p-4 text-center">
-                <p className="text-slate-300">Change Due</p>
-                <p className="text-3xl font-bold text-emerald-400">${change.toFixed(2)}</p>
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex justify-between items-center animate-in fade-in slide-in-from-top-2">
+                <p className="text-emerald-400 font-bold">Change Due</p>
+                <p className="text-3xl font-black text-emerald-400">${change.toFixed(2)}</p>
               </div>
             )}
           </div>
         )}
         
         {method === 'card' && (
-          <div className="bg-slate-700/50 rounded-lg p-6 text-center">
-            <CreditCard className="h-12 w-12 mx-auto text-blue-400 mb-3" />
-            <p className="text-slate-300">Ready for card payment</p>
-            <p className="text-sm text-slate-400 mt-1">Use your card terminal</p>
+          <div className="bg-zinc-800/50 rounded-xl p-10 text-center border border-zinc-800 shadow-inner">
+            <CreditCard className="h-16 w-16 mx-auto text-blue-500 opacity-40 mb-4" />
+            <p className="text-zinc-300 font-bold text-lg">Ready for card payment</p>
+            <p className="text-sm text-zinc-500 mt-1">Process the transaction on your terminal</p>
           </div>
         )}
         
         <button
           onClick={() => onPay(method, parseFloat(cashReceived || '0'))}
           disabled={!canPay || isPending}
-          className="w-full mt-6 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full mt-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg shadow-blue-600/20"
         >
           {isPending ? 'Processing...' : `Complete ${method === 'cash' ? 'Cash' : 'Card'} Payment`}
         </button>

@@ -28,7 +28,7 @@ export default async function AccountsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Chart of Accounts</h1>
-          <p className="text-slate-400">Manage your organization&apos;s accounts</p>
+          <p className="text-zinc-500">Manage your organization&apos;s accounts</p>
         </div>
         <div className="flex gap-3">
           {accounts.length === 0 && <SeedAccountsButton />}
@@ -41,24 +41,24 @@ export default async function AccountsPage() {
         {Object.entries(accountsByType).map(([type, typeAccounts]) => (
           <div
             key={type}
-            className="rounded-xl border border-slate-700 bg-slate-800/50 p-4"
+            className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700"
           >
-            <div className={`inline-flex items-center gap-2 rounded-lg px-2 py-1 text-xs font-medium ${typeColors[type as keyof typeof typeColors]}`}>
+            <div className={`inline-flex items-center gap-2 rounded-lg px-2 py-1 text-xs font-bold uppercase tracking-wider border border-current/20 ${typeColors[type as keyof typeof typeColors]}`}>
               <FileText className="h-3 w-3" />
               {type}
             </div>
-            <p className="mt-2 text-2xl font-bold text-white">{typeAccounts.length}</p>
-            <p className="text-sm text-slate-400">accounts</p>
+            <p className="mt-3 text-2xl font-black text-white">{typeAccounts.length}</p>
+            <p className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mt-1">Accounts</p>
           </div>
         ))}
       </div>
 
       {/* Accounts Table */}
       {accounts.length === 0 ? (
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-12 text-center">
-          <FileText className="mx-auto h-12 w-12 text-slate-500" />
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-12 text-center shadow-sm backdrop-blur-sm">
+          <FileText className="mx-auto h-12 w-12 text-zinc-700" />
           <h3 className="mt-4 text-lg font-semibold text-white">No accounts yet</h3>
-          <p className="mt-2 text-slate-400">
+          <p className="mt-2 text-zinc-500">
             Get started by seeding default accounts or create your first account.
           </p>
           <div className="mt-6 flex justify-center gap-3">

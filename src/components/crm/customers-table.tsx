@@ -40,37 +40,37 @@ export function CustomersTable({ customers }: CustomersTableProps) {
   }
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800/50 overflow-hidden">
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-slate-700 bg-slate-800">
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+          <tr className="border-b border-zinc-800 bg-zinc-900">
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
               Customer
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
               Contact
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
               Type
             </th>
-            <th className="px-6 py-3 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">
+            <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase tracking-wider">
               Invoices
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
               Status
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">
+            <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-700">
+        <tbody className="divide-y divide-zinc-800">
           {customers.map((customer) => (
-            <tr key={customer.id} className="hover:bg-slate-700/30 transition-colors">
+            <tr key={customer.id} className="hover:bg-zinc-800/30 transition-colors">
               <td className="px-6 py-4">
                 <div>
                   <p className="text-sm font-medium text-white">{customer.companyName}</p>
-                  <p className="text-xs text-slate-400 font-mono">{customer.customerNumber}</p>
+                  <p className="text-xs text-zinc-500 font-mono">{customer.customerNumber}</p>
                 </div>
               </td>
               <td className="px-6 py-4">
@@ -78,12 +78,12 @@ export function CustomersTable({ customers }: CustomersTableProps) {
                   {customer.contactPerson && (
                     <p className="text-sm text-white">{customer.contactPerson}</p>
                   )}
-                  <div className="flex items-center gap-1 text-xs text-slate-400">
+                  <div className="flex items-center gap-1 text-xs text-zinc-500">
                     <Mail className="h-3 w-3" />
                     {customer.email}
                   </div>
                   {customer.phone && (
-                    <div className="flex items-center gap-1 text-xs text-slate-400">
+                    <div className="flex items-center gap-1 text-xs text-zinc-500">
                       <Phone className="h-3 w-3" />
                       {customer.phone}
                     </div>
@@ -106,7 +106,7 @@ export function CustomersTable({ customers }: CustomersTableProps) {
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                   customer.status === 'ACTIVE' 
                     ? 'text-green-400 bg-green-400/10' 
-                    : 'text-slate-400 bg-slate-400/10'
+                    : 'text-zinc-500 bg-zinc-500/10'
                 }`}>
                   {customer.status}
                 </span>
@@ -114,7 +114,7 @@ export function CustomersTable({ customers }: CustomersTableProps) {
               <td className="px-6 py-4 whitespace-nowrap text-right">
                 <div className="flex justify-end gap-2">
                   <button
-                    className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-600 hover:text-white transition-colors"
+                    className="rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-700 hover:text-white transition-colors"
                     title="View"
                   >
                     <Eye className="h-4 w-4" />
@@ -122,7 +122,7 @@ export function CustomersTable({ customers }: CustomersTableProps) {
                   <button
                     onClick={() => handleDelete(customer.id)}
                     disabled={deletingId === customer.id}
-                    className="rounded-lg p-1.5 text-slate-400 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50"
+                    className="rounded-lg p-1.5 text-zinc-500 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50"
                     title="Delete"
                   >
                     <Trash2 className="h-4 w-4" />

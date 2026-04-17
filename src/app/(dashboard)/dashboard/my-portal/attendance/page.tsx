@@ -13,7 +13,7 @@ type Timesheet = {
 }
 
 const statusColors: Record<string, string> = {
-  DRAFT: 'bg-slate-500/20 text-slate-400',
+  DRAFT: 'bg-zinc-600/20 text-zinc-500',
   SUBMITTED: 'bg-blue-500/20 text-blue-400',
   APPROVED: 'bg-green-500/20 text-green-400',
   REJECTED: 'bg-red-500/20 text-red-400',
@@ -31,7 +31,7 @@ export default function AttendancePage() {
   }, [])
   
   if (loading) {
-    return <div className="text-slate-400">Loading...</div>
+    return <div className="text-zinc-500">Loading...</div>
   }
   
   return (
@@ -41,12 +41,12 @@ export default function AttendancePage() {
         <h2 className="text-lg font-semibold text-white">Time & Attendance</h2>
       </div>
       
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-zinc-500">
         View your timesheets and attendance records.
       </p>
       
       {timesheets.length === 0 ? (
-        <div className="text-center py-8 text-slate-400">
+        <div className="text-center py-8 text-zinc-500">
           <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
           <p>No timesheets found.</p>
         </div>
@@ -54,23 +54,23 @@ export default function AttendancePage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-700 text-left">
-                <th className="pb-3 text-sm font-medium text-slate-400">Week Starting</th>
-                <th className="pb-3 text-sm font-medium text-slate-400">Total Hours</th>
-                <th className="pb-3 text-sm font-medium text-slate-400">Overtime</th>
-                <th className="pb-3 text-sm font-medium text-slate-400">Status</th>
+              <tr className="border-b border-zinc-800 text-left bg-zinc-900/50">
+                <th className="px-4 py-3 text-xs font-black text-zinc-500 uppercase tracking-widest">Week Starting</th>
+                <th className="px-4 py-3 text-xs font-black text-zinc-500 uppercase tracking-widest">Total Hours</th>
+                <th className="px-4 py-3 text-xs font-black text-zinc-500 uppercase tracking-widest">Overtime</th>
+                <th className="px-4 py-3 text-xs font-black text-zinc-500 uppercase tracking-widest">Status</th>
               </tr>
             </thead>
             <tbody>
               {timesheets.map((ts) => (
-                <tr key={ts.id} className="border-b border-slate-700/50">
-                  <td className="py-3 text-white">
+                <tr key={ts.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                  <td className="px-4 py-4 text-sm text-white font-medium">
                     {new Date(ts.weekStartDate).toLocaleDateString()}
                   </td>
-                  <td className="py-3 text-white">{ts.totalHours.toString()} hrs</td>
-                  <td className="py-3 text-white">{ts.overtimeHours.toString()} hrs</td>
-                  <td className="py-3">
-                    <span className={`text-xs px-2 py-1 rounded-full ${statusColors[ts.status]}`}>
+                  <td className="px-4 py-4 text-sm text-zinc-300">{ts.totalHours.toString()} hrs</td>
+                  <td className="px-4 py-4 text-sm text-zinc-300">{ts.overtimeHours.toString()} hrs</td>
+                  <td className="px-4 py-4">
+                    <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded border border-current/20 ${statusColors[ts.status]}`}>
                       {ts.status}
                     </span>
                   </td>

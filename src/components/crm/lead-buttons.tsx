@@ -47,10 +47,10 @@ export function CreateLeadButton() {
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-lg rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">Capture New Lead</h2>
-              <button onClick={() => setIsOpen(false)} className="rounded-lg p-1 text-slate-400 hover:bg-slate-700 hover:text-white"><X className="h-5 w-5" /></button>
+              <button onClick={() => setIsOpen(false)} className="rounded-lg p-1 text-zinc-500 hover:bg-zinc-800 hover:text-white"><X className="h-5 w-5" /></button>
             </div>
 
             {error && <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">{error}</div>}
@@ -58,35 +58,35 @@ export function CreateLeadButton() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">First Name *</label>
-                  <input name="firstName" required className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">First Name *</label>
+                  <input name="firstName" required className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Last Name *</label>
-                  <input name="lastName" required className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Last Name *</label>
+                  <input name="lastName" required className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
                 </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Email *</label>
-                  <input name="email" type="email" required className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Email *</label>
+                  <input name="email" type="email" required className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Phone</label>
-                  <input name="phone" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Phone</label>
+                  <input name="phone" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Company Name</label>
-                <input name="companyName" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Company Name</label>
+                <input name="companyName" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
               </div>
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Source *</label>
-                  <select name="source" required className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Source *</label>
+                  <select name="source" required className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
                     <option value="WEBSITE">Website</option>
                     <option value="REFERRAL">Referral</option>
                     <option value="COLD_CALL">Cold Call</option>
@@ -96,8 +96,8 @@ export function CreateLeadButton() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Rating</label>
-                  <select name="rating" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Rating</label>
+                  <select name="rating" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
                     <option value="">Select...</option>
                     <option value="HOT">🔥 Hot</option>
                     <option value="WARM">☀️ Warm</option>
@@ -105,23 +105,23 @@ export function CreateLeadButton() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Est. Value</label>
-                  <input name="estimatedValue" type="number" min="0" step="0.01" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" placeholder="$0.00" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Est. Value</label>
+                  <input name="estimatedValue" type="number" min="0" step="0.01" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" placeholder="$0.00" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Industry</label>
-                <input name="industry" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" placeholder="e.g., Technology, Healthcare" />
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Industry</label>
+                <input name="industry" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" placeholder="e.g., Technology, Healthcare" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Notes</label>
-                <textarea name="notes" rows={2} className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" placeholder="Additional notes..." />
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Notes</label>
+                <textarea name="notes" rows={2} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" placeholder="Additional notes..." />
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 rounded-lg border border-slate-600 bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 transition-colors">Cancel</button>
+                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors">Cancel</button>
                 <button type="submit" disabled={isLoading} className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors disabled:opacity-50">{isLoading ? 'Creating...' : 'Capture Lead'}</button>
               </div>
             </form>

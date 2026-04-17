@@ -30,53 +30,53 @@ export default async function InvoicesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Invoices</h1>
-          <p className="text-slate-400">Manage your accounts receivable</p>
+          <p className="text-zinc-500">Manage your accounts receivable</p>
         </div>
         <CreateInvoiceButton customers={customers} />
       </div>
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-blue-500/10 p-2">
               <Receipt className="h-5 w-5 text-blue-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-400">Total Invoices</p>
+              <p className="text-sm text-zinc-500 font-medium">Total Invoices</p>
               <p className="text-2xl font-bold text-white">{stats.total}</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-green-500/10 p-2">
               <DollarSign className="h-5 w-5 text-green-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-400">Total Amount</p>
+              <p className="text-sm text-zinc-500 font-medium">Total Amount</p>
               <p className="text-2xl font-bold text-white">${stats.totalAmount.toLocaleString()}</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-orange-500/10 p-2">
               <Clock className="h-5 w-5 text-orange-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-400">Pending</p>
+              <p className="text-sm text-zinc-500 font-medium">Pending</p>
               <p className="text-2xl font-bold text-white">${stats.pendingAmount.toLocaleString()}</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-emerald-500/10 p-2">
               <CheckCircle className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-400">Paid</p>
+              <p className="text-sm text-zinc-500 font-medium">Paid</p>
               <p className="text-2xl font-bold text-white">${stats.paidAmount.toLocaleString()}</p>
             </div>
           </div>
@@ -85,10 +85,10 @@ export default async function InvoicesPage() {
 
       {/* Invoices Table */}
       {invoices.length === 0 ? (
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-12 text-center">
-          <Receipt className="mx-auto h-12 w-12 text-slate-500" />
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-12 text-center shadow-sm backdrop-blur-sm">
+          <Receipt className="mx-auto h-12 w-12 text-zinc-700" />
           <h3 className="mt-4 text-lg font-semibold text-white">No invoices yet</h3>
-          <p className="mt-2 text-slate-400">
+          <p className="mt-2 text-zinc-500">
             Create your first invoice to start tracking revenue.
           </p>
           <div className="mt-6">

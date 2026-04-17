@@ -17,7 +17,7 @@ const statusColors: Record<string, string> = {
   PENDING: 'bg-yellow-500/20 text-yellow-400',
   APPROVED: 'bg-green-500/20 text-green-400',
   REJECTED: 'bg-red-500/20 text-red-400',
-  WITHDRAWN: 'bg-slate-500/20 text-slate-400',
+  WITHDRAWN: 'bg-zinc-600/20 text-zinc-500',
 }
 
 export default function ResignationPage() {
@@ -86,7 +86,7 @@ export default function ResignationPage() {
   }
   
   if (loading) {
-    return <div className="text-slate-400">Loading...</div>
+    return <div className="text-zinc-500">Loading...</div>
   }
   
   return (
@@ -125,7 +125,7 @@ export default function ResignationPage() {
           <h3 className="font-medium text-white">Submit Resignation Request</h3>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">
+              <label className="block text-sm font-medium text-zinc-500 mb-1">
                 Last Working Date <span className="text-red-400">*</span>
               </label>
               <input
@@ -133,16 +133,16 @@ export default function ResignationPage() {
                 value={form.lastWorkingDate}
                 onChange={(e) => setForm({ ...form, lastWorkingDate: e.target.value })}
                 min={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white"
               />
-              <p className="text-xs text-slate-500 mt-1">Minimum 2 weeks notice</p>
+              <p className="text-xs text-zinc-600 mt-1">Minimum 2 weeks notice</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">Reason</label>
+              <label className="block text-sm font-medium text-zinc-500 mb-1">Reason</label>
               <select
                 value={form.reason}
                 onChange={(e) => setForm({ ...form, reason: e.target.value })}
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white"
               >
                 <option value="">Select reason...</option>
                 <option value="Better opportunity">Better opportunity</option>
@@ -155,12 +155,12 @@ export default function ResignationPage() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Additional Notes</label>
+            <label className="block text-sm font-medium text-zinc-500 mb-1">Additional Notes</label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={2}
-              className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white"
               placeholder="Any additional information..."
             />
           </div>
@@ -174,7 +174,7 @@ export default function ResignationPage() {
             </button>
             <button
               onClick={() => setShowForm(false)}
-              className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-500"
+              className="rounded-lg bg-zinc-700 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-600"
             >
               Cancel
             </button>
@@ -184,38 +184,51 @@ export default function ResignationPage() {
       
       {/* History */}
       {resignations.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-sm font-medium text-slate-400">Request History</h3>
+        <div className="space-y-4">
+          <h3 className="text-xs font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2">
+            <Clock className="h-3 w-3" /> Request History
+          </h3>
           {resignations.map((res) => (
-            <div key={res.id} className="flex items-center justify-between p-4 rounded-lg border border-slate-700 bg-slate-800/50">
+            <div key={res.id} className="flex items-center justify-between p-5 rounded-xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 transition-all shadow-sm">
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-white font-medium">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-white font-black text-lg">
                     Last Day: {new Date(res.lastWorkingDate).toLocaleDateString()}
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[res.status]}`}>
+                  <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded border border-current/20 ${statusColors[res.status]}`}>
                     {res.status}
                   </span>
                 </div>
-                <div className="text-sm text-slate-400">
-                  Submitted: {new Date(res.requestDate).toLocaleDateString()}
-                  {res.reason && ` • ${res.reason}`}
+                <div className="text-sm text-zinc-500 font-medium">
+                  Submitted on {new Date(res.requestDate).toLocaleDateString()}
+                  {res.reason && <span className="mx-2 opacity-30">•</span>}
+                  {res.reason && <span className="text-zinc-400">{res.reason}</span>}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                {res.status === 'APPROVED' && <CheckCircle className="h-5 w-5 text-green-400" />}
-                {res.status === 'REJECTED' && <XCircle className="h-5 w-5 text-red-400" />}
+              <div className="flex items-center gap-4">
+                {res.status === 'APPROVED' && (
+                  <div className="p-2 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+                    <CheckCircle className="h-6 w-6" />
+                  </div>
+                )}
+                {res.status === 'REJECTED' && (
+                  <div className="p-2 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+                    <XCircle className="h-6 w-6" />
+                  </div>
+                )}
                 {res.status === 'PENDING' && (
-                  <>
-                    <Clock className="h-5 w-5 text-yellow-400" />
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 animate-pulse">
+                      <Clock className="h-6 w-6" />
+                    </div>
                     <button
                       onClick={() => handleWithdraw(res.id)}
-                      className="flex items-center gap-1 text-sm text-slate-400 hover:text-white"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all text-sm font-bold"
                     >
                       <Undo2 className="h-4 w-4" />
                       Withdraw
                     </button>
-                  </>
+                  </div>
                 )}
               </div>
             </div>

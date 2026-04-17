@@ -37,7 +37,7 @@ const statusInfo: Record<string, { label: string; color: string; icon: typeof Cl
   PLANNED: { label: 'Planned', color: 'text-blue-400 bg-blue-500/10', icon: CheckCircle },
   IN_PROGRESS: { label: 'In Progress', color: 'text-purple-400 bg-purple-500/10', icon: PlayCircle },
   COMPLETED: { label: 'Completed', color: 'text-green-400 bg-green-500/10', icon: CheckCircle },
-  DECLINED: { label: 'Declined', color: 'text-slate-400 bg-slate-500/10', icon: XCircle },
+  DECLINED: { label: 'Declined', color: 'text-zinc-500 bg-zinc-600/10', icon: XCircle },
 }
 
 export function FeedbackList({ items }: { items: FeedbackItem[] }) {
@@ -86,7 +86,7 @@ function FeedbackCard({ item }: { item: FeedbackItem }) {
   }
 
   return (
-    <div className="group relative flex gap-4 p-4 rounded-xl border border-slate-700 bg-slate-800/50 hover:bg-slate-800 transition-colors">
+    <div className="group relative flex gap-4 p-4 rounded-xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 transition-colors">
       {/* Vote Button */}
       <button
         onClick={handleVote}
@@ -94,7 +94,7 @@ function FeedbackCard({ item }: { item: FeedbackItem }) {
         className={`flex flex-col items-center justify-center w-16 h-16 rounded-lg border transition-all flex-shrink-0 ${
           hasVoted
             ? 'bg-blue-600 border-blue-500 text-white'
-            : 'bg-slate-700 border-slate-600 text-slate-300 hover:border-blue-500 hover:text-blue-400'
+            : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-blue-500 hover:text-blue-400'
         }`}
       >
         <ArrowUp className={`h-5 w-5 ${isVoting ? 'animate-pulse' : ''}`} />
@@ -123,12 +123,12 @@ function FeedbackCard({ item }: { item: FeedbackItem }) {
           <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 transition-colors line-clamp-1">
             {item.title}
           </h3>
-          <p className="text-slate-400 text-sm mt-1 line-clamp-2">
+          <p className="text-zinc-500 text-sm mt-1 line-clamp-2">
             {item.description}
           </p>
         </Link>
 
-        <div className="flex items-center gap-4 mt-3 text-sm text-slate-500">
+        <div className="flex items-center gap-4 mt-3 text-sm text-zinc-600">
           <span>{item.authorName}</span>
           <span>•</span>
           <span>{new Date(item.createdAt).toLocaleDateString()}</span>

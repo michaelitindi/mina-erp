@@ -24,56 +24,56 @@ export default async function OpportunitiesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Opportunities</h1>
-          <p className="text-slate-400">Manage your sales pipeline and deals</p>
+          <p className="text-zinc-500">Manage your sales pipeline and deals</p>
         </div>
         <CreateOpportunityButton customers={customers} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-blue-500/10 p-2"><Target className="h-5 w-5 text-blue-400" /></div>
-            <div><p className="text-sm text-slate-400">Open Deals</p><p className="text-2xl font-bold text-white">{openOpps.length}</p></div>
+            <div><p className="text-sm text-zinc-500 font-medium">Open Deals</p><p className="text-2xl font-bold text-white">{openOpps.length}</p></div>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-green-500/10 p-2"><DollarSign className="h-5 w-5 text-green-400" /></div>
-            <div><p className="text-sm text-slate-400">Pipeline Value</p><p className="text-2xl font-bold text-white">${totalValue.toLocaleString()}</p></div>
+            <div><p className="text-sm text-zinc-500 font-medium">Pipeline Value</p><p className="text-2xl font-bold text-white">${totalValue.toLocaleString()}</p></div>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-purple-500/10 p-2"><TrendingUp className="h-5 w-5 text-purple-400" /></div>
-            <div><p className="text-sm text-slate-400">Avg. Probability</p><p className="text-2xl font-bold text-white">{avgProbability}%</p></div>
+            <div><p className="text-sm text-zinc-500 font-medium">Avg. Probability</p><p className="text-2xl font-bold text-white">{avgProbability}%</p></div>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-yellow-500/10 p-2"><Trophy className="h-5 w-5 text-yellow-400" /></div>
-            <div><p className="text-sm text-slate-400">Won This Period</p><p className="text-2xl font-bold text-white">${wonValue.toLocaleString()}</p></div>
+            <div><p className="text-sm text-zinc-500 font-medium">Won This Period</p><p className="text-2xl font-bold text-white">${wonValue.toLocaleString()}</p></div>
           </div>
         </div>
       </div>
 
       {/* Pipeline Stages */}
-      <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-6">
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm backdrop-blur-sm">
         <h2 className="text-lg font-semibold text-white mb-4">Pipeline Stages</h2>
         <div className="grid grid-cols-6 gap-3">
           {pipeline.map((stage) => {
             const stageColors: Record<string, string> = {
-              PROSPECTING: 'border-slate-400 bg-slate-400/10',
-              QUALIFICATION: 'border-blue-400 bg-blue-400/10',
-              PROPOSAL: 'border-purple-400 bg-purple-400/10',
-              NEGOTIATION: 'border-orange-400 bg-orange-400/10',
-              CLOSED_WON: 'border-green-400 bg-green-400/10',
-              CLOSED_LOST: 'border-red-400 bg-red-400/10',
+              PROSPECTING: 'border-zinc-700 bg-zinc-800/50 text-zinc-400',
+              QUALIFICATION: 'border-blue-500/20 bg-blue-500/5 text-blue-400',
+              PROPOSAL: 'border-purple-500/20 bg-purple-500/5 text-purple-400',
+              NEGOTIATION: 'border-orange-500/20 bg-orange-500/5 text-orange-400',
+              CLOSED_WON: 'border-green-500/20 bg-green-500/5 text-green-400',
+              CLOSED_LOST: 'border-red-500/20 bg-red-500/5 text-red-400',
             }
             return (
-              <div key={stage.stage} className={`rounded-lg border-2 p-4 text-center ${stageColors[stage.stage]}`}>
-                <p className="text-xs text-slate-400 uppercase tracking-wide">{stage.stage.replace('_', ' ')}</p>
-                <p className="text-2xl font-bold text-white mt-1">{stage.count}</p>
-                <p className="text-xs text-slate-400">${stage.amount.toLocaleString()}</p>
+              <div key={stage.stage} className={`rounded-lg border p-4 text-center transition-all hover:scale-105 shadow-sm ${stageColors[stage.stage]}`}>
+                <p className="text-[10px] uppercase tracking-widest font-black opacity-70">{stage.stage.replace('_', ' ')}</p>
+                <p className="text-2xl font-black text-white mt-1">{stage.count}</p>
+                <p className="text-xs font-bold opacity-80 mt-1">${stage.amount.toLocaleString()}</p>
               </div>
             )
           })}
@@ -81,10 +81,10 @@ export default async function OpportunitiesPage() {
       </div>
 
       {opportunities.length === 0 ? (
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-12 text-center">
-          <Target className="mx-auto h-12 w-12 text-slate-500" />
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-12 text-center shadow-sm backdrop-blur-sm">
+          <Target className="mx-auto h-12 w-12 text-zinc-700" />
           <h3 className="mt-4 text-lg font-semibold text-white">No opportunities yet</h3>
-          <p className="mt-2 text-slate-400">Create your first opportunity to start building your pipeline.</p>
+          <p className="mt-2 text-zinc-500">Create your first opportunity to start building your pipeline.</p>
           <div className="mt-6"><CreateOpportunityButton customers={customers} /></div>
         </div>
       ) : (

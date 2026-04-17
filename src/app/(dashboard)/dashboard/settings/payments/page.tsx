@@ -11,13 +11,15 @@ export default async function PaymentsSettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Payment Providers</h1>
-        <p className="text-slate-400">Configure payment methods for POS and E-commerce</p>
+        <p className="text-zinc-500 font-medium">Configure payment methods for POS and E-commerce</p>
       </div>
       
-      <PaymentsClient 
-        providers={providers} 
-        availableTypes={availableTypes} 
-      />
+      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-1 shadow-sm backdrop-blur-sm">
+        <PaymentsClient 
+          providers={providers} 
+          availableTypes={availableTypes} 
+        />
+      </div>
     </div>
   )
 }

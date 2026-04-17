@@ -43,7 +43,7 @@ export function VoteButton({ feedbackId, initialVotes }: { feedbackId: string; i
       className={`w-full flex flex-col items-center justify-center p-6 rounded-lg border transition-all ${
         hasVoted
           ? 'bg-blue-600 border-blue-500 text-white'
-          : 'bg-slate-700 border-slate-600 text-slate-300 hover:border-blue-500 hover:text-blue-400'
+          : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-blue-500 hover:text-blue-400'
       }`}
     >
       <ArrowUp className={`h-8 w-8 ${isLoading ? 'animate-pulse' : ''}`} />
@@ -90,7 +90,7 @@ export function ReplyForm({ feedbackId }: { feedbackId: string }) {
         onChange={(e) => setContent(e.target.value)}
         placeholder="Write a reply..."
         rows={3}
-        className="w-full rounded-lg border border-slate-600 bg-slate-700 px-4 py-2.5 text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+        className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
       />
       <div className="flex justify-end">
         <button
@@ -146,7 +146,7 @@ export function StatusSelector({ feedbackId, currentStatus }: { feedbackId: stri
       value={status}
       onChange={(e) => handleChange(e.target.value)}
       disabled={isLoading}
-      className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none disabled:opacity-50"
+      className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none disabled:opacity-50"
     >
       {statuses.map(s => (
         <option key={s.key} value={s.key}>{s.label}</option>
@@ -192,7 +192,7 @@ export function AdminActions({ feedbackId, isPinned }: { feedbackId: string; isP
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white"
+        className="p-2 rounded-lg text-zinc-500 hover:bg-zinc-800 hover:text-white"
       >
         <MoreVertical className="h-5 w-5" />
       </button>
@@ -200,11 +200,11 @@ export function AdminActions({ feedbackId, isPinned }: { feedbackId: string; isP
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-slate-700 bg-slate-800 shadow-xl z-50 overflow-hidden">
+          <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-zinc-800 bg-zinc-900 shadow-xl z-50 overflow-hidden">
             <button
               onClick={handlePin}
               disabled={isLoading}
-              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white"
+              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-white"
             >
               <Pin className="h-4 w-4" />
               {isPinned ? 'Unpin' : 'Pin to Top'}

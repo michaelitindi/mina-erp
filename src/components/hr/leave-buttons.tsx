@@ -45,26 +45,26 @@ export function CreateLeaveButton({ employees }: { employees: Employee[] }) {
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">Request Leave</h2>
-              <button onClick={() => setIsOpen(false)} className="rounded-lg p-1 text-slate-400 hover:bg-slate-700 hover:text-white"><X className="h-5 w-5" /></button>
+              <button onClick={() => setIsOpen(false)} className="rounded-lg p-1 text-zinc-500 hover:bg-zinc-800 hover:text-white"><X className="h-5 w-5" /></button>
             </div>
 
             {error && <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">{error}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Employee *</label>
-                <select name="employeeId" required className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Employee *</label>
+                <select name="employeeId" required className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
                   <option value="">Select...</option>
                   {employees.map(e => <option key={e.id} value={e.id}>{e.firstName} {e.lastName} ({e.employeeNumber})</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Leave Type *</label>
-                <select name="leaveType" required className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Leave Type *</label>
+                <select name="leaveType" required className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
                   <option value="ANNUAL">Annual Leave</option>
                   <option value="SICK">Sick Leave</option>
                   <option value="UNPAID">Unpaid Leave</option>
@@ -76,22 +76,22 @@ export function CreateLeaveButton({ employees }: { employees: Employee[] }) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Start Date *</label>
-                  <input name="startDate" type="date" required defaultValue={today} className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Start Date *</label>
+                  <input name="startDate" type="date" required defaultValue={today} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">End Date *</label>
-                  <input name="endDate" type="date" required defaultValue={today} className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">End Date *</label>
+                  <input name="endDate" type="date" required defaultValue={today} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Reason</label>
-                <textarea name="reason" rows={2} className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Reason</label>
+                <textarea name="reason" rows={2} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 rounded-lg border border-slate-600 bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 transition-colors">Cancel</button>
+                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors">Cancel</button>
                 <button type="submit" disabled={isLoading} className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors disabled:opacity-50">{isLoading ? 'Submitting...' : 'Submit Request'}</button>
               </div>
             </form>

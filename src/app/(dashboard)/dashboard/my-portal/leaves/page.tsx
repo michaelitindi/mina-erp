@@ -66,7 +66,7 @@ export default function LeavesPage() {
   }
   
   if (loading) {
-    return <div className="text-slate-400">Loading...</div>
+    return <div className="text-zinc-500">Loading...</div>
   }
   
   return (
@@ -78,7 +78,7 @@ export default function LeavesPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95"
         >
           <Plus className="h-4 w-4" />
           Request Leave
@@ -87,14 +87,14 @@ export default function LeavesPage() {
       
       {/* Submit Form */}
       {showForm && (
-        <div className="rounded-lg border border-slate-600 bg-slate-700/30 p-4 space-y-4">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4 shadow-xl backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">Leave Type</label>
+              <label className="block text-sm font-medium text-zinc-500 mb-1">Leave Type</label>
               <select
                 value={form.leaveType}
                 onChange={(e) => setForm({ ...form, leaveType: e.target.value as typeof form.leaveType })}
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               >
                 <option value="ANNUAL">Annual Leave</option>
                 <option value="SICK">Sick Leave</option>
@@ -106,32 +106,32 @@ export default function LeavesPage() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Start Date *</label>
+                <label className="block text-sm font-medium text-zinc-500 mb-1">Start Date *</label>
                 <input
                   type="date"
                   value={form.startDate}
                   onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                  className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">End Date *</label>
+                <label className="block text-sm font-medium text-zinc-500 mb-1">End Date *</label>
                 <input
                   type="date"
                   value={form.endDate}
                   onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                  className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Reason (optional)</label>
+            <label className="block text-sm font-medium text-zinc-500 mb-1">Reason (optional)</label>
             <textarea
               value={form.reason}
               onChange={(e) => setForm({ ...form, reason: e.target.value })}
               rows={2}
-              className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+              className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               placeholder="Brief reason for leave..."
             />
           </div>
@@ -139,13 +139,13 @@ export default function LeavesPage() {
             <button
               onClick={handleSubmit}
               disabled={saving}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 transition-all"
             >
               {saving ? 'Submitting...' : 'Submit Request'}
             </button>
             <button
               onClick={() => setShowForm(false)}
-              className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-500"
+              className="rounded-lg bg-zinc-800 px-6 py-2 text-sm font-bold text-zinc-400 hover:bg-zinc-700 hover:text-white transition-all"
             >
               Cancel
             </button>
@@ -155,29 +155,29 @@ export default function LeavesPage() {
       
       {/* List */}
       {leaves.length === 0 ? (
-        <div className="text-center py-8 text-slate-400">
-          <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
-          <p>No leave requests yet.</p>
+        <div className="text-center py-12 bg-zinc-900/30 rounded-xl border border-dashed border-zinc-800">
+          <Clock className="h-12 w-12 mx-auto mb-3 text-zinc-700 opacity-50" />
+          <p className="text-zinc-500">No leave requests yet.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {leaves.map((leave) => (
-            <div key={leave.id} className="flex items-center justify-between p-4 rounded-lg border border-slate-700 bg-slate-800/50">
+            <div key={leave.id} className="flex items-center justify-between p-4 rounded-xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900/80 transition-all group">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-white font-medium">{leave.leaveType.replace('_', ' ')} Leave</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[leave.status]}`}>
+                  <span className="text-white font-bold">{leave.leaveType.replace('_', ' ')} Leave</span>
+                  <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-current/20 ${statusColors[leave.status]}`}>
                     {leave.status}
                   </span>
                 </div>
-                <div className="text-sm text-slate-400">
+                <div className="text-xs text-zinc-500 font-medium">
                   {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
-                  <span className="mx-2">•</span>
-                  {leave.totalDays.toString()} day(s)
+                  <span className="mx-2 opacity-30">•</span>
+                  <span className="text-zinc-400">{leave.totalDays.toString()} day(s)</span>
                 </div>
-                {leave.reason && <div className="text-sm text-slate-500 mt-1">{leave.reason}</div>}
+                {leave.reason && <div className="text-sm text-zinc-600 mt-2 italic">&ldquo;{leave.reason}&rdquo;</div>}
               </div>
-              <div className="ml-4">
+              <div className="ml-4 p-2 rounded-lg bg-zinc-800/50 opacity-50 group-hover:opacity-100 transition-opacity">
                 {leave.status === 'APPROVED' && <CheckCircle className="h-5 w-5 text-green-400" />}
                 {leave.status === 'REJECTED' && <XCircle className="h-5 w-5 text-red-400" />}
                 {leave.status === 'PENDING' && <Clock className="h-5 w-5 text-yellow-400" />}

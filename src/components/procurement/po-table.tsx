@@ -22,7 +22,7 @@ export function POTable({ orders }: { orders: PurchaseOrder[] }) {
   const router = useRouter()
 
   const statusColors: Record<string, string> = {
-    DRAFT: 'text-slate-400 bg-slate-400/10',
+    DRAFT: 'text-zinc-500 bg-zinc-500/10',
     SENT: 'text-blue-400 bg-blue-400/10',
     CONFIRMED: 'text-purple-400 bg-purple-400/10',
     PARTIAL: 'text-yellow-400 bg-yellow-400/10',
@@ -46,47 +46,47 @@ export function POTable({ orders }: { orders: PurchaseOrder[] }) {
   }
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800/50 overflow-hidden">
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-slate-700 bg-slate-800">
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">PO #</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Vendor</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Date</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase">Total</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Status</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase">Actions</th>
+          <tr className="border-b border-zinc-800 bg-zinc-900">
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">PO #</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Vendor</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Date</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase">Total</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Status</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-700">
+        <tbody className="divide-y divide-zinc-800">
           {orders.map((po) => (
-            <tr key={po.id} className="hover:bg-slate-700/30 transition-colors">
+            <tr key={po.id} className="hover:bg-zinc-800/30 transition-colors">
               <td className="px-6 py-4">
                 <p className="text-sm font-medium text-white font-mono">{po.poNumber}</p>
-                <p className="text-xs text-slate-400">{po._count?.lineItems || 0} items</p>
+                <p className="text-xs text-zinc-500">{po._count?.lineItems || 0} items</p>
               </td>
-              <td className="px-6 py-4"><span className="text-sm text-slate-300">{po.vendor.companyName}</span></td>
-              <td className="px-6 py-4"><span className="text-sm text-slate-300">{new Date(po.orderDate).toLocaleDateString()}</span></td>
+              <td className="px-6 py-4"><span className="text-sm text-zinc-400">{po.vendor.companyName}</span></td>
+              <td className="px-6 py-4"><span className="text-sm text-zinc-400">{new Date(po.orderDate).toLocaleDateString()}</span></td>
               <td className="px-6 py-4 text-right"><span className="text-sm text-white font-mono">${getAmount(po.totalAmount).toLocaleString()}</span></td>
               <td className="px-6 py-4"><span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[po.status]}`}>{po.status}</span></td>
               <td className="px-6 py-4 text-right">
                 <div className="flex justify-end gap-1">
                   {po.status === 'DRAFT' && (
-                    <button onClick={() => handleStatusChange(po.id, 'SENT')} disabled={processingId === po.id} className="rounded-lg p-1.5 text-slate-400 hover:bg-blue-600/20 hover:text-blue-400 transition-colors disabled:opacity-50" title="Send to Vendor">
+                    <button onClick={() => handleStatusChange(po.id, 'SENT')} disabled={processingId === po.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-blue-600/20 hover:text-blue-400 transition-colors disabled:opacity-50" title="Send to Vendor">
                       <Send className="h-4 w-4" />
                     </button>
                   )}
                   {(po.status === 'SENT' || po.status === 'CONFIRMED') && (
-                    <button onClick={() => handleStatusChange(po.id, 'RECEIVED')} disabled={processingId === po.id} className="rounded-lg p-1.5 text-slate-400 hover:bg-green-600/20 hover:text-green-400 transition-colors disabled:opacity-50" title="Mark Received">
+                    <button onClick={() => handleStatusChange(po.id, 'RECEIVED')} disabled={processingId === po.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-green-600/20 hover:text-green-400 transition-colors disabled:opacity-50" title="Mark Received">
                       <CheckCircle className="h-4 w-4" />
                     </button>
                   )}
                   {po.status !== 'RECEIVED' && po.status !== 'CANCELLED' && (
-                    <button onClick={() => handleStatusChange(po.id, 'CANCELLED')} disabled={processingId === po.id} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Cancel">
+                    <button onClick={() => handleStatusChange(po.id, 'CANCELLED')} disabled={processingId === po.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Cancel">
                       <XCircle className="h-4 w-4" />
                     </button>
                   )}
-                  <button onClick={() => handleDelete(po.id)} disabled={processingId === po.id} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Delete">
+                  <button onClick={() => handleDelete(po.id)} disabled={processingId === po.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Delete">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>

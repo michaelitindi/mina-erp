@@ -51,7 +51,7 @@ function ProfileContent() {
   }
   
   if (!employee) {
-    return <div className="text-slate-400">Loading...</div>
+    return <div className="text-zinc-500">Loading...</div>
   }
   
   return (
@@ -78,33 +78,33 @@ function ProfileContent() {
         {/* Read-only fields */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Full Name</label>
+            <label className="block text-sm font-medium text-zinc-500 mb-1">Full Name</label>
             <div className="flex items-center gap-2 text-white">
-              <User className="h-4 w-4 text-slate-500" />
+              <User className="h-4 w-4 text-zinc-600" />
               {employee.firstName} {employee.lastName}
             </div>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Email</label>
+            <label className="block text-sm font-medium text-zinc-500 mb-1">Email</label>
             <div className="flex items-center gap-2 text-white">
-              <Mail className="h-4 w-4 text-slate-500" />
+              <Mail className="h-4 w-4 text-zinc-600" />
               {employee.email}
             </div>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Employee Number</label>
+            <label className="block text-sm font-medium text-zinc-500 mb-1">Employee Number</label>
             <div className="text-white">{employee.employeeNumber}</div>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Department</label>
+            <label className="block text-sm font-medium text-zinc-500 mb-1">Department</label>
             <div className="text-white">{employee.department || 'Not assigned'}</div>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Position</label>
+            <label className="block text-sm font-medium text-zinc-500 mb-1">Position</label>
             <div className="text-white">{employee.position}</div>
           </div>
         </div>
@@ -112,7 +112,7 @@ function ProfileContent() {
         {/* Editable fields */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">
+            <label className="block text-sm font-medium text-zinc-500 mb-1">
               <Phone className="h-4 w-4 inline mr-1" />
               Phone
             </label>
@@ -121,7 +121,7 @@ function ProfileContent() {
                 type="tel"
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white placeholder:text-slate-500"
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white placeholder:text-zinc-600"
                 placeholder="+1 234 567 890"
               />
             ) : (
@@ -130,7 +130,7 @@ function ProfileContent() {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">
+            <label className="block text-sm font-medium text-zinc-500 mb-1">
               <MapPin className="h-4 w-4 inline mr-1" />
               Address
             </label>
@@ -139,7 +139,7 @@ function ProfileContent() {
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
                 rows={2}
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white placeholder:text-slate-500"
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-white placeholder:text-zinc-600 focus:border-blue-500 focus:outline-none transition-all"
                 placeholder="Your address"
               />
             ) : (
@@ -147,7 +147,7 @@ function ProfileContent() {
             )}
           </div>
           
-          <div className="border-t border-slate-700 pt-4">
+          <div className="border-t border-zinc-800 pt-4">
             <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <Shield className="h-4 w-4" />
               Emergency Contact
@@ -155,13 +155,13 @@ function ProfileContent() {
             
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Name</label>
+                <label className="block text-sm font-medium text-zinc-500 mb-1">Name</label>
                 {isEditing ? (
                   <input
                     type="text"
                     value={form.emergencyContactName}
                     onChange={(e) => setForm({ ...form, emergencyContactName: e.target.value })}
-                    className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white placeholder:text-slate-500"
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white placeholder:text-zinc-600"
                     placeholder="Emergency contact name"
                   />
                 ) : (
@@ -170,13 +170,13 @@ function ProfileContent() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-400 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-zinc-500 mb-1">Phone</label>
                 {isEditing ? (
                   <input
                     type="tel"
                     value={form.emergencyContactPhone}
                     onChange={(e) => setForm({ ...form, emergencyContactPhone: e.target.value })}
-                    className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white placeholder:text-slate-500"
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white placeholder:text-zinc-600"
                     placeholder="Emergency contact phone"
                   />
                 ) : (

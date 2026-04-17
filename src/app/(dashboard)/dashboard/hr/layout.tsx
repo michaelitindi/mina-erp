@@ -12,7 +12,7 @@ export default async function HRLayout({
   return (
     <div className="space-y-0">
       <HRModuleNav />
-      <div className="p-6">
+      <div>
         {children}
       </div>
     </div>

@@ -76,7 +76,7 @@ export default function DependantsPage() {
   }
   
   if (loading) {
-    return <div className="text-slate-400">Loading...</div>
+    return <div className="text-zinc-500">Loading...</div>
   }
   
   return (
@@ -95,38 +95,38 @@ export default function DependantsPage() {
         </button>
       </div>
       
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-zinc-500">
         Add family members for benefits and tax purposes.
       </p>
       
       {/* Add Form */}
       {showForm && (
-        <div className="rounded-lg border border-slate-600 bg-slate-700/30 p-4 space-y-4">
+        <div className="rounded-lg border border-zinc-700 bg-zinc-800/30 p-4 space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">First Name *</label>
+              <label className="block text-sm font-medium text-zinc-500 mb-1">First Name *</label>
               <input
                 type="text"
                 value={form.firstName}
                 onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">Last Name *</label>
+              <label className="block text-sm font-medium text-zinc-500 mb-1">Last Name *</label>
               <input
                 type="text"
                 value={form.lastName}
                 onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">Relationship</label>
+              <label className="block text-sm font-medium text-zinc-500 mb-1">Relationship</label>
               <select
                 value={form.relationship}
                 onChange={(e) => setForm({ ...form, relationship: e.target.value as typeof form.relationship })}
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white"
               >
                 <option value="SPOUSE">Spouse</option>
                 <option value="CHILD">Child</option>
@@ -135,20 +135,20 @@ export default function DependantsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">Date of Birth</label>
+              <label className="block text-sm font-medium text-zinc-500 mb-1">Date of Birth</label>
               <input
                 type="date"
                 value={form.dateOfBirth}
                 onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">Gender</label>
+              <label className="block text-sm font-medium text-zinc-500 mb-1">Gender</label>
               <select
                 value={form.gender}
                 onChange={(e) => setForm({ ...form, gender: e.target.value as typeof form.gender })}
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white"
               >
                 <option value="">Not specified</option>
                 <option value="MALE">Male</option>
@@ -157,12 +157,12 @@ export default function DependantsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">Phone</label>
+              <label className="block text-sm font-medium text-zinc-500 mb-1">Phone</label>
               <input
                 type="tel"
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-3 py-2 text-white"
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-white"
               />
             </div>
           </div>
@@ -172,9 +172,9 @@ export default function DependantsPage() {
               id="emergency"
               checked={form.isEmergencyContact}
               onChange={(e) => setForm({ ...form, isEmergencyContact: e.target.checked })}
-              className="rounded border-slate-600"
+              className="rounded border-zinc-700"
             />
-            <label htmlFor="emergency" className="text-sm text-slate-300">Is emergency contact</label>
+            <label htmlFor="emergency" className="text-sm text-zinc-400">Is emergency contact</label>
           </div>
           <div className="flex gap-2">
             <button
@@ -186,7 +186,7 @@ export default function DependantsPage() {
             </button>
             <button
               onClick={() => setShowForm(false)}
-              className="rounded-lg bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-500"
+              className="rounded-lg bg-zinc-700 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-600"
             >
               Cancel
             </button>
@@ -196,14 +196,14 @@ export default function DependantsPage() {
       
       {/* List */}
       {dependants.length === 0 ? (
-        <div className="text-center py-8 text-slate-400">
+        <div className="text-center py-8 text-zinc-500">
           <User className="h-12 w-12 mx-auto mb-3 opacity-50" />
           <p>No dependants added yet.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {dependants.map((dep) => (
-            <div key={dep.id} className="flex items-center justify-between p-4 rounded-lg border border-slate-700 bg-slate-800/50">
+            <div key={dep.id} className="flex items-center justify-between p-4 rounded-lg border border-zinc-800 bg-zinc-900/50">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-white font-medium">{dep.firstName} {dep.lastName}</span>
@@ -217,7 +217,7 @@ export default function DependantsPage() {
                   )}
                 </div>
                 {dep.dateOfBirth && (
-                  <div className="text-sm text-slate-400">
+                  <div className="text-sm text-zinc-500">
                     Born: {new Date(dep.dateOfBirth).toLocaleDateString()}
                   </div>
                 )}

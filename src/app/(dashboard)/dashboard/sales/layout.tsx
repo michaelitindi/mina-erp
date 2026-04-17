@@ -12,7 +12,7 @@ export default async function SalesLayout({
   return (
     <div className="space-y-0">
       <SalesModuleNav />
-      <div className="p-6">
+      <div>
         {children}
       </div>
     </div>

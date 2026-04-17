@@ -11,7 +11,7 @@ export default async function POSLayout({
   return (
     <div className="space-y-0">
       <POSModuleNav />
-      <div className="p-6">
+      <div>
         {children}
       </div>
     </div>

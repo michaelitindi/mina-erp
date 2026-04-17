@@ -60,10 +60,10 @@ export function CreatePOButton({ vendors }: { vendors: Vendor[] }) {
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-3xl rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-3xl rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">Create Purchase Order</h2>
-              <button onClick={() => setIsOpen(false)} className="rounded-lg p-1 text-slate-400 hover:bg-slate-700 hover:text-white"><X className="h-5 w-5" /></button>
+              <button onClick={() => setIsOpen(false)} className="rounded-lg p-1 text-zinc-500 hover:bg-zinc-800 hover:text-white"><X className="h-5 w-5" /></button>
             </div>
 
             {error && <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">{error}</div>}
@@ -71,54 +71,54 @@ export function CreatePOButton({ vendors }: { vendors: Vendor[] }) {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Vendor *</label>
-                  <select name="vendorId" required className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Vendor *</label>
+                  <select name="vendorId" required className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
                     <option value="">Select...</option>
                     {vendors.map(v => <option key={v.id} value={v.id}>{v.companyName}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Order Date *</label>
-                  <input name="orderDate" type="date" required defaultValue={today} className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Order Date *</label>
+                  <input name="orderDate" type="date" required defaultValue={today} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Expected Date</label>
-                  <input name="expectedDate" type="date" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Expected Date</label>
+                  <input name="expectedDate" type="date" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-slate-300">Line Items</label>
+                  <label className="text-sm font-medium text-zinc-400">Line Items</label>
                   <button type="button" onClick={addLine} className="text-xs text-blue-400 hover:text-blue-300">+ Add Item</button>
                 </div>
                 <div className="space-y-2">
                   {lineItems.map((item, i) => (
                     <div key={i} className="grid grid-cols-12 gap-2 items-center">
-                      <input placeholder="Description" value={item.description} onChange={e => updateLine(i, 'description', e.target.value)} className="col-span-5 rounded-lg border border-slate-600 bg-slate-700 px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none" />
-                      <input placeholder="SKU" value={item.sku} onChange={e => updateLine(i, 'sku', e.target.value)} className="col-span-2 rounded-lg border border-slate-600 bg-slate-700 px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none" />
-                      <input type="number" min="1" placeholder="Qty" value={item.quantity} onChange={e => updateLine(i, 'quantity', parseFloat(e.target.value) || 0)} className="col-span-1 rounded-lg border border-slate-600 bg-slate-700 px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none" />
-                      <input type="number" min="0" step="0.01" placeholder="Price" value={item.unitPrice} onChange={e => updateLine(i, 'unitPrice', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-lg border border-slate-600 bg-slate-700 px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none" />
-                      <input type="number" min="0" max="100" placeholder="Tax%" value={item.taxRate} onChange={e => updateLine(i, 'taxRate', parseFloat(e.target.value) || 0)} className="col-span-1 rounded-lg border border-slate-600 bg-slate-700 px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none" />
-                      <button type="button" onClick={() => removeLine(i)} className="col-span-1 p-1.5 text-slate-400 hover:text-red-400"><Trash2 className="h-4 w-4" /></button>
+                      <input placeholder="Description" value={item.description} onChange={e => updateLine(i, 'description', e.target.value)} className="col-span-5 rounded-lg border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none" />
+                      <input placeholder="SKU" value={item.sku} onChange={e => updateLine(i, 'sku', e.target.value)} className="col-span-2 rounded-lg border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none" />
+                      <input type="number" min="1" placeholder="Qty" value={item.quantity} onChange={e => updateLine(i, 'quantity', parseFloat(e.target.value) || 0)} className="col-span-1 rounded-lg border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none" />
+                      <input type="number" min="0" step="0.01" placeholder="Price" value={item.unitPrice} onChange={e => updateLine(i, 'unitPrice', parseFloat(e.target.value) || 0)} className="col-span-2 rounded-lg border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none" />
+                      <input type="number" min="0" max="100" placeholder="Tax%" value={item.taxRate} onChange={e => updateLine(i, 'taxRate', parseFloat(e.target.value) || 0)} className="col-span-1 rounded-lg border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none" />
+                      <button type="button" onClick={() => removeLine(i)} className="col-span-1 p-1.5 text-zinc-500 hover:text-red-400"><Trash2 className="h-4 w-4" /></button>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium text-slate-300 mb-1">Shipping</label><input name="shippingAmount" type="number" min="0" step="0.01" defaultValue="0" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" /></div>
-                <div><label className="block text-sm font-medium text-slate-300 mb-1">Notes</label><input name="notes" className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" /></div>
+                <div><label className="block text-sm font-medium text-zinc-400 mb-1">Shipping</label><input name="shippingAmount" type="number" min="0" step="0.01" defaultValue="0" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" /></div>
+                <div><label className="block text-sm font-medium text-zinc-400 mb-1">Notes</label><input name="notes" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" /></div>
               </div>
 
-              <div className="flex justify-end gap-4 text-sm text-slate-300 bg-slate-700/50 p-3 rounded-lg">
+              <div className="flex justify-end gap-4 text-sm text-zinc-400 bg-zinc-800/50 p-3 rounded-lg">
                 <span>Subtotal: <strong className="text-white">${subtotal.toFixed(2)}</strong></span>
                 <span>Tax: <strong className="text-white">${taxTotal.toFixed(2)}</strong></span>
                 <span>Total: <strong className="text-green-400 text-lg">${(subtotal + taxTotal).toFixed(2)}</strong></span>
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 rounded-lg border border-slate-600 bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 transition-colors">Cancel</button>
+                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors">Cancel</button>
                 <button type="submit" disabled={isLoading} className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors disabled:opacity-50">{isLoading ? 'Creating...' : 'Create PO'}</button>
               </div>
             </form>
