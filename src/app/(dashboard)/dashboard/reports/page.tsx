@@ -112,47 +112,47 @@ export default async function ReportsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Financial Reports</h1>
-          <p className="text-slate-400">Overview of your financial performance</p>
+          <p className="text-zinc-500">Overview of your financial performance</p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-lg border border-slate-600 bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600 transition-colors">
+        <button className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-all shadow-sm">
           <Download className="h-4 w-4" />Export Report
         </button>
       </div>
 
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-green-500/10 p-3"><TrendingUp className="h-6 w-6 text-green-400" /></div>
             <div>
-              <p className="text-sm text-slate-400">Total Revenue</p>
+              <p className="text-sm text-zinc-500 font-medium">Total Revenue</p>
               <p className="text-2xl font-bold text-green-400">${data?.revenue.toLocaleString() || '0'}</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-red-500/10 p-3"><TrendingDown className="h-6 w-6 text-red-400" /></div>
             <div>
-              <p className="text-sm text-slate-400">Total Expenses</p>
+              <p className="text-sm text-zinc-500 font-medium">Total Expenses</p>
               <p className="text-2xl font-bold text-red-400">${data?.expenses.toLocaleString() || '0'}</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-blue-500/10 p-3"><DollarSign className="h-6 w-6 text-blue-400" /></div>
             <div>
-              <p className="text-sm text-slate-400">Net Profit</p>
+              <p className="text-sm text-zinc-500 font-medium">Net Profit</p>
               <p className={`text-2xl font-bold ${(data?.profit || 0) >= 0 ? 'text-blue-400' : 'text-red-400'}`}>${data?.profit.toLocaleString() || '0'}</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-5">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-purple-500/10 p-3"><PieChart className="h-6 w-6 text-purple-400" /></div>
             <div>
-              <p className="text-sm text-slate-400">Profit Margin</p>
+              <p className="text-sm text-zinc-500 font-medium">Profit Margin</p>
               <p className="text-2xl font-bold text-purple-400">{profitMargin}%</p>
             </div>
           </div>
@@ -162,21 +162,23 @@ export default async function ReportsPage() {
       {/* Reports Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Accounts Receivable */}
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="h-5 w-5 text-green-400" />
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-2 rounded-lg bg-green-500/10">
+              <BarChart3 className="h-5 w-5 text-green-400" />
+            </div>
             <h2 className="text-lg font-semibold text-white">Accounts Receivable</h2>
           </div>
           <div className="space-y-3">
             {data?.invoiceStats.map((stat) => (
-              <div key={stat.status} className="flex items-center justify-between p-3 rounded-lg bg-slate-700/30">
+              <div key={stat.status} className="flex items-center justify-between p-4 rounded-xl bg-zinc-950/50 border border-zinc-800/50 hover:border-zinc-700 transition-all">
                 <div className="flex items-center gap-3">
-                  <span className={`w-3 h-3 rounded-full ${stat.status === 'PAID' ? 'bg-green-400' : stat.status === 'SENT' ? 'bg-blue-400' : stat.status === 'OVERDUE' ? 'bg-red-400' : 'bg-slate-400'}`}></span>
-                  <span className="text-sm text-white capitalize">{stat.status.toLowerCase()}</span>
+                  <span className={`w-3 h-3 rounded-full ${stat.status === 'PAID' ? 'bg-green-400' : stat.status === 'SENT' ? 'bg-blue-400' : stat.status === 'OVERDUE' ? 'bg-red-400' : 'bg-zinc-500'}`}></span>
+                  <span className="text-sm font-medium text-zinc-200 capitalize">{stat.status.toLowerCase()}</span>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-white">${Number(stat._sum.totalAmount || 0).toLocaleString()}</p>
-                  <p className="text-xs text-slate-400">{stat._count} invoices</p>
+                  <p className="text-sm font-bold text-white">${Number(stat._sum.totalAmount || 0).toLocaleString()}</p>
+                  <p className="text-xs text-zinc-500">{stat._count} invoices</p>
                 </div>
               </div>
             ))}
@@ -184,21 +186,23 @@ export default async function ReportsPage() {
         </div>
 
         {/* Accounts Payable */}
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="h-5 w-5 text-red-400" />
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-2 rounded-lg bg-red-500/10">
+              <BarChart3 className="h-5 w-5 text-red-400" />
+            </div>
             <h2 className="text-lg font-semibold text-white">Accounts Payable</h2>
           </div>
           <div className="space-y-3">
             {data?.billStats.map((stat) => (
-              <div key={stat.status} className="flex items-center justify-between p-3 rounded-lg bg-slate-700/30">
+              <div key={stat.status} className="flex items-center justify-between p-4 rounded-xl bg-zinc-950/50 border border-zinc-800/50 hover:border-zinc-700 transition-all">
                 <div className="flex items-center gap-3">
-                  <span className={`w-3 h-3 rounded-full ${stat.status === 'PAID' ? 'bg-green-400' : stat.status === 'APPROVED' ? 'bg-blue-400' : stat.status === 'OVERDUE' ? 'bg-red-400' : 'bg-slate-400'}`}></span>
-                  <span className="text-sm text-white capitalize">{stat.status.toLowerCase()}</span>
+                  <span className={`w-3 h-3 rounded-full ${stat.status === 'PAID' ? 'bg-green-400' : stat.status === 'APPROVED' ? 'bg-blue-400' : stat.status === 'OVERDUE' ? 'bg-red-400' : 'bg-zinc-500'}`}></span>
+                  <span className="text-sm font-medium text-zinc-200 capitalize">{stat.status.toLowerCase()}</span>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-white">${Number(stat._sum.totalAmount || 0).toLocaleString()}</p>
-                  <p className="text-xs text-slate-400">{stat._count} bills</p>
+                  <p className="text-sm font-bold text-white">${Number(stat._sum.totalAmount || 0).toLocaleString()}</p>
+                  <p className="text-xs text-zinc-500">{stat._count} bills</p>
                 </div>
               </div>
             ))}
@@ -206,22 +210,26 @@ export default async function ReportsPage() {
         </div>
 
         {/* Top Customers */}
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <FileText className="h-5 w-5 text-blue-400" />
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-2 rounded-lg bg-blue-500/10">
+              <FileText className="h-5 w-5 text-blue-400" />
+            </div>
             <h2 className="text-lg font-semibold text-white">Top Customers by Revenue</h2>
           </div>
           <div className="space-y-3">
             {data?.topCustomers.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-4">No data yet</p>
+              <div className="text-center py-8 rounded-xl bg-zinc-950/50 border border-dashed border-zinc-800">
+                <p className="text-sm text-zinc-600">No data yet</p>
+              </div>
             ) : (
               data?.topCustomers.map((c, i) => (
-                <div key={c.customerId} className="flex items-center justify-between p-3 rounded-lg bg-slate-700/30">
+                <div key={c.customerId} className="flex items-center justify-between p-4 rounded-xl bg-zinc-950/50 border border-zinc-800/50 hover:border-zinc-700 transition-all">
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs font-medium text-blue-400">{i + 1}</span>
-                    <span className="text-sm text-white">{c.companyName}</span>
+                    <span className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-xs font-bold text-blue-400 border border-blue-500/20">{i + 1}</span>
+                    <span className="text-sm font-medium text-zinc-200">{c.companyName}</span>
                   </div>
-                  <span className="text-sm font-medium text-green-400">${Number(c._sum.totalAmount || 0).toLocaleString()}</span>
+                  <span className="text-sm font-bold text-green-400">${Number(c._sum.totalAmount || 0).toLocaleString()}</span>
                 </div>
               ))
             )}
@@ -229,22 +237,26 @@ export default async function ReportsPage() {
         </div>
 
         {/* Top Vendors */}
-        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <FileText className="h-5 w-5 text-orange-400" />
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-2 rounded-lg bg-orange-500/10">
+              <FileText className="h-5 w-5 text-orange-400" />
+            </div>
             <h2 className="text-lg font-semibold text-white">Top Vendors by Spending</h2>
           </div>
           <div className="space-y-3">
             {data?.topVendors.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-4">No data yet</p>
+              <div className="text-center py-8 rounded-xl bg-zinc-950/50 border border-dashed border-zinc-800">
+                <p className="text-sm text-zinc-600">No data yet</p>
+              </div>
             ) : (
               data?.topVendors.map((v, i) => (
-                <div key={v.vendorId} className="flex items-center justify-between p-3 rounded-lg bg-slate-700/30">
+                <div key={v.vendorId} className="flex items-center justify-between p-4 rounded-xl bg-zinc-950/50 border border-zinc-800/50 hover:border-zinc-700 transition-all">
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center text-xs font-medium text-orange-400">{i + 1}</span>
-                    <span className="text-sm text-white">{v.companyName}</span>
+                    <span className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-xs font-bold text-orange-400 border border-orange-500/20">{i + 1}</span>
+                    <span className="text-sm font-medium text-zinc-200">{v.companyName}</span>
                   </div>
-                  <span className="text-sm font-medium text-red-400">${Number(v._sum.totalAmount || 0).toLocaleString()}</span>
+                  <span className="text-sm font-bold text-red-400">${Number(v._sum.totalAmount || 0).toLocaleString()}</span>
                 </div>
               ))
             )}

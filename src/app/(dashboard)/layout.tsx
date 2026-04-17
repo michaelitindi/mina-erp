@@ -109,7 +109,7 @@ export default async function DashboardLayout({
       <Sidebar enabledModules={modulesToShow} userRole={orgRole} />
       <div className="ml-64">
         <Header />
-        <main className="min-h-[calc(100vh-4rem)] bg-zinc-950">
+        <main className="min-h-[calc(100vh-4rem)] bg-zinc-950 p-6">
           {children}
         </main>
       </div>
