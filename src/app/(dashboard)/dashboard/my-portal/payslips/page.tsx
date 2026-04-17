@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getMyPayslips } from '@/app/actions/self-service'
-import { Receipt, Download, DollarSign } from 'lucide-react'
+import { Receipt, Download, DollarSign, Calendar } from 'lucide-react'
 
 type Payslip = {
   id: string
