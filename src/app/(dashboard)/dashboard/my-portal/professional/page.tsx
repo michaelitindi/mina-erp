@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getMyEmployee, addCertification, deleteCertification } from '@/app/actions/self-service'
-import { GraduationCap, Plus, Trash2, Award, Calendar } from 'lucide-react'
+import { GraduationCap, Plus, Trash2, Award, Calendar, Clock } from 'lucide-react'
 
 type Certification = {
   id: string
