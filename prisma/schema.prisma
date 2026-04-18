@@ -67,6 +67,8 @@ model Organization {
   posTerminals   POSTerminal[]
   posSessions    POSSession[]
   posSales       POSSale[]
+  creditNotes    CreditNote[]
+  debitNotes     DebitNote[]
 
   @@index([clerkOrgId])
   @@index([status])
@@ -269,6 +271,10 @@ model Invoice {
   paidAmount     Decimal  @default(0) @db.Decimal(15, 2)
   status         String   @default("DRAFT") // DRAFT, SENT, PAID, OVERDUE, VOID
   notes          String?
+  kraControlNumber String? // eTIMS Control Number
+  kraQrCode      String?  // eTIMS QR Code Data
+  isEtimsValidated Boolean @default(false)
+  etimsValidatedAt DateTime?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   createdBy      String
@@ -280,6 +286,7 @@ model Invoice {
   customer     Customer          @relation(fields: [customerId], references: [id])
   lineItems    InvoiceLineItem[]
   payments     Payment[]         @relation("InvoicePayments")
+  creditNotes  CreditNote[]
 
   @@unique([organizationId, invoiceNumber])
   @@index([organizationId])
@@ -287,6 +294,28 @@ model Invoice {
   @@index([status])
   @@index([dueDate])
   @@index([deletedAt])
+}
+
+// Credit Note - Formal reversal of an Invoice
+model CreditNote {
+  id             String   @id @default(cuid())
+  organizationId String
+  cnNumber       String   // CN-000001
+  invoiceId      String
+  cnDate         DateTime @default(now())
+  amount         Decimal  @db.Decimal(15, 2)
+  reason         String?
+  status         String   @default("POSTED") // DRAFT, POSTED, VOID
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id])
+
+  @@unique([organizationId, cnNumber])
+  @@index([organizationId])
+  @@index([invoiceId])
 }
 
 model InvoiceLineItem {
@@ -325,16 +354,40 @@ model Bill {
   deletedBy      String?
 
   organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  vendor       Vendor         @relation(fields: [vendorId], references: [id])
+  vendor       Vendor         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   lineItems    BillLineItem[]
   payments     Payment[]      @relation("BillPayments")
+  debitNotes   DebitNote[]
 
   @@unique([organizationId, billNumber])
   @@index([organizationId])
   @@index([vendorId])
   @@index([status])
   @@index([deletedAt])
-}
+  }
+
+  // Debit Note - Formal reversal of a Bill
+  model DebitNote {
+  id             String   @id @default(cuid())
+  organizationId String
+  dnNumber       String   // DN-000001
+  billId         String
+  dnDate         DateTime @default(now())
+  amount         Decimal  @db.Decimal(15, 2)
+  reason         String?
+  status         String   @default("POSTED") // DRAFT, POSTED, VOID
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  bill         Bill         @relation(fields: [billId], references: [id])
+
+  @@unique([organizationId, dnNumber])
+  @@index([organizationId])
+  @@index([billId])
+  }
+
 
 model BillLineItem {
   id          String  @id @default(cuid())
@@ -1009,6 +1062,9 @@ model Product {
   name           String
   description    String?
   category       String?
+  hsCode         String?  // KRA HS Code for eTIMS
+  taxCategory    String   @default("A") // A=16%, B=8%, C=0%, E=Exempt, D=Non-VAT
+  etimsSynced    Boolean  @default(false)
   type           String   @default("PHYSICAL") // PHYSICAL, SERVICE, DIGITAL
   unit           String   @default("EACH") // EACH, KG, LB, L, M, etc.
   costPrice      Decimal  @default(0) @db.Decimal(15, 2)

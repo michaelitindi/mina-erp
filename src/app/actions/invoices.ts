@@ -136,26 +136,47 @@ export async function createInvoice(input: CreateInvoiceInput) {
 
   const totalAmount = subtotal + taxAmount
 
-  const invoice = await prisma.invoice.create({
-    data: {
-      invoiceNumber,
-      customerId: validated.customerId,
-      invoiceDate: validated.invoiceDate,
-      dueDate: validated.dueDate,
-      subtotal: new Decimal(subtotal),
-      taxAmount: new Decimal(taxAmount),
-      totalAmount: new Decimal(totalAmount),
-      notes: validated.notes,
-      organizationId: orgId,
-      createdBy: userId,
-      lineItems: {
-        create: lineItemsWithAmount
+  const invoice = await prisma.$transaction(async (tx) => {
+    const newInvoice = await tx.invoice.create({
+      data: {
+        invoiceNumber,
+        customerId: validated.customerId,
+        invoiceDate: validated.invoiceDate,
+        dueDate: validated.dueDate,
+        subtotal: new Decimal(subtotal),
+        taxAmount: new Decimal(taxAmount),
+        totalAmount: new Decimal(totalAmount),
+        notes: validated.notes,
+        organizationId: orgId,
+        createdBy: userId,
+        lineItems: {
+          create: lineItemsWithAmount
+        }
+      },
+      include: {
+        lineItems: true,
+        customer: true,
       }
-    },
-    include: {
-      lineItems: true,
-      customer: true,
-    }
+    })
+
+    // Post to General Ledger
+    await postToLedger(tx, {
+      organizationId: orgId,
+      transactionDate: validated.invoiceDate,
+      description: `Invoice ${invoiceNumber} - ${newInvoice.customer.companyName}`,
+      referenceNumber: invoiceNumber,
+      userId,
+      entries: [
+        { accountNumber: '1100', debit: totalAmount, description: 'Accounts Receivable' },
+        { accountNumber: '4000', credit: subtotal, description: 'Sales Revenue' },
+        ...(taxAmount > 0 ? [{ accountNumber: '2100', credit: taxAmount, description: 'Tax Payable (Accrued)' }] : [])
+      ]
+    })
+
+    // Validate with eTIMS (Kenya Compliance)
+    await validateWithEtims(newInvoice.id)
+
+    return newInvoice
   })
 
   await logAudit({

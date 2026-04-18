@@ -145,6 +145,43 @@ export async function createPayment(input: CreatePaymentInput) {
       }
     }
 
+    // Post to General Ledger
+    if (validated.invoiceId) {
+      const invoice = await tx.invoice.findUnique({
+        where: { id: validated.invoiceId },
+        include: { customer: { select: { companyName: true } } }
+      })
+      
+      await postToLedger(tx, {
+        organizationId: orgId,
+        transactionDate: validated.paymentDate,
+        description: `Payment for Invoice ${invoice?.invoiceNumber} - ${invoice?.customer.companyName}`,
+        referenceNumber: validated.referenceNumber || paymentNumber,
+        userId,
+        entries: [
+          { accountNumber: '1010', debit: validated.amount, description: 'Checking Account (Receipt)' },
+          { accountNumber: '1100', credit: validated.amount, description: 'Accounts Receivable' }
+        ]
+      })
+    } else if (validated.billId) {
+      const bill = await tx.bill.findUnique({
+        where: { id: validated.billId },
+        include: { vendor: { select: { companyName: true } } }
+      })
+
+      await postToLedger(tx, {
+        organizationId: orgId,
+        transactionDate: validated.paymentDate,
+        description: `Payment for Bill ${bill?.billNumber} - ${bill?.vendor.companyName}`,
+        referenceNumber: validated.referenceNumber || paymentNumber,
+        userId,
+        entries: [
+          { accountNumber: '2000', debit: validated.amount, description: 'Accounts Payable' },
+          { accountNumber: '1010', credit: validated.amount, description: 'Checking Account (Payment)' }
+        ]
+      })
+    }
+
     return newPayment
   })
 

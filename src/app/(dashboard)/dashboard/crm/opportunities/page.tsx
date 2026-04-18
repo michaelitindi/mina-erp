@@ -19,12 +19,15 @@ export default async function OpportunitiesPage() {
   const wonValue = wonOpps.reduce((sum, o) => sum + Number(o.amount), 0)
   const avgProbability = openOpps.length > 0 ? Math.round(openOpps.reduce((sum, o) => sum + o.probability, 0) / openOpps.length) : 0
 
+  const weightedTotal = pipeline.reduce((sum, s) => sum + s.weightedAmount, 0)
+  const rawTotal = pipeline.reduce((sum, s) => sum + s.amount, 0)
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Opportunities</h1>
-          <p className="text-zinc-500">Manage your sales pipeline and deals</p>
+          <h1 className="text-2xl font-bold text-white">Sales Pipeline</h1>
+          <p className="text-zinc-500">Manage opportunities and sales forecasting</p>
         </div>
         <CreateOpportunityButton customers={customers} />
       </div>
@@ -38,27 +41,29 @@ export default async function OpportunitiesPage() {
         </div>
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-green-500/10 p-2"><DollarSign className="h-5 w-5 text-green-400" /></div>
-            <div><p className="text-sm text-zinc-500 font-medium">Pipeline Value</p><p className="text-2xl font-bold text-white">${totalValue.toLocaleString()}</p></div>
+            <div className="rounded-lg bg-emerald-500/10 p-2"><DollarSign className="h-5 w-5 text-emerald-400" /></div>
+            <div><p className="text-sm text-zinc-500 font-medium">Expected Value</p><p className="text-2xl font-bold text-emerald-400">${weightedTotal.toLocaleString()}</p></div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-zinc-500/10 p-2"><PieChart className="h-5 w-5 text-zinc-400" /></div>
+            <div><p className="text-sm text-zinc-500 font-medium">Pipeline Total</p><p className="text-2xl font-bold text-white">${rawTotal.toLocaleString()}</p></div>
           </div>
         </div>
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-purple-500/10 p-2"><TrendingUp className="h-5 w-5 text-purple-400" /></div>
-            <div><p className="text-sm text-zinc-500 font-medium">Avg. Probability</p><p className="text-2xl font-bold text-white">{avgProbability}%</p></div>
-          </div>
-        </div>
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-yellow-500/10 p-2"><Trophy className="h-5 w-5 text-yellow-400" /></div>
-            <div><p className="text-sm text-zinc-500 font-medium">Won This Period</p><p className="text-2xl font-bold text-white">${wonValue.toLocaleString()}</p></div>
+            <div><p className="text-sm text-zinc-500 font-medium">Avg. Confidence</p><p className="text-2xl font-bold text-white">{avgProbability}%</p></div>
           </div>
         </div>
       </div>
 
       {/* Pipeline Stages */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm backdrop-blur-sm">
-        <h2 className="text-lg font-semibold text-white mb-4">Pipeline Stages</h2>
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-6 shadow-sm backdrop-blur-sm overflow-hidden">
+        <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2 uppercase tracking-tight">
+          <BarChart3 className="h-5 w-5 text-blue-500" /> Sales Funnel
+        </h2>
         <div className="grid grid-cols-6 gap-3">
           {pipeline.map((stage) => {
             const stageColors: Record<string, string> = {
@@ -70,10 +75,16 @@ export default async function OpportunitiesPage() {
               CLOSED_LOST: 'border-red-500/20 bg-red-500/5 text-red-400',
             }
             return (
-              <div key={stage.stage} className={`rounded-lg border p-4 text-center transition-all hover:scale-105 shadow-sm ${stageColors[stage.stage]}`}>
-                <p className="text-[10px] uppercase tracking-widest font-black opacity-70">{stage.stage.replace('_', ' ')}</p>
-                <p className="text-2xl font-black text-white mt-1">{stage.count}</p>
-                <p className="text-xs font-bold opacity-80 mt-1">${stage.amount.toLocaleString()}</p>
+              <div key={stage.stage} className={`relative rounded-xl border p-4 transition-all hover:scale-105 shadow-sm group ${stageColors[stage.stage]}`}>
+                <p className="text-[10px] uppercase tracking-widest font-black opacity-60 mb-1">{stage.stage.replace('_', ' ')}</p>
+                <div className="flex items-end justify-between gap-1">
+                  <p className="text-2xl font-black text-white">{stage.count}</p>
+                  <p className="text-[10px] font-bold opacity-40 group-hover:opacity-100 transition-opacity">Deals</p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-current/10">
+                  <p className="text-xs font-black text-white">${stage.amount.toLocaleString()}</p>
+                  <p className="text-[9px] font-medium opacity-60 mt-0.5">Exp: ${stage.weightedAmount.toLocaleString()}</p>
+                </div>
               </div>
             )
           })}

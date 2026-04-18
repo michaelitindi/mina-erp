@@ -80,6 +80,8 @@ export async function createProduct(input: CreateProductInput) {
       costPrice: new Decimal(validated.costPrice),
       sellingPrice: new Decimal(validated.sellingPrice),
       taxRate: new Decimal(validated.taxRate),
+      hsCode: validated.hsCode,
+      taxCategory: validated.taxCategory,
       organizationId: orgId,
       createdBy: userId,
     }

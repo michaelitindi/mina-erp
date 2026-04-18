@@ -128,24 +128,28 @@ export async function deleteOpportunity(id: string) {
   return { success: true }
 }
 
-// Pipeline summary for dashboard
+// Pipeline summary for dashboard with weighted forecasting
 export async function getOpportunityPipeline() {
   const { orgId } = await getOrganization()
   
   const stages = ['PROSPECTING', 'QUALIFICATION', 'PROPOSAL', 'NEGOTIATION', 'CLOSED_WON', 'CLOSED_LOST']
-  const pipeline = await prisma.opportunity.groupBy({
-    by: ['stage'],
+  
+  // Fetch all active opportunities to calculate weighted values
+  const opportunities = await prisma.opportunity.findMany({
     where: { organizationId: orgId, deletedAt: null },
-    _count: true,
-    _sum: { amount: true }
+    select: { stage: true, amount: true, probability: true }
   })
 
   return stages.map(stage => {
-    const stageData = pipeline.find(p => p.stage === stage)
+    const stageOpps = opportunities.filter(o => o.stage === stage)
+    const totalAmount = stageOpps.reduce((sum, o) => sum + Number(o.amount), 0)
+    const weightedAmount = stageOpps.reduce((sum, o) => sum + (Number(o.amount) * (o.probability / 100)), 0)
+    
     return {
       stage,
-      count: stageData?._count || 0,
-      amount: Number(stageData?._sum.amount || 0)
+      count: stageOpps.length,
+      amount: totalAmount,
+      weightedAmount: weightedAmount
     }
   })
 }

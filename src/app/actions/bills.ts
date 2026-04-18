@@ -110,26 +110,44 @@ export async function createBill(input: CreateBillInput) {
 
   const totalAmount = subtotal + taxAmount
 
-  const bill = await prisma.bill.create({
-    data: {
-      billNumber,
-      vendorId: validated.vendorId,
-      billDate: validated.billDate,
-      dueDate: validated.dueDate,
-      subtotal: new Decimal(subtotal),
-      taxAmount: new Decimal(taxAmount),
-      totalAmount: new Decimal(totalAmount),
-      notes: validated.notes,
-      organizationId: orgId,
-      createdBy: userId,
-      lineItems: {
-        create: lineItemsWithAmount
+  const bill = await prisma.$transaction(async (tx) => {
+    const newBill = await tx.bill.create({
+      data: {
+        billNumber,
+        vendorId: validated.vendorId,
+        billDate: validated.billDate,
+        dueDate: validated.dueDate,
+        subtotal: new Decimal(subtotal),
+        taxAmount: new Decimal(taxAmount),
+        totalAmount: new Decimal(totalAmount),
+        notes: validated.notes,
+        organizationId: orgId,
+        createdBy: userId,
+        lineItems: {
+          create: lineItemsWithAmount
+        }
+      },
+      include: {
+        lineItems: true,
+        vendor: true,
       }
-    },
-    include: {
-      lineItems: true,
-      vendor: true,
-    }
+    })
+
+    // Post to General Ledger
+    await postToLedger(tx, {
+      organizationId: orgId,
+      transactionDate: validated.billDate,
+      description: `Bill ${billNumber} - ${newBill.vendor.companyName}`,
+      referenceNumber: billNumber,
+      userId,
+      entries: [
+        { accountNumber: '5900', debit: subtotal, description: 'Expense (Purchases)' },
+        ...(taxAmount > 0 ? [{ accountNumber: '2100', debit: taxAmount, description: 'Input Tax (Recoverable)' }] : []),
+        { accountNumber: '2000', credit: totalAmount, description: 'Accounts Payable' }
+      ]
+    })
+
+    return newBill
   })
 
   await logAudit({

@@ -125,12 +125,13 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right">
                 <div className="flex justify-end gap-1">
-                  <button
+                  <Link
+                    href={`/dashboard/finance/invoices/${invoice.id}`}
                     className="rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-700 hover:text-white transition-colors"
                     title="View"
                   >
                     <Eye className="h-4 w-4" />
-                  </button>
+                  </Link>
                   {invoice.status === 'DRAFT' && (
                     <button
                       onClick={() => handleStatusChange(invoice.id, 'SENT')}

@@ -1,6 +1,5 @@
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
 import { 
   DollarSign, 
   TrendingUp, 
@@ -9,124 +8,50 @@ import {
   BarChart3,
   FileText,
   Download,
+  Calendar,
+  ArrowLeft,
+  ArrowRight
 } from 'lucide-react'
-
-async function getReportData(clerkOrgId: string) {
-  const org = await prisma.organization.findUnique({ where: { clerkOrgId } })
-  if (!org) return null
-
-  const [
-    totalRevenue,
-    totalExpenses,
-    invoiceStats,
-    billStats,
-    topCustomers,
-    topVendors,
-    accountBalances,
-  ] = await Promise.all([
-    // Total revenue (paid invoices)
-    prisma.invoice.aggregate({
-      where: { organizationId: org.id, status: 'PAID', deletedAt: null },
-      _sum: { totalAmount: true }
-    }),
-    // Total expenses (paid bills)
-    prisma.bill.aggregate({
-      where: { organizationId: org.id, status: 'PAID', deletedAt: null },
-      _sum: { totalAmount: true }
-    }),
-    // Invoice stats
-    prisma.invoice.groupBy({
-      by: ['status'],
-      where: { organizationId: org.id, deletedAt: null },
-      _count: true,
-      _sum: { totalAmount: true }
-    }),
-    // Bill stats
-    prisma.bill.groupBy({
-      by: ['status'],
-      where: { organizationId: org.id, deletedAt: null },
-      _count: true,
-      _sum: { totalAmount: true }
-    }),
-    // Top customers by revenue
-    prisma.invoice.groupBy({
-      by: ['customerId'],
-      where: { organizationId: org.id, status: 'PAID', deletedAt: null },
-      _sum: { totalAmount: true },
-      orderBy: { _sum: { totalAmount: 'desc' } },
-      take: 5,
-    }),
-    // Top vendors by spending
-    prisma.bill.groupBy({
-      by: ['vendorId'],
-      where: { organizationId: org.id, status: 'PAID', deletedAt: null },
-      _sum: { totalAmount: true },
-      orderBy: { _sum: { totalAmount: 'desc' } },
-      take: 5,
-    }),
-    // Account balances by type
-    prisma.account.groupBy({
-      by: ['accountType'],
-      where: { organizationId: org.id, deletedAt: null },
-      _sum: { balance: true },
-    }),
-  ])
-
-  // Get customer and vendor details
-  const customerIds = topCustomers.map(c => c.customerId)
-  const vendorIds = topVendors.map(v => v.vendorId)
-  
-  const [customers, vendors] = await Promise.all([
-    prisma.customer.findMany({ where: { id: { in: customerIds } }, select: { id: true, companyName: true } }),
-    prisma.vendor.findMany({ where: { id: { in: vendorIds } }, select: { id: true, companyName: true } }),
-  ])
-
-  return {
-    revenue: Number(totalRevenue._sum.totalAmount || 0),
-    expenses: Number(totalExpenses._sum.totalAmount || 0),
-    profit: Number(totalRevenue._sum.totalAmount || 0) - Number(totalExpenses._sum.totalAmount || 0),
-    invoiceStats,
-    billStats,
-    topCustomers: topCustomers.map(c => ({
-      ...c,
-      companyName: customers.find(cust => cust.id === c.customerId)?.companyName || 'Unknown'
-    })),
-    topVendors: topVendors.map(v => ({
-      ...v,
-      companyName: vendors.find(vend => vend.id === v.vendorId)?.companyName || 'Unknown'
-    })),
-    accountBalances,
-  }
-}
+import { getProfitAndLoss, getBalanceSheet } from '@/app/actions/reports'
+import Link from 'next/link'
 
 export default async function ReportsPage() {
   const { orgId } = await auth()
   if (!orgId) redirect('/')
 
-  const data = await getReportData(orgId)
+  // Fetch real GL data for the current year-to-date
+  const now = new Date()
+  const startOfYear = new Date(now.getFullYear(), 0, 1)
+  
+  const [pnl, balanceSheet] = await Promise.all([
+    getProfitAndLoss(startOfYear, now),
+    getBalanceSheet(now)
+  ])
 
-  const profitMargin = data && data.revenue > 0 ? ((data.profit / data.revenue) * 100).toFixed(1) : '0'
+  const profitMargin = pnl.totalRevenue > 0 ? ((pnl.netIncome / pnl.totalRevenue) * 100).toFixed(1) : '0'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Financial Reports</h1>
-          <p className="text-zinc-500">Overview of your financial performance</p>
+          <h1 className="text-2xl font-bold text-white">Financial Center</h1>
+          <p className="text-zinc-500">Professional accounting reports from General Ledger</p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-all shadow-sm">
-          <Download className="h-4 w-4" />Export Report
-        </button>
+        <div className="flex gap-3">
+          <button className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-all shadow-sm">
+            <Download className="h-4 w-4" />Export GL
+          </button>
+        </div>
       </div>
 
-      {/* Key Metrics */}
+      {/* High-Level Overview */}
       <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-green-500/10 p-3"><TrendingUp className="h-6 w-6 text-green-400" /></div>
             <div>
-              <p className="text-sm text-zinc-500 font-medium">Total Revenue</p>
-              <p className="text-2xl font-bold text-green-400">${data?.revenue.toLocaleString() || '0'}</p>
+              <p className="text-sm text-zinc-500 font-medium">YTD Revenue</p>
+              <p className="text-2xl font-bold text-green-400">${pnl.totalRevenue.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -134,8 +59,8 @@ export default async function ReportsPage() {
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-red-500/10 p-3"><TrendingDown className="h-6 w-6 text-red-400" /></div>
             <div>
-              <p className="text-sm text-zinc-500 font-medium">Total Expenses</p>
-              <p className="text-2xl font-bold text-red-400">${data?.expenses.toLocaleString() || '0'}</p>
+              <p className="text-sm text-zinc-500 font-medium">YTD Expenses</p>
+              <p className="text-2xl font-bold text-red-400">${pnl.totalExpenses.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -143,8 +68,8 @@ export default async function ReportsPage() {
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-blue-500/10 p-3"><DollarSign className="h-6 w-6 text-blue-400" /></div>
             <div>
-              <p className="text-sm text-zinc-500 font-medium">Net Profit</p>
-              <p className={`text-2xl font-bold ${(data?.profit || 0) >= 0 ? 'text-blue-400' : 'text-red-400'}`}>${data?.profit.toLocaleString() || '0'}</p>
+              <p className="text-sm text-zinc-500 font-medium">Net Income</p>
+              <p className={`text-2xl font-bold ${pnl.netIncome >= 0 ? 'text-blue-400' : 'text-red-400'}`}>${pnl.netIncome.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -159,107 +84,124 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      {/* Reports Grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Accounts Receivable */}
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 rounded-lg bg-green-500/10">
-              <BarChart3 className="h-5 w-5 text-green-400" />
+      <div className="grid gap-8 lg:grid-cols-2">
+        {/* Profit & Loss Statement */}
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/30 overflow-hidden shadow-xl">
+          <div className="border-b border-zinc-800 bg-zinc-900/50 p-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-500/10"><BarChart3 className="h-5 w-5 text-blue-400" /></div>
+              <h2 className="text-lg font-bold text-white uppercase tracking-tight">Profit & Loss</h2>
             </div>
-            <h2 className="text-lg font-semibold text-white">Accounts Receivable</h2>
+            <span className="text-xs font-black bg-zinc-800 text-zinc-400 px-2 py-1 rounded">YTD</span>
           </div>
-          <div className="space-y-3">
-            {data?.invoiceStats.map((stat) => (
-              <div key={stat.status} className="flex items-center justify-between p-4 rounded-xl bg-zinc-950/50 border border-zinc-800/50 hover:border-zinc-700 transition-all">
-                <div className="flex items-center gap-3">
-                  <span className={`w-3 h-3 rounded-full ${stat.status === 'PAID' ? 'bg-green-400' : stat.status === 'SENT' ? 'bg-blue-400' : stat.status === 'OVERDUE' ? 'bg-red-400' : 'bg-zinc-500'}`}></span>
-                  <span className="text-sm font-medium text-zinc-200 capitalize">{stat.status.toLowerCase()}</span>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-white">${Number(stat._sum.totalAmount || 0).toLocaleString()}</p>
-                  <p className="text-xs text-zinc-500">{stat._count} invoices</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Accounts Payable */}
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 rounded-lg bg-red-500/10">
-              <BarChart3 className="h-5 w-5 text-red-400" />
-            </div>
-            <h2 className="text-lg font-semibold text-white">Accounts Payable</h2>
-          </div>
-          <div className="space-y-3">
-            {data?.billStats.map((stat) => (
-              <div key={stat.status} className="flex items-center justify-between p-4 rounded-xl bg-zinc-950/50 border border-zinc-800/50 hover:border-zinc-700 transition-all">
-                <div className="flex items-center gap-3">
-                  <span className={`w-3 h-3 rounded-full ${stat.status === 'PAID' ? 'bg-green-400' : stat.status === 'APPROVED' ? 'bg-blue-400' : stat.status === 'OVERDUE' ? 'bg-red-400' : 'bg-zinc-500'}`}></span>
-                  <span className="text-sm font-medium text-zinc-200 capitalize">{stat.status.toLowerCase()}</span>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-white">${Number(stat._sum.totalAmount || 0).toLocaleString()}</p>
-                  <p className="text-xs text-zinc-500">{stat._count} bills</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Top Customers */}
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 rounded-lg bg-blue-500/10">
-              <FileText className="h-5 w-5 text-blue-400" />
-            </div>
-            <h2 className="text-lg font-semibold text-white">Top Customers by Revenue</h2>
-          </div>
-          <div className="space-y-3">
-            {data?.topCustomers.length === 0 ? (
-              <div className="text-center py-8 rounded-xl bg-zinc-950/50 border border-dashed border-zinc-800">
-                <p className="text-sm text-zinc-600">No data yet</p>
-              </div>
-            ) : (
-              data?.topCustomers.map((c, i) => (
-                <div key={c.customerId} className="flex items-center justify-between p-4 rounded-xl bg-zinc-950/50 border border-zinc-800/50 hover:border-zinc-700 transition-all">
-                  <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-xs font-bold text-blue-400 border border-blue-500/20">{i + 1}</span>
-                    <span className="text-sm font-medium text-zinc-200">{c.companyName}</span>
+          <div className="p-6 space-y-6">
+            {/* Revenue Section */}
+            <div>
+              <h3 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-3">Operating Revenue</h3>
+              <div className="space-y-2">
+                {pnl.revenue.map(line => (
+                  <div key={line.accountNumber} className="flex justify-between text-sm py-1 border-b border-zinc-800/50">
+                    <span className="text-zinc-300">{line.accountName}</span>
+                    <span className="text-white font-mono">${line.balance.toLocaleString()}</span>
                   </div>
-                  <span className="text-sm font-bold text-green-400">${Number(c._sum.totalAmount || 0).toLocaleString()}</span>
+                ))}
+                <div className="flex justify-between text-sm font-black pt-2 text-green-400">
+                  <span>Total Revenue</span>
+                  <span className="font-mono">${pnl.totalRevenue.toLocaleString()}</span>
                 </div>
-              ))
-            )}
+              </div>
+            </div>
+
+            {/* Expenses Section */}
+            <div>
+              <h3 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-3">Operating Expenses</h3>
+              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                {pnl.expenses.map(line => (
+                  <div key={line.accountNumber} className="flex justify-between text-sm py-1 border-b border-zinc-800/50">
+                    <span className="text-zinc-400">{line.accountName}</span>
+                    <span className="text-zinc-200 font-mono">${line.balance.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between text-sm font-black pt-4 text-red-400 border-t border-zinc-800 mt-2">
+                <span>Total Expenses</span>
+                <span className="font-mono">${pnl.totalExpenses.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t-2 border-zinc-800 flex justify-between items-center">
+              <span className="text-lg font-black text-white">Net Income</span>
+              <span className={`text-2xl font-black font-mono ${pnl.netIncome >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
+                ${pnl.netIncome.toLocaleString()}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Top Vendors */}
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 rounded-lg bg-orange-500/10">
-              <FileText className="h-5 w-5 text-orange-400" />
+        {/* Balance Sheet */}
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/30 overflow-hidden shadow-xl">
+          <div className="border-b border-zinc-800 bg-zinc-900/50 p-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-500/10"><FileText className="h-5 w-5 text-purple-400" /></div>
+              <h2 className="text-lg font-bold text-white uppercase tracking-tight">Balance Sheet</h2>
             </div>
-            <h2 className="text-lg font-semibold text-white">Top Vendors by Spending</h2>
+            <span className="text-xs font-black bg-zinc-800 text-zinc-400 px-2 py-1 rounded">As of Today</span>
           </div>
-          <div className="space-y-3">
-            {data?.topVendors.length === 0 ? (
-              <div className="text-center py-8 rounded-xl bg-zinc-950/50 border border-dashed border-zinc-800">
-                <p className="text-sm text-zinc-600">No data yet</p>
-              </div>
-            ) : (
-              data?.topVendors.map((v, i) => (
-                <div key={v.vendorId} className="flex items-center justify-between p-4 rounded-xl bg-zinc-950/50 border border-zinc-800/50 hover:border-zinc-700 transition-all">
-                  <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-xs font-bold text-orange-400 border border-orange-500/20">{i + 1}</span>
-                    <span className="text-sm font-medium text-zinc-200">{v.companyName}</span>
+          <div className="p-6 space-y-6">
+            {/* Assets */}
+            <div>
+              <h3 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-3">Assets</h3>
+              <div className="space-y-2">
+                {balanceSheet.assets.map(line => (
+                  <div key={line.accountNumber} className="flex justify-between text-sm py-1 border-b border-zinc-800/50">
+                    <span className="text-zinc-300">{line.accountName}</span>
+                    <span className="text-white font-mono">${line.balance.toLocaleString()}</span>
                   </div>
-                  <span className="text-sm font-bold text-red-400">${Number(v._sum.totalAmount || 0).toLocaleString()}</span>
+                ))}
+                <div className="flex justify-between text-sm font-black pt-2 text-blue-400">
+                  <span>Total Assets</span>
+                  <span className="font-mono">${balanceSheet.totalAssets.toLocaleString()}</span>
                 </div>
-              ))
-            )}
+              </div>
+            </div>
+
+            {/* Liabilities & Equity */}
+            <div>
+              <h3 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-3">Liabilities & Equity</h3>
+              <div className="space-y-2">
+                {balanceSheet.liabilities.map(line => (
+                  <div key={line.accountNumber} className="flex justify-between text-sm py-1 border-b border-zinc-800/50">
+                    <span className="text-zinc-400">{line.accountName}</span>
+                    <span className="text-zinc-200 font-mono">${line.balance.toLocaleString()}</span>
+                  </div>
+                ))}
+                {balanceSheet.equity.map(line => (
+                  <div key={line.accountNumber} className="flex justify-between text-sm py-1 border-b border-zinc-800/50">
+                    <span className="text-zinc-400">{line.accountName}</span>
+                    <span className="text-zinc-200 font-mono">${line.balance.toLocaleString()}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between text-sm font-black pt-2 text-purple-400 border-t border-zinc-800 mt-2">
+                  <span>Total Liabilities & Equity</span>
+                  <span className="font-mono">${(balanceSheet.totalLiabilities + balanceSheet.totalEquity).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Reconciliation Check */}
+            <div className="pt-4 border-t border-zinc-800 flex justify-center">
+              <div className={`text-[10px] font-black px-3 py-1 rounded-full flex items-center gap-2 ${
+                Math.abs(balanceSheet.totalAssets - (balanceSheet.totalLiabilities + balanceSheet.totalEquity)) < 1
+                ? 'bg-green-500/10 text-green-500'
+                : 'bg-red-500/10 text-red-500'
+              }`}>
+                {Math.abs(balanceSheet.totalAssets - (balanceSheet.totalLiabilities + balanceSheet.totalEquity)) < 1 ? (
+                  <>BOOKS BALANCED ✓</>
+                ) : (
+                  <>IMBALANCE DETECTED ⚠</>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
