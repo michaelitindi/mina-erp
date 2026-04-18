@@ -105,8 +105,16 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
-      <Sidebar enabledModules={modulesToShow} userRole={orgRole} />
+    <DashboardShell enabledModules={modulesToShow} userRole={orgRole}>
+      {children}
+    </DashboardShell>
+  )
+}
+
+
+
+
+>
       <div className="ml-64">
         <Header />
         <main className="min-h-[calc(100vh-4rem)] bg-zinc-950 p-6">

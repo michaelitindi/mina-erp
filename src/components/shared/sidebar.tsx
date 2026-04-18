@@ -42,9 +42,11 @@ const navigation = [
 interface SidebarProps {
   enabledModules?: string[]
   userRole?: string | null
+  isOpen?: boolean
+  onClose?: () => void
 }
 
-export function Sidebar({ enabledModules, userRole }: SidebarProps) {
+export function Sidebar({ enabledModules, userRole, isOpen, onClose }: SidebarProps) {
   const pathname = usePathname()
   const userIsAdmin = isAdmin(userRole)
 
@@ -64,60 +66,80 @@ export function Sidebar({ enabledModules, userRole }: SidebarProps) {
   const isMyPortalActive = pathname.startsWith('/dashboard/my-portal')
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-zinc-800 bg-zinc-950/50 backdrop-blur-xl">
-      <div className="flex h-full flex-col">
-        {/* Logo */}
-        <div className="flex h-16 items-center border-b border-zinc-800 px-6">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/20">
-              <span className="text-lg font-bold text-white">M</span>
-            </div>
-            <span className="text-xl font-semibold text-white">MinaERP</span>
-          </Link>
-        </div>
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-          {filteredNavigation.map((item) => {
-            // Check if current page is within this module's section
-            const isActive = pathname === item.href || 
-              (item.href !== '/dashboard' && pathname.startsWith(item.href.split('/').slice(0, 4).join('/')))
-            
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
-                  isActive
-                    ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20'
-                    : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white border border-transparent'
-                )}
-              >
-                <item.icon className="h-5 w-5" />
-                {item.name}
-              </Link>
-            )
-          })}
-        </nav>
-        
-        {/* My Portal - Always visible at bottom */}
-        <div className="border-t border-zinc-800 px-3 py-3">
-          <Link
-            href="/dashboard/my-portal"
-            className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
-              isMyPortalActive
-                ? 'bg-purple-600/10 text-purple-400 border border-purple-500/20'
-                : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white border border-transparent'
-            )}
-          >
-            <User2 className="h-5 w-5" />
-            My Portal
-          </Link>
+      {/* Sidebar */}
+      <aside className={cn(
+        "fixed left-0 top-0 z-40 h-screen w-64 border-r border-zinc-800 bg-zinc-950 transition-transform duration-300 lg:translate-x-0",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="flex h-full flex-col">
+          {/* Logo */}
+          <div className="flex h-16 items-center justify-between border-b border-zinc-800 px-6">
+            <Link href="/dashboard" className="flex items-center gap-2" onClick={onClose}>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/20">
+                <span className="text-lg font-bold text-white">M</span>
+              </div>
+              <span className="text-xl font-semibold text-white">MinaERP</span>
+            </Link>
+            {/* Mobile Close Button */}
+            <button onClick={onClose} className="lg:hidden p-2 text-zinc-500 hover:text-white transition-colors">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+            {filteredNavigation.map((item) => {
+              // Check if current page is within this module's section
+              const isActive = pathname === item.href || 
+                (item.href !== '/dashboard' && pathname.startsWith(item.href.split('/').slice(0, 4).join('/')))
+              
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+                    isActive
+                      ? 'bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-sm'
+                      : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white border border-transparent'
+                  )}
+                  onClick={onClose}
+                >
+                  <item.icon className="h-5 w-5" />
+                  {item.name}
+                </Link>
+              )
+            })}
+          </nav>
+          
+          {/* My Portal - Always visible at bottom */}
+          <div className="border-t border-zinc-800 px-3 py-3">
+            <Link
+              href="/dashboard/my-portal"
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+                isMyPortalActive
+                  ? 'bg-purple-600/10 text-purple-400 border border-purple-500/20'
+                  : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white border border-transparent'
+              )}
+              onClick={onClose}
+            >
+              <User2 className="h-5 w-5" />
+              My Portal
+            </Link>
+          </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   )
 }
 
