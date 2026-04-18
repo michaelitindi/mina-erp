@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { deleteInvoice, updateInvoiceStatus } from '@/app/actions/invoices'
 import { Trash2, Eye, Send, CheckCircle } from 'lucide-react'
 

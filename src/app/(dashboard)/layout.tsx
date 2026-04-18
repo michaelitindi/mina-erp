@@ -1,9 +1,9 @@
-import { Sidebar } from '@/components/shared/sidebar'
-import { Header } from '@/components/shared/header'
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/roles'
+import { DashboardShell } from '@/components/shared/dashboard-shell'
+import { Header } from '@/components/shared/header'
 
 async function getOrganizationData(clerkOrgId: string) {
   const org = await prisma.organization.findUnique({
@@ -105,23 +105,9 @@ export default async function DashboardLayout({
   }
 
   return (
-    <DashboardShell enabledModules={modulesToShow} userRole={orgRole}>
+    <DashboardShell enabledModules={modulesToShow} userRole={orgRole ?? null}>
       {children}
     </DashboardShell>
-  )
-}
-
-
-
-
->
-      <div className="ml-64">
-        <Header />
-        <main className="min-h-[calc(100vh-4rem)] bg-zinc-950 p-6">
-          {children}
-        </main>
-      </div>
-    </div>
   )
 }
 

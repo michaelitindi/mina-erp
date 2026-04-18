@@ -20,6 +20,7 @@ import {
   Cog,
   Store,
   User2,
+  X,
 } from 'lucide-react'
 
 const navigation = [

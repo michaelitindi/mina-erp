@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createProduct } from '@/app/actions/products'
-import { Plus, X } from 'lucide-react'
+import { Plus, X, Shield } from 'lucide-react'
 
 export function CreateProductButton() {
   const [isOpen, setIsOpen] = useState(false)

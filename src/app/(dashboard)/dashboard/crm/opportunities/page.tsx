@@ -2,7 +2,7 @@ import { getOpportunities, getOpportunityPipeline } from '@/app/actions/opportun
 import { getCustomers } from '@/app/actions/customers'
 import { OpportunitiesTable } from '@/components/crm/opportunities-table'
 import { CreateOpportunityButton } from '@/components/crm/opportunity-buttons'
-import { Target, DollarSign, TrendingUp, Trophy } from 'lucide-react'
+import { Target, DollarSign, TrendingUp, Trophy, BarChart3, PieChart } from 'lucide-react'
 
 export default async function OpportunitiesPage() {
   const [opportunities, pipeline, customersResult] = await Promise.all([

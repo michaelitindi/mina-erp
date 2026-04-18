@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
+import { postToLedger } from '@/lib/finance'
 
 const createPaymentSchema = z.object({
   paymentDate: z.coerce.date(),

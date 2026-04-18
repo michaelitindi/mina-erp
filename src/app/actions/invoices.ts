@@ -6,6 +6,8 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { createInvoiceSchema, type CreateInvoiceInput } from '@/lib/validations/finance'
 import { Decimal } from '@prisma/client/runtime/library'
+import { postToLedger } from '@/lib/finance'
+import { validateWithEtims } from '@/lib/etims'
 
 async function getOrganization() {
   const { userId, orgId } = await auth()
@@ -99,6 +101,7 @@ export async function getInvoice(id: string) {
       deletedAt: null,
     },
     include: {
+      organization: true,
       customer: true,
       lineItems: true,
       payments: {

@@ -20,6 +20,8 @@ const createProductSchema = z.object({
   reorderLevel: z.number().int().nonnegative().default(0),
   reorderQuantity: z.number().int().nonnegative().default(0),
   barcode: z.string().nullable().optional(),
+  hsCode: z.string().nullable().optional(),
+  taxCategory: z.enum(['A', 'B', 'C', 'D', 'E']).default('A'),
 })
 
 type CreateProductInput = z.input<typeof createProductSchema>
