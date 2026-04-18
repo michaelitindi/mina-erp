@@ -9,7 +9,7 @@ export default async function ProcurementLayout({
   await checkModuleAccess('PROCUREMENT')
   
   return (
-    <div className="space-y-0">
+    <div className="space-y-6">
       <ProcurementModuleNav />
       <div>
         {children}
