@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
+import { serializeDecimal } from '@/lib/utils'
 
 const createDeliverySchema = z.object({
   salesOrderId: z.string().min(1),
@@ -50,14 +51,14 @@ async function generateDeliveryNumber(orgId: string): Promise<string> {
 
 export async function getDeliveries() {
   const { orgId } = await getOrganization()
-  return prisma.delivery.findMany({
+  return serializeDecimal(await prisma.delivery.findMany({
     where: { organizationId: orgId, deletedAt: null },
     orderBy: { createdAt: 'desc' },
     include: { 
       salesOrder: { select: { orderNumber: true, customer: { select: { companyName: true } } } },
       _count: { select: { items: true } }
     }
-  })
+  }))
 }
 
 export async function createDelivery(input: CreateDeliveryInput) {
@@ -96,7 +97,7 @@ export async function createDelivery(input: CreateDeliveryInput) {
 
   await logAudit({ organizationId: orgId, userId, action: 'CREATE', entityType: 'Delivery', entityId: delivery.id, newValues: delivery as unknown as Record<string, unknown> })
   revalidatePath('/dashboard/sales/shipments')
-  return delivery
+  return serializeDecimal(delivery)
 }
 
 export async function updateDeliveryStatus(id: string, status: string) {
@@ -118,7 +119,7 @@ export async function updateDeliveryStatus(id: string, status: string) {
 
   await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'Delivery', entityId: delivery.id, oldValues: { status: existing.status }, newValues: { status: delivery.status } })
   revalidatePath('/dashboard/sales/shipments')
-  return delivery
+  return serializeDecimal(delivery)
 }
 
 export async function updateTracking(id: string, carrier: string, trackingNumber: string) {
@@ -133,7 +134,7 @@ export async function updateTracking(id: string, carrier: string, trackingNumber
 
   await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'Delivery', entityId: delivery.id, oldValues: { carrier: existing.carrier, trackingNumber: existing.trackingNumber }, newValues: { carrier, trackingNumber } })
   revalidatePath('/dashboard/sales/shipments')
-  return delivery
+  return serializeDecimal(delivery)
 }
 
 export async function deleteDelivery(id: string) {
@@ -157,5 +158,5 @@ export async function getDeliveryStats() {
     prisma.delivery.count({ where: { organizationId: orgId, status: 'DELIVERED', deletedAt: null } }),
   ])
 
-  return { total, pending, inTransit, delivered }
+  return serializeDecimal({ total, pending, inTransit, delivered })
 }

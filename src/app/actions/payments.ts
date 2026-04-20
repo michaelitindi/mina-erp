@@ -7,6 +7,7 @@ import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
 import { postToLedger } from '@/lib/finance'
+import { serializeDecimal } from '@/lib/utils'
 
 const createPaymentSchema = z.object({
   paymentDate: z.coerce.date(),
@@ -78,7 +79,7 @@ export async function getPayments() {
     }
   })
 
-  return payments
+  return serializeDecimal(payments)
 }
 
 export async function createPayment(input: CreatePaymentInput) {
@@ -198,7 +199,7 @@ export async function createPayment(input: CreatePaymentInput) {
   revalidatePath('/dashboard/finance/payments')
   revalidatePath('/dashboard/finance/invoices')
   revalidatePath('/dashboard/finance/bills')
-  return payment
+  return serializeDecimal(payment)
 }
 
 export async function deletePayment(id: string) {

@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
+import { serializeDecimal } from '@/lib/utils'
 
 const createLeadSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -20,7 +21,7 @@ const createLeadSchema = z.object({
   notes: z.string().nullable().optional(),
 })
 
-type CreateLeadInput = z.input<typeof createLeadSchema>
+type CreateLeadInput = z.infer<typeof createLeadSchema>
 
 async function getOrganization() {
   const { userId, orgId } = await auth()
@@ -48,19 +49,19 @@ async function generateLeadNumber(orgId: string): Promise<string> {
 
 export async function getLeads() {
   const { orgId } = await getOrganization()
-  return prisma.lead.findMany({
+  return serializeDecimal(await prisma.lead.findMany({
     where: { organizationId: orgId, deletedAt: null },
     orderBy: { createdAt: 'desc' },
     include: { _count: { select: { activities: true } } }
-  })
+  }))
 }
 
 export async function getLead(id: string) {
   const { orgId } = await getOrganization()
-  return prisma.lead.findFirst({
+  return serializeDecimal(await prisma.lead.findFirst({
     where: { id, organizationId: orgId, deletedAt: null },
     include: { activities: { where: { deletedAt: null }, orderBy: { createdAt: 'desc' }, take: 10 } }
-  })
+  }))
 }
 
 export async function createLead(input: CreateLeadInput) {
@@ -81,7 +82,7 @@ export async function createLead(input: CreateLeadInput) {
 
   await logAudit({ organizationId: orgId, userId, action: 'CREATE', entityType: 'Lead', entityId: lead.id, newValues: lead as unknown as Record<string, unknown> })
   revalidatePath('/dashboard/crm/leads')
-  return lead
+  return serializeDecimal(lead)
 }
 
 export async function updateLeadStatus(id: string, status: string) {
@@ -96,7 +97,7 @@ export async function updateLeadStatus(id: string, status: string) {
 
   await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'Lead', entityId: lead.id, oldValues: { status: existing.status }, newValues: { status: lead.status } })
   revalidatePath('/dashboard/crm/leads')
-  return lead
+  return serializeDecimal(lead)
 }
 
 export async function convertLeadToCustomer(leadId: string) {
@@ -140,7 +141,7 @@ export async function convertLeadToCustomer(leadId: string) {
   await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'Lead', entityId: leadId, oldValues: { status: lead.status }, newValues: { status: 'CONVERTED', convertedToCustomerId: result.customer.id } })
   revalidatePath('/dashboard/crm/leads')
   revalidatePath('/dashboard/crm/customers')
-  return result
+  return serializeDecimal(result)
 }
 
 export async function deleteLead(id: string) {

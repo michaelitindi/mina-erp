@@ -7,6 +7,7 @@ import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
 import { postToLedger } from '@/lib/finance'
+import { serializeDecimal } from '@/lib/utils'
 
 const billLineItemSchema = z.object({
   description: z.string().min(1),
@@ -83,7 +84,7 @@ export async function getBills() {
     }
   })
 
-  return bills
+  return serializeDecimal(bills)
 }
 
 export async function createBill(input: CreateBillInput) {
@@ -161,7 +162,7 @@ export async function createBill(input: CreateBillInput) {
   })
 
   revalidatePath('/dashboard/finance/bills')
-  return bill
+  return serializeDecimal(bill)
 }
 
 export async function updateBillStatus(id: string, status: string) {
@@ -194,7 +195,7 @@ export async function updateBillStatus(id: string, status: string) {
   })
 
   revalidatePath('/dashboard/finance/bills')
-  return bill
+  return serializeDecimal(bill)
 }
 
 export async function deleteBill(id: string) {

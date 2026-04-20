@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
+import { serializeDecimal } from '@/lib/utils'
 
 const createOpportunitySchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -46,25 +47,25 @@ async function generateOpportunityNumber(orgId: string): Promise<string> {
 
 export async function getOpportunities() {
   const { orgId } = await getOrganization()
-  return prisma.opportunity.findMany({
+  return serializeDecimal(await prisma.opportunity.findMany({
     where: { organizationId: orgId, deletedAt: null },
     orderBy: { createdAt: 'desc' },
     include: { 
       customer: { select: { companyName: true } },
       _count: { select: { activities: true } }
     }
-  })
+  }))
 }
 
 export async function getOpportunity(id: string) {
   const { orgId } = await getOrganization()
-  return prisma.opportunity.findFirst({
+  return serializeDecimal(await prisma.opportunity.findFirst({
     where: { id, organizationId: orgId, deletedAt: null },
     include: { 
       customer: true,
       activities: { where: { deletedAt: null }, orderBy: { createdAt: 'desc' }, take: 10 }
     }
-  })
+  }))
 }
 
 export async function createOpportunity(input: CreateOpportunityInput) {
@@ -91,7 +92,7 @@ export async function createOpportunity(input: CreateOpportunityInput) {
 
   await logAudit({ organizationId: orgId, userId, action: 'CREATE', entityType: 'Opportunity', entityId: opportunity.id, newValues: opportunity as unknown as Record<string, unknown> })
   revalidatePath('/dashboard/crm/opportunities')
-  return opportunity
+  return serializeDecimal(opportunity)
 }
 
 export async function updateOpportunityStage(id: string, stage: string, lostReason?: string) {
@@ -114,7 +115,7 @@ export async function updateOpportunityStage(id: string, stage: string, lostReas
 
   await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'Opportunity', entityId: opportunity.id, oldValues: { stage: existing.stage }, newValues: { stage: opportunity.stage } })
   revalidatePath('/dashboard/crm/opportunities')
-  return opportunity
+  return serializeDecimal(opportunity)
 }
 
 export async function deleteOpportunity(id: string) {
@@ -140,7 +141,7 @@ export async function getOpportunityPipeline() {
     select: { stage: true, amount: true, probability: true }
   })
 
-  return stages.map(stage => {
+  return serializeDecimal(stages.map(stage => {
     const stageOpps = opportunities.filter(o => o.stage === stage)
     const totalAmount = stageOpps.reduce((sum, o) => sum + Number(o.amount), 0)
     const weightedAmount = stageOpps.reduce((sum, o) => sum + (Number(o.amount) * (o.probability / 100)), 0)
@@ -151,5 +152,5 @@ export async function getOpportunityPipeline() {
       amount: totalAmount,
       weightedAmount: weightedAmount
     }
-  })
+  }))
 }

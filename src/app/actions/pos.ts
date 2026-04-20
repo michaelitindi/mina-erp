@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
 import { Decimal } from '@prisma/client/runtime/library'
+import { serializeDecimal } from '@/lib/utils'
 
 async function getOrganization() {
   const { userId, orgId } = await auth()
@@ -24,10 +25,10 @@ async function getOrganization() {
 export async function getTerminals() {
   const { orgId } = await getOrganization()
   
-  return prisma.pOSTerminal.findMany({
+  return serializeDecimal(await prisma.pOSTerminal.findMany({
     where: { organizationId: orgId },
     orderBy: { name: 'asc' },
-  })
+  }))
 }
 
 export async function createTerminal(data: {
@@ -45,7 +46,7 @@ export async function createTerminal(data: {
   })
   
   revalidatePath('/dashboard/pos')
-  return terminal
+  return serializeDecimal(terminal)
 }
 
 export async function updateTerminal(id: string, data: {
@@ -61,7 +62,7 @@ export async function updateTerminal(id: string, data: {
   })
   
   revalidatePath('/dashboard/pos')
-  return terminal
+  return serializeDecimal(terminal)
 }
 
 export async function deleteTerminal(id: string) {
@@ -81,14 +82,14 @@ export async function deleteTerminal(id: string) {
 export async function getActiveSession() {
   const { orgId, clerkUserId } = await getOrganization()
   
-  return prisma.pOSSession.findFirst({
+  return serializeDecimal(await prisma.pOSSession.findFirst({
     where: { 
       organizationId: orgId,
       cashierId: clerkUserId,
       status: 'OPEN',
     },
     include: { terminal: true },
-  })
+  }))
 }
 
 export async function getSessions(filters?: {
@@ -99,7 +100,7 @@ export async function getSessions(filters?: {
 }) {
   const { orgId } = await getOrganization()
   
-  return prisma.pOSSession.findMany({
+  return serializeDecimal(await prisma.pOSSession.findMany({
     where: { 
       organizationId: orgId,
       ...(filters?.terminalId && { terminalId: filters.terminalId }),
@@ -109,7 +110,7 @@ export async function getSessions(filters?: {
     },
     include: { terminal: true },
     orderBy: { openedAt: 'desc' },
-  })
+  }))
 }
 
 export async function openSession(data: {
@@ -151,7 +152,7 @@ export async function openSession(data: {
   })
   
   revalidatePath('/dashboard/pos')
-  return session
+  return serializeDecimal(session)
 }
 
 export async function closeSession(id: string, data: {
@@ -196,7 +197,7 @@ export async function closeSession(id: string, data: {
   })
   
   revalidatePath('/dashboard/pos')
-  return updated
+  return serializeDecimal(updated)
 }
 
 // ============================================
@@ -206,7 +207,7 @@ export async function closeSession(id: string, data: {
 export async function getSales(sessionId?: string) {
   const { orgId } = await getOrganization()
   
-  return prisma.pOSSale.findMany({
+  return serializeDecimal(await prisma.pOSSale.findMany({
     where: { 
       organizationId: orgId,
       ...(sessionId && { sessionId }),
@@ -218,13 +219,13 @@ export async function getSales(sessionId?: string) {
     },
     orderBy: { createdAt: 'desc' },
     take: 100,
-  })
+  }))
 }
 
 export async function getSaleById(id: string) {
   const { orgId } = await getOrganization()
   
-  return prisma.pOSSale.findUnique({
+  return serializeDecimal(await prisma.pOSSale.findUnique({
     where: { id, organizationId: orgId },
     include: {
       items: { include: { product: true } },
@@ -232,7 +233,7 @@ export async function getSaleById(id: string) {
       customer: true,
       session: { include: { terminal: true } },
     },
-  })
+  }))
 }
 
 async function generateSaleNumber(orgId: string): Promise<string> {
@@ -348,7 +349,7 @@ export async function createSale(data: {
   }
   
   revalidatePath('/dashboard/pos')
-  return sale
+  return serializeDecimal(sale)
 }
 
 export async function voidSale(id: string, reason?: string) {
@@ -396,7 +397,7 @@ export async function voidSale(id: string, reason?: string) {
   })
   
   revalidatePath('/dashboard/pos')
-  return updated
+  return serializeDecimal(updated)
 }
 
 // ============================================
@@ -406,7 +407,7 @@ export async function voidSale(id: string, reason?: string) {
 export async function getProductsForPOS(search?: string) {
   const { orgId } = await getOrganization()
   
-  return prisma.product.findMany({
+  return serializeDecimal(await prisma.product.findMany({
     where: { 
       organizationId: orgId,
       isActive: true,
@@ -431,7 +432,7 @@ export async function getProductsForPOS(search?: string) {
     },
     orderBy: { name: 'asc' },
     take: 50,
-  })
+  }))
 }
 
 // ============================================
@@ -469,11 +470,11 @@ export async function getDailySummary(date?: Date) {
     return acc
   }, {} as Record<string, number>)
   
-  return {
+  return serializeDecimal({
     date: targetDate.toISOString().split('T')[0],
     totalSales,
     totalTransactions,
     averageTransaction: totalTransactions > 0 ? totalSales / totalTransactions : 0,
     byPaymentMethod,
-  }
+  })
 }

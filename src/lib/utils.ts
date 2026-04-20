@@ -33,3 +33,34 @@ export function formatDateTime(date: Date | string): string {
 export function generateNumber(prefix: string, sequence: number): string {
   return `${prefix}-${String(sequence).padStart(6, '0')}`
 }
+
+/**
+ * Recursively converts Prisma Decimal objects to plain numbers for JSON serialization.
+ * Critical for passing server data to Next.js Client Components.
+ */
+export function serializeDecimal(obj: any): any {
+  if (obj === null || obj === undefined) return obj
+
+  // Handle Decimal objects
+  if (typeof obj === 'object' && obj.constructor?.name === 'Decimal') {
+    return Number(obj.toString())
+  }
+
+  // Handle Arrays
+  if (Array.isArray(obj)) {
+    return obj.map(serializeDecimal)
+  }
+
+  // Handle Objects
+  if (typeof obj === 'object' && !(obj instanceof Date)) {
+    const serialized: any = {}
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        serialized[key] = serializeDecimal(obj[key])
+      }
+    }
+    return serialized
+  }
+
+  return obj
+}

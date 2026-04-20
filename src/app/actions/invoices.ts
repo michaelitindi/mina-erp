@@ -8,6 +8,7 @@ import { createInvoiceSchema, type CreateInvoiceInput } from '@/lib/validations/
 import { Decimal } from '@prisma/client/runtime/library'
 import { postToLedger } from '@/lib/finance'
 import { validateWithEtims } from '@/lib/etims'
+import { serializeDecimal } from '@/lib/utils'
 
 async function getOrganization() {
   const { userId, orgId } = await auth()
@@ -80,7 +81,7 @@ export async function getInvoices(page: number = 1, limit: number = 50) {
     })
   ])
 
-  return {
+  return serializeDecimal({
     items: invoices,
     pagination: {
       page,
@@ -88,7 +89,7 @@ export async function getInvoices(page: number = 1, limit: number = 50) {
       total,
       pages: Math.ceil(total / take),
     }
-  }
+  })
 }
 
 export async function getInvoice(id: string) {
@@ -110,7 +111,7 @@ export async function getInvoice(id: string) {
     }
   })
 
-  return invoice
+  return serializeDecimal(invoice)
 }
 
 export async function createInvoice(input: CreateInvoiceInput) {
@@ -192,7 +193,7 @@ export async function createInvoice(input: CreateInvoiceInput) {
   })
 
   revalidatePath('/dashboard/finance/invoices')
-  return invoice
+  return serializeDecimal(invoice)
 }
 
 export async function updateInvoiceStatus(id: string, status: string) {
@@ -225,7 +226,7 @@ export async function updateInvoiceStatus(id: string, status: string) {
   })
 
   revalidatePath('/dashboard/finance/invoices')
-  return invoice
+  return serializeDecimal(invoice)
 }
 
 export async function deleteInvoice(id: string) {

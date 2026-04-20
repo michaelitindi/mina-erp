@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
+import { serializeDecimal } from '@/lib/utils'
 
 const lineItemSchema = z.object({
   description: z.string().min(1),
@@ -76,15 +77,15 @@ export async function getSalesOrders(page: number = 1, limit: number = 50) {
     })
   ])
 
-  return {
+  return serializeDecimal({
     items: orders,
     pagination: { page, limit: take, total, pages: Math.ceil(total / take) }
-  }
+  })
 }
 
 export async function getSalesOrder(id: string) {
   const { orgId } = await getOrganization()
-  return prisma.salesOrder.findFirst({
+  return serializeDecimal(await prisma.salesOrder.findFirst({
     where: { id, organizationId: orgId, deletedAt: null },
     include: { 
       customer: true,
@@ -92,7 +93,7 @@ export async function getSalesOrder(id: string) {
       deliveries: { where: { deletedAt: null } },
       returns: { where: { deletedAt: null } }
     }
-  })
+  }))
 }
 
 export async function createSalesOrder(input: CreateSalesOrderInput) {
@@ -150,7 +151,7 @@ export async function createSalesOrder(input: CreateSalesOrderInput) {
 
   await logAudit({ organizationId: orgId, userId, action: 'CREATE', entityType: 'SalesOrder', entityId: order.id, newValues: order as unknown as Record<string, unknown> })
   revalidatePath('/dashboard/sales/orders')
-  return order
+  return serializeDecimal(order)
 }
 
 export async function updateSalesOrderStatus(id: string, status: string) {
@@ -165,7 +166,7 @@ export async function updateSalesOrderStatus(id: string, status: string) {
 
   await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'SalesOrder', entityId: order.id, oldValues: { status: existing.status }, newValues: { status: order.status } })
   revalidatePath('/dashboard/sales/orders')
-  return order
+  return serializeDecimal(order)
 }
 
 export async function deleteSalesOrder(id: string) {
@@ -190,11 +191,11 @@ export async function getSalesOrderStats() {
     prisma.salesOrder.aggregate({ where: { organizationId: orgId, status: 'DELIVERED', deletedAt: null }, _sum: { totalAmount: true }, _count: true }),
   ])
 
-  return {
+  return serializeDecimal({
     total: { count: total._count, amount: Number(total._sum.totalAmount || 0) },
     draft: { count: draft._count, amount: Number(draft._sum.totalAmount || 0) },
     confirmed: { count: confirmed._count, amount: Number(confirmed._sum.totalAmount || 0) },
     shipped: { count: shipped._count, amount: Number(shipped._sum.totalAmount || 0) },
     delivered: { count: delivered._count, amount: Number(delivered._sum.totalAmount || 0) },
-  }
+  })
 }

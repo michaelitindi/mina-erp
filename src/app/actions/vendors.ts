@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { createVendorSchema, type CreateVendorInput } from '@/lib/validations/finance'
+import { serializeDecimal } from '@/lib/utils'
 
 async function getOrganization() {
   const { userId, orgId } = await auth()
@@ -74,10 +75,10 @@ export async function getVendors(page: number = 1, limit: number = 50) {
     })
   ])
 
-  return {
+  return serializeDecimal({
     items: vendors,
     pagination: { page, limit: take, total, pages: Math.ceil(total / take) }
-  }
+  })
 }
 
 export async function createVendor(input: CreateVendorInput) {
@@ -105,7 +106,7 @@ export async function createVendor(input: CreateVendorInput) {
   })
 
   revalidatePath('/dashboard/crm/vendors')
-  return vendor
+  return serializeDecimal(vendor)
 }
 
 export async function deleteVendor(id: string) {

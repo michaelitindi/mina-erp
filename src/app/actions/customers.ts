@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { createCustomerSchema, type CreateCustomerInput } from '@/lib/validations/finance'
+import { serializeDecimal } from '@/lib/utils'
 
 async function getOrganization() {
   const { userId, orgId } = await auth()
@@ -74,10 +75,10 @@ export async function getCustomers(page: number = 1, limit: number = 50) {
     })
   ])
 
-  return {
+  return serializeDecimal({
     items: customers,
     pagination: { page, limit: take, total, pages: Math.ceil(total / take) }
-  }
+  })
 }
 
 export async function getCustomer(id: string) {
@@ -98,7 +99,7 @@ export async function getCustomer(id: string) {
     }
   })
 
-  return customer
+  return serializeDecimal(customer)
 }
 
 export async function createCustomer(input: CreateCustomerInput) {
@@ -126,7 +127,7 @@ export async function createCustomer(input: CreateCustomerInput) {
   })
 
   revalidatePath('/dashboard/crm/customers')
-  return customer
+  return serializeDecimal(customer)
 }
 
 export async function deleteCustomer(id: string) {

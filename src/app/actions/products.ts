@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
+import { serializeDecimal } from '@/lib/utils'
 
 const createProductSchema = z.object({
   sku: z.string().min(1, 'SKU is required'),
@@ -58,18 +59,18 @@ export async function getProducts(page: number = 1, limit: number = 50) {
     })
   ])
 
-  return {
+  return serializeDecimal({
     items: products,
     pagination: { page, limit: take, total, pages: Math.ceil(total / take) }
-  }
+  })
 }
 
 export async function getProduct(id: string) {
   const { orgId } = await getOrganization()
-  return prisma.product.findFirst({
+  return serializeDecimal(await prisma.product.findFirst({
     where: { id, organizationId: orgId, deletedAt: null },
     include: { stockLevels: { include: { warehouse: true } }, stockMovements: { orderBy: { movementDate: 'desc' }, take: 20 } }
-  })
+  }))
 }
 
 export async function createProduct(input: CreateProductInput) {
@@ -91,7 +92,7 @@ export async function createProduct(input: CreateProductInput) {
 
   await logAudit({ organizationId: orgId, userId, action: 'CREATE', entityType: 'Product', entityId: product.id, newValues: product as unknown as Record<string, unknown> })
   revalidatePath('/dashboard/inventory/products')
-  return product
+  return serializeDecimal(product)
 }
 
 export async function updateProduct(id: string, input: Partial<CreateProductInput>) {
@@ -110,7 +111,7 @@ export async function updateProduct(id: string, input: Partial<CreateProductInpu
   const product = await prisma.product.update({ where: { id }, data: updateData })
   await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'Product', entityId: product.id, oldValues: existing as unknown as Record<string, unknown>, newValues: product as unknown as Record<string, unknown> })
   revalidatePath('/dashboard/inventory/products')
-  return product
+  return serializeDecimal(product)
 }
 
 export async function deleteProduct(id: string) {
@@ -138,7 +139,7 @@ export async function getProductStats() {
     ` as Promise<[{ count: bigint }]>,
   ])
 
-  return { total, active, lowStock: Number(lowStock[0]?.count || 0) }
+  return serializeDecimal({ total, active, lowStock: Number(lowStock[0]?.count || 0) })
 }
 
 // Get products that need reordering
@@ -170,5 +171,5 @@ export async function getLowStockAlerts() {
     .filter(p => p.isLow)
     .sort((a, b) => a.deficit - b.deficit) // Most critical first
 
-  return alerts
+  return serializeDecimal(alerts)
 }

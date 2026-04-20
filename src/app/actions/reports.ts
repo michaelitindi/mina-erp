@@ -3,6 +3,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { Decimal } from '@prisma/client/runtime/library'
+import { serializeDecimal } from '@/lib/utils'
 
 async function getOrganization() {
   const { userId, orgId } = await auth()
@@ -95,13 +96,13 @@ export async function getProfitAndLoss(startDate: Date, endDate: Date): Promise<
     }
   })
 
-  return {
+  return serializeDecimal({
     revenue,
     expenses,
     totalRevenue,
     totalExpenses,
     netIncome: totalRevenue - totalExpenses,
-  }
+  })
 }
 
 /**
@@ -147,14 +148,14 @@ export async function getBalanceSheet(asOfDate: Date): Promise<BalanceSheet | nu
     }
   })
 
-  return {
+  return serializeDecimal({
     assets,
     liabilities,
     equity,
     totalAssets,
     totalLiabilities,
     totalEquity,
-  }
+  })
 }
 
 export type VatSummaryLine = {
@@ -236,11 +237,11 @@ export async function getVat3Summary(startDate: Date, endDate: Date): Promise<Va
   const totalOutputTax = salesSummary.reduce((sum, s) => sum + s.taxAmount, 0)
   const totalInputTax = purchasesSummary.reduce((sum, p) => sum + p.taxAmount, 0)
 
-  return {
+  return serializeDecimal({
     sales: salesSummary,
     purchases: purchasesSummary,
     totalOutputTax,
     totalInputTax,
     netVatPayable: totalOutputTax - totalInputTax
-  }
+  })
 }

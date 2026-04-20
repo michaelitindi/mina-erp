@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
+import { serializeDecimal } from '@/lib/utils'
 
 const lineItemSchema = z.object({
   description: z.string().min(1),
@@ -52,14 +53,14 @@ async function generatePONumber(orgId: string): Promise<string> {
 
 export async function getPurchaseOrders() {
   const { orgId } = await getOrganization()
-  return prisma.purchaseOrder.findMany({
+  return serializeDecimal(await prisma.purchaseOrder.findMany({
     where: { organizationId: orgId, deletedAt: null },
     orderBy: { createdAt: 'desc' },
     include: { 
       vendor: { select: { companyName: true } },
       _count: { select: { lineItems: true, goodsReceipts: true } }
     }
-  })
+  }))
 }
 
 export async function createPurchaseOrder(input: CreatePOInput) {
@@ -106,7 +107,7 @@ export async function createPurchaseOrder(input: CreatePOInput) {
 
   await logAudit({ organizationId: orgId, userId, action: 'CREATE', entityType: 'PurchaseOrder', entityId: po.id, newValues: po as unknown as Record<string, unknown> })
   revalidatePath('/dashboard/procurement/purchase-orders')
-  return po
+  return serializeDecimal(po)
 }
 
 export async function updatePOStatus(id: string, status: string) {
@@ -121,7 +122,7 @@ export async function updatePOStatus(id: string, status: string) {
 
   await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'PurchaseOrder', entityId: po.id, oldValues: { status: existing.status }, newValues: { status: po.status } })
   revalidatePath('/dashboard/procurement/purchase-orders')
-  return po
+  return serializeDecimal(po)
 }
 
 export async function deletePurchaseOrder(id: string) {
@@ -145,10 +146,10 @@ export async function getPOStats() {
     prisma.purchaseOrder.count({ where: { organizationId: orgId, status: 'RECEIVED', deletedAt: null } }),
   ])
 
-  return {
+  return serializeDecimal({
     total: { count: total._count, amount: Number(total._sum.totalAmount || 0) },
     draft,
     sent,
     received,
-  }
+  })
 }

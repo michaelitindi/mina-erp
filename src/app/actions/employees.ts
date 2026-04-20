@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
+import { serializeDecimal } from '@/lib/utils'
 
 const createEmployeeSchema = z.object({
   firstName: z.string().min(1),
@@ -68,10 +69,10 @@ export async function getEmployees(page: number = 1, limit: number = 50) {
     })
   ])
 
-  return {
+  return serializeDecimal({
     items: employees,
     pagination: { page, limit: take, total, pages: Math.ceil(total / take) }
-  }
+  })
 }
 
 export async function createEmployee(input: CreateEmployeeInput) {
@@ -91,7 +92,7 @@ export async function createEmployee(input: CreateEmployeeInput) {
 
   await logAudit({ organizationId: orgId, userId, action: 'CREATE', entityType: 'Employee', entityId: employee.id, newValues: employee as unknown as Record<string, unknown> })
   revalidatePath('/dashboard/hr/employees')
-  return employee
+  return serializeDecimal(employee)
 }
 
 export async function updateEmployeeStatus(id: string, status: string) {
@@ -110,7 +111,7 @@ export async function updateEmployeeStatus(id: string, status: string) {
 
   await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'Employee', entityId: employee.id, oldValues: { status: existing.status }, newValues: { status: employee.status } })
   revalidatePath('/dashboard/hr/employees')
-  return employee
+  return serializeDecimal(employee)
 }
 
 export async function deleteEmployee(id: string) {
@@ -134,7 +135,7 @@ export async function getEmployeeStats() {
     prisma.employee.count({ where: { organizationId: orgId, employmentType: 'PART_TIME', status: 'ACTIVE', deletedAt: null } }),
   ])
 
-  return { total, active, fullTime, partTime }
+  return serializeDecimal({ total, active, fullTime, partTime })
 }
 
 // Leave Management
@@ -150,11 +151,11 @@ type CreateLeaveInput = z.input<typeof createLeaveSchema>
 
 export async function getLeaveRequests() {
   const { orgId } = await getOrganization()
-  return prisma.leaveRequest.findMany({
+  return serializeDecimal(await prisma.leaveRequest.findMany({
     where: { organizationId: orgId },
     orderBy: { createdAt: 'desc' },
     include: { employee: { select: { firstName: true, lastName: true, employeeNumber: true } } }
-  })
+  }))
 }
 
 export async function createLeaveRequest(input: CreateLeaveInput) {
@@ -177,7 +178,7 @@ export async function createLeaveRequest(input: CreateLeaveInput) {
 
   await logAudit({ organizationId: orgId, userId, action: 'CREATE', entityType: 'LeaveRequest', entityId: leave.id, newValues: leave as unknown as Record<string, unknown> })
   revalidatePath('/dashboard/hr/leave')
-  return leave
+  return serializeDecimal(leave)
 }
 
 export async function updateLeaveStatus(id: string, status: string, rejectionReason?: string) {
@@ -197,13 +198,13 @@ export async function updateLeaveStatus(id: string, status: string, rejectionRea
 
   await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'LeaveRequest', entityId: leave.id, oldValues: { status: existing.status }, newValues: { status: leave.status } })
   revalidatePath('/dashboard/hr/leave')
-  return leave
+  return serializeDecimal(leave)
 }
 
 // Employee Module Access Management
 export async function getEmployeeById(id: string) {
   const { orgId } = await getOrganization()
-  return prisma.employee.findFirst({
+  return serializeDecimal(await prisma.employee.findFirst({
     where: { id, organizationId: orgId, deletedAt: null },
     select: {
       id: true,
@@ -214,7 +215,7 @@ export async function getEmployeeById(id: string) {
       department: true,
       allowedModules: true,
     }
-  })
+  }))
 }
 
 export async function updateEmployeeModules(id: string, modules: string[]) {
@@ -244,4 +245,3 @@ export async function updateEmployeeModules(id: string, modules: string[]) {
   revalidatePath('/dashboard/hr/employees')
   return { success: true }
 }
-
