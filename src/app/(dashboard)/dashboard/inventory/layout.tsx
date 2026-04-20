@@ -9,7 +9,7 @@ export default async function InventoryLayout({
   await checkModuleAccess('INVENTORY')
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-0">
       <InventoryModuleNav />
       <div>
         {children}

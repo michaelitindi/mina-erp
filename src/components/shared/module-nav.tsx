@@ -20,7 +20,7 @@ export function ModuleNav({ moduleName, items }: ModuleNavProps) {
   const pathname = usePathname()
 
   return (
-    <div className="border-b border-zinc-800 bg-zinc-950/50 backdrop-blur-xl sticky top-16 z-20">
+    <div className="border-b border-zinc-800 bg-zinc-950/50 backdrop-blur-xl sticky top-16 z-20 -mx-4 md:-mx-6 -mt-4 md:-mt-6 mb-6">
       <div className="flex items-center gap-1 px-4 md:px-6 py-2 overflow-x-auto no-scrollbar">
         <span className="mr-4 text-xs md:text-sm font-bold uppercase tracking-wider text-zinc-500 whitespace-nowrap">{moduleName}</span>
         <nav className="flex items-center gap-1">

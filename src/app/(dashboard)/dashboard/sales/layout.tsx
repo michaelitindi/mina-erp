@@ -10,7 +10,7 @@ export default async function SalesLayout({
   await checkModuleAccess('SALES')
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-0">
       <SalesModuleNav />
       <div>
         {children}

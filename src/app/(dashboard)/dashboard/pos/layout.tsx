@@ -9,7 +9,7 @@ export default async function POSLayout({
   await checkModuleAccess('POS')
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-0">
       <POSModuleNav />
       <div>
         {children}

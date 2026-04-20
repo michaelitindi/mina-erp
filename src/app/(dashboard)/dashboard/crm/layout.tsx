@@ -10,7 +10,7 @@ export default async function CRMLayout({
   await checkModuleAccess('CRM')
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-0">
       <CRMModuleNav />
       <div>
         {children}
