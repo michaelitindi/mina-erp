@@ -1,9 +1,11 @@
 import { auth } from '@clerk/nextjs/server'
+import { OrganizationSwitcher } from '@clerk/nextjs'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/roles'
 import { DashboardShell } from '@/components/shared/dashboard-shell'
 import { Header } from '@/components/shared/header'
+import Link from 'next/link'
 
 async function getOrganizationData(clerkOrgId: string) {
   const org = await prisma.organization.findUnique({
