@@ -10,10 +10,13 @@ import {
   Download,
   Calendar,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  AlertCircle
 } from 'lucide-react'
 import { getProfitAndLoss, getBalanceSheet } from '@/app/actions/reports'
 import Link from 'next/link'
+
+export const dynamic = 'force-dynamic'
 
 export default async function ReportsPage() {
   const { orgId } = await auth()
@@ -27,6 +30,28 @@ export default async function ReportsPage() {
     getProfitAndLoss(startOfYear, now),
     getBalanceSheet(now)
   ])
+
+  // Handle case where organization is not yet set up or ledger is empty
+  if (!pnl || !balanceSheet) {
+    return (
+      <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 text-center">
+        <div className="p-4 rounded-full bg-blue-500/10 text-blue-400">
+          <BarChart3 className="h-12 w-12" />
+        </div>
+        <h2 className="text-xl font-bold text-white">No Financial Data Available</h2>
+        <p className="text-zinc-500 max-w-md mx-auto">
+          Start recording invoices and payments to generate professional accounting reports. 
+          Your General Ledger will automatically aggregate data as you operate.
+        </p>
+        <Link 
+          href="/dashboard/finance/invoices" 
+          className="mt-4 px-6 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all"
+        >
+          Create First Invoice
+        </Link>
+      </div>
+    )
+  }
 
   const profitMargin = pnl.totalRevenue > 0 ? ((pnl.netIncome / pnl.totalRevenue) * 100).toFixed(1) : '0'
 

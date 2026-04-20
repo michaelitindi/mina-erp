@@ -6,13 +6,13 @@ import { Decimal } from '@prisma/client/runtime/library'
 
 async function getOrganization() {
   const { userId, orgId } = await auth()
-  if (!userId || !orgId) throw new Error('Unauthorized')
+  if (!userId || !orgId) return null
 
   const org = await prisma.organization.findUnique({
     where: { clerkOrgId: orgId }
   })
 
-  if (!org) throw new Error('Organization not found')
+  if (!org) return null
   return { userId, orgId: org.id }
 }
 
@@ -42,8 +42,10 @@ export type BalanceSheet = {
 /**
  * Generates a Profit & Loss statement based on GL entries
  */
-export async function getProfitAndLoss(startDate: Date, endDate: Date): Promise<ProfitAndLoss> {
-  const { orgId } = await getOrganization()
+export async function getProfitAndLoss(startDate: Date, endDate: Date): Promise<ProfitAndLoss | null> {
+  const orgResult = await getOrganization()
+  if (!orgResult) return null
+  const { orgId } = orgResult
 
   // Find all revenue and expense accounts and their entries in the period
   const accounts = await prisma.account.findMany({
@@ -105,11 +107,11 @@ export async function getProfitAndLoss(startDate: Date, endDate: Date): Promise<
 /**
  * Generates a Balance Sheet based on account balances as of a date
  */
-export async function getBalanceSheet(asOfDate: Date): Promise<BalanceSheet> {
-  const { orgId } = await getOrganization()
+export async function getBalanceSheet(asOfDate: Date): Promise<BalanceSheet | null> {
+  const orgResult = await getOrganization()
+  if (!orgResult) return null
+  const { orgId } = orgResult
 
-  // For a basic balance sheet, we can use the account balances directly
-  // In a more advanced version, we'd sum all entries up to asOfDate
   const accounts = await prisma.account.findMany({
     where: {
       organizationId: orgId,
@@ -155,9 +157,6 @@ export async function getBalanceSheet(asOfDate: Date): Promise<BalanceSheet> {
   }
 }
 
-/**
- * Returns a basic summary of GL performance for the dashboard
- */
 export type VatSummaryLine = {
   category: string
   rate: number
@@ -176,8 +175,10 @@ export type Vat3Summary = {
 /**
  * Generates a VAT 3 summary for KRA returns
  */
-export async function getVat3Summary(startDate: Date, endDate: Date): Promise<Vat3Summary> {
-  const { orgId } = await getOrganization()
+export async function getVat3Summary(startDate: Date, endDate: Date): Promise<Vat3Summary | null> {
+  const orgResult = await getOrganization()
+  if (!orgResult) return null
+  const { orgId } = orgResult
 
   // 1. Get all posted invoices in period
   const invoices = await prisma.invoice.findMany({
@@ -201,7 +202,6 @@ export async function getVat3Summary(startDate: Date, endDate: Date): Promise<Va
     include: { lineItems: true }
   })
 
-  // Helper to group by tax rate
   const groupByTax = (items: any[]) => {
     const summary: Record<string, VatSummaryLine> = {}
     

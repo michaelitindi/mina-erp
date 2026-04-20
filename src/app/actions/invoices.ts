@@ -176,11 +176,11 @@ export async function createInvoice(input: CreateInvoiceInput) {
       ]
     })
 
-    // Validate with eTIMS (Kenya Compliance)
-    await validateWithEtims(newInvoice.id)
-
     return newInvoice
   })
+
+  // Validate with eTIMS (Kenya Compliance) - Outside the transaction
+  await validateWithEtims(invoice.id)
 
   await logAudit({
     organizationId: orgId,
