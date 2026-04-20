@@ -17,13 +17,14 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     COMPLETED: 'text-blue-400 bg-blue-400/10',
     CANCELLED: 'text-red-400 bg-red-400/10',
   }
+const stats = {
+  total: project.tasks.length,
+  todo: project.tasks.filter((t: any) => t.status === 'TODO').length,
+  inProgress: project.tasks.filter((t: any) => t.status === 'IN_PROGRESS').length,
+  review: project.tasks.filter((t: any) => t.status === 'REVIEW').length,
+  done: project.tasks.filter((t: any) => t.status === 'DONE').length,
+}
 
-  const tasksByStatus = {
-    todo: project.tasks.filter(t => t.status === 'TODO').length,
-    inProgress: project.tasks.filter(t => t.status === 'IN_PROGRESS').length,
-    review: project.tasks.filter(t => t.status === 'REVIEW').length,
-    done: project.tasks.filter(t => t.status === 'DONE').length,
-  }
 
   return (
     <div className="space-y-6">

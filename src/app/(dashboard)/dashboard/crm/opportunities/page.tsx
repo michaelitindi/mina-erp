@@ -13,14 +13,14 @@ export default async function OpportunitiesPage() {
 
   const customers = customersResult.items
 
-  const openOpps = opportunities.filter(o => !['CLOSED_WON', 'CLOSED_LOST'].includes(o.stage))
-  const wonOpps = opportunities.filter(o => o.stage === 'CLOSED_WON')
-  const totalValue = openOpps.reduce((sum, o) => sum + Number(o.amount), 0)
-  const wonValue = wonOpps.reduce((sum, o) => sum + Number(o.amount), 0)
-  const avgProbability = openOpps.length > 0 ? Math.round(openOpps.reduce((sum, o) => sum + o.probability, 0) / openOpps.length) : 0
+  const openOpps = opportunities.filter((o: any) => !['CLOSED_WON', 'CLOSED_LOST'].includes(o.stage))
+  const wonOpps = opportunities.filter((o: any) => o.stage === 'CLOSED_WON')
+  const totalValue = openOpps.reduce((sum: number, o: any) => sum + Number(o.amount), 0)
+  const wonValue = wonOpps.reduce((sum: number, o: any) => sum + Number(o.amount), 0)
+  const avgProbability = openOpps.length > 0 ? Math.round(openOpps.reduce((sum: number, o: any) => sum + o.probability, 0) / openOpps.length) : 0
 
-  const weightedTotal = pipeline.reduce((sum, s) => sum + s.weightedAmount, 0)
-  const rawTotal = pipeline.reduce((sum, s) => sum + s.amount, 0)
+  const weightedTotal = pipeline.reduce((sum: number, s: any) => sum + s.weightedAmount, 0)
+  const rawTotal = pipeline.reduce((sum: number, s: any) => sum + s.amount, 0)
 
   return (
     <div className="space-y-6">

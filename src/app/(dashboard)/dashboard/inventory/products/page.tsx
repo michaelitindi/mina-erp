@@ -11,10 +11,11 @@ export default async function ProductsPage() {
 
   const products = productsResult.items
 
-  const totalValue = products.reduce((sum, p) => {
-    const stockQty = p.stockLevels.reduce((s, sl) => s + Number(sl.quantity), 0)
-    return sum + (stockQty * Number(p.costPrice))
+  const totalValue = products.reduce((sum: number, p: any) => {
+    const stockQty = p.stockLevels.reduce((s: number, sl: any) => s + Number(sl.quantity), 0)
+    return sum + (stockQty * Number(p.costPrice || 0))
   }, 0)
+
 
   return (
     <div className="space-y-6">

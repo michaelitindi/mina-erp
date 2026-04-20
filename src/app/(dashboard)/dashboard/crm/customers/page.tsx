@@ -6,8 +6,8 @@ import { Users, Building2 } from 'lucide-react'
 export default async function CustomersPage() {
   const { items: customers, pagination } = await getCustomers()
 
-  const activeCustomers = customers.filter(c => c.status === 'ACTIVE')
-  const totalInvoices = customers.reduce((sum, c) => sum + (c._count?.invoices || 0), 0)
+  const activeCustomers = customers.filter((c: any) => c.status === 'ACTIVE')
+  const totalInvoices = customers.reduce((sum: number, c: any) => sum + (c._count?.invoices || 0), 0)
 
   return (
     <div className="space-y-6">

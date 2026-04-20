@@ -5,8 +5,8 @@ import Link from 'next/link'
 export default async function AlertsPage() {
   const alerts = await getLowStockAlerts()
 
-  const critical = alerts.filter(a => a.isCritical)
-  const low = alerts.filter(a => !a.isCritical)
+  const critical = alerts.filter((a: any) => a.isCritical)
+  const low = alerts.filter((a: any) => !a.isCritical)
 
   return (
     <div className="space-y-6">

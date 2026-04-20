@@ -6,13 +6,14 @@ import { FileText, Plus } from 'lucide-react'
 export default async function AccountsPage() {
   const accounts = await getAccounts()
 
-  const accountsByType = {
-    ASSET: accounts.filter(a => a.accountType === 'ASSET'),
-    LIABILITY: accounts.filter(a => a.accountType === 'LIABILITY'),
-    EQUITY: accounts.filter(a => a.accountType === 'EQUITY'),
-    REVENUE: accounts.filter(a => a.accountType === 'REVENUE'),
-    EXPENSE: accounts.filter(a => a.accountType === 'EXPENSE'),
+  const grouped = {
+    ASSET: accounts.filter((a: any) => a.accountType === 'ASSET'),
+    LIABILITY: accounts.filter((a: any) => a.accountType === 'LIABILITY'),
+    EQUITY: accounts.filter((a: any) => a.accountType === 'EQUITY'),
+    REVENUE: accounts.filter((a: any) => a.accountType === 'REVENUE'),
+    EXPENSE: accounts.filter((a: any) => a.accountType === 'EXPENSE'),
   }
+
 
   const typeColors = {
     ASSET: 'text-green-400 bg-green-400/10',
@@ -38,7 +39,7 @@ export default async function AccountsPage() {
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-5">
-        {Object.entries(accountsByType).map(([type, typeAccounts]) => (
+        {Object.entries(grouped).map(([type, typeAccounts]) => (
           <div
             key={type}
             className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700"

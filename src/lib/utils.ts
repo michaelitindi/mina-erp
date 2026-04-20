@@ -38,17 +38,17 @@ export function generateNumber(prefix: string, sequence: number): string {
  * Recursively converts Prisma Decimal objects to plain numbers for JSON serialization.
  * Critical for passing server data to Next.js Client Components.
  */
-export function serializeDecimal(obj: any): any {
+export function serializeDecimal<T>(obj: T): T {
   if (obj === null || obj === undefined) return obj
 
   // Handle Decimal objects
-  if (typeof obj === 'object' && obj.constructor?.name === 'Decimal') {
-    return Number(obj.toString())
+  if (typeof obj === 'object' && (obj as any).constructor?.name === 'Decimal') {
+    return Number(obj.toString()) as any
   }
 
   // Handle Arrays
   if (Array.isArray(obj)) {
-    return obj.map(serializeDecimal)
+    return obj.map(serializeDecimal) as any
   }
 
   // Handle Objects
@@ -56,10 +56,10 @@ export function serializeDecimal(obj: any): any {
     const serialized: any = {}
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        serialized[key] = serializeDecimal(obj[key])
+        serialized[key] = serializeDecimal((obj as any)[key])
       }
     }
-    return serialized
+    return serialized as T
   }
 
   return obj

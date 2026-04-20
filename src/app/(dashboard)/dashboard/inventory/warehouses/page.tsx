@@ -1,7 +1,7 @@
 import { getWarehouses } from '@/app/actions/warehouses'
 import { WarehousesTable } from '@/components/inventory/warehouses-table'
 import { CreateWarehouseButton } from '@/components/inventory/warehouse-buttons'
-import { Warehouse, MapPin } from 'lucide-react'
+import { Warehouse, MapPin, Package } from 'lucide-react'
 
 export default async function WarehousesPage() {
   const warehouses = await getWarehouses()
@@ -19,20 +19,35 @@ export default async function WarehousesPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-blue-500/10 p-2"><Warehouse className="h-5 w-5 text-blue-400" /></div>
-            <div><p className="text-sm text-zinc-500 font-medium">Total Warehouses</p><p className="text-2xl font-bold text-white">{warehouses.length}</p></div>
+            <div className="rounded-lg bg-blue-500/10 p-2">
+              <Warehouse className="h-5 w-5 text-blue-400" />
+            </div>
+            <div>
+              <p className="text-sm text-zinc-500 font-medium">Total Warehouses</p>
+              <p className="text-2xl font-bold text-white">{warehouses.length}</p>
+            </div>
           </div>
         </div>
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-green-500/10 p-2"><MapPin className="h-5 w-5 text-green-400" /></div>
-            <div><p className="text-sm text-zinc-500 font-medium">Active Locations</p><p className="text-2xl font-bold text-white">{warehouses.filter(w => w.isActive).length}</p></div>
+            <div className="rounded-lg bg-green-500/10 p-2">
+              <MapPin className="h-5 w-5 text-green-400" />
+            </div>
+            <div>
+              <p className="text-sm text-zinc-500 font-medium">Active Locations</p>
+              <p className="text-2xl font-bold text-white">{warehouses.filter((w: any) => w.isActive).length}</p>
+            </div>
           </div>
         </div>
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-purple-500/10 p-2"><Warehouse className="h-5 w-5 text-purple-400" /></div>
-            <div><p className="text-sm text-zinc-500 font-medium">Products Stored</p><p className="text-2xl font-bold text-white">{warehouses.reduce((sum, w) => sum + (w._count?.stockLevels || 0), 0)}</p></div>
+            <div className="rounded-lg bg-green-500/10 p-2">
+              <Package className="h-5 w-5 text-green-400" />
+            </div>
+            <div>
+              <p className="text-sm text-zinc-500 font-medium">Products Stored</p>
+              <p className="text-2xl font-bold text-white">{warehouses.reduce((sum: number, w: any) => sum + (w._count?.stockLevels || 0), 0)}</p>
+            </div>
           </div>
         </div>
       </div>

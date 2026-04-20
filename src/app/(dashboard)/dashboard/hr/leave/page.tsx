@@ -10,9 +10,9 @@ export default async function LeavePage() {
   ])
   const employees = employeesResult.items
 
-  const pending = leaves.filter(l => l.status === 'PENDING').length
-  const approved = leaves.filter(l => l.status === 'APPROVED').length
-  const rejected = leaves.filter(l => l.status === 'REJECTED').length
+  const pending = leaves.filter((l: any) => l.status === 'PENDING').length
+  const approved = leaves.filter((l: any) => l.status === 'APPROVED').length
+  const rejected = leaves.filter((l: any) => l.status === 'REJECTED').length
 
   return (
     <div className="space-y-6">

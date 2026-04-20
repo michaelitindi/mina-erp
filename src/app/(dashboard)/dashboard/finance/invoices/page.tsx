@@ -14,15 +14,16 @@ export default async function InvoicesPage() {
   const customers = customersResult.items
 
   const stats = {
-    total: invoicesResult.pagination.total,
-    draft: invoices.filter(i => i.status === 'DRAFT').length,
-    sent: invoices.filter(i => i.status === 'SENT').length,
-    paid: invoices.filter(i => i.status === 'PAID').length,
-    overdue: invoices.filter(i => i.status === 'OVERDUE').length,
-    totalAmount: invoices.reduce((sum, i) => sum + Number(i.totalAmount), 0),
-    paidAmount: invoices.filter(i => i.status === 'PAID').reduce((sum, i) => sum + Number(i.totalAmount), 0),
-    pendingAmount: invoices.filter(i => ['DRAFT', 'SENT', 'OVERDUE'].includes(i.status)).reduce((sum, i) => sum + Number(i.totalAmount), 0),
+    total: invoices.length,
+    draft: invoices.filter((i: any) => i.status === 'DRAFT').length,
+    sent: invoices.filter((i: any) => i.status === 'SENT').length,
+    paid: invoices.filter((i: any) => i.status === 'PAID').length,
+    overdue: invoices.filter((i: any) => i.status === 'OVERDUE').length,
+    totalAmount: invoices.reduce((sum: number, i: any) => sum + Number(i.totalAmount), 0),
+    paidAmount: invoices.filter((i: any) => i.status === 'PAID').reduce((sum: number, i: any) => sum + Number(i.totalAmount), 0),
+    pendingAmount: invoices.filter((i: any) => ['DRAFT', 'SENT', 'OVERDUE'].includes(i.status)).reduce((sum: number, i: any) => sum + Number(i.totalAmount), 0),
   }
+
 
   return (
     <div className="space-y-6">

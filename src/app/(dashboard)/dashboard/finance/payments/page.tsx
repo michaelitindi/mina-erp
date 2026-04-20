@@ -15,15 +15,15 @@ export default async function PaymentsPage() {
   const invoices = invoicesResult.items
 
   // Filter unpaid invoices and bills for the create payment modal
-  const unpaidInvoices = invoices.filter(i => i.status !== 'PAID' && i.status !== 'VOID')
-  const unpaidBills = bills.filter(b => b.status !== 'PAID' && b.status !== 'VOID')
+  const unpaidInvoices = invoices.filter((i: any) => i.status !== 'PAID' && i.status !== 'VOID')
+  const unpaidBills = bills.filter((b: any) => b.status !== 'PAID' && b.status !== 'VOID')
 
   const stats = {
     total: payments.length,
-    received: payments.filter(p => p.invoice).length,
-    made: payments.filter(p => p.bill).length,
-    totalReceived: payments.filter(p => p.invoice).reduce((sum, p) => sum + Number(p.amount), 0),
-    totalPaid: payments.filter(p => p.bill).reduce((sum, p) => sum + Number(p.amount), 0),
+    received: payments.filter((p: any) => p.invoice).length,
+    made: payments.filter((p: any) => p.bill).length,
+    totalReceived: payments.filter((p: any) => p.invoice).reduce((sum: number, p: any) => sum + Number(p.amount), 0),
+    totalPaid: payments.filter((p: any) => p.bill).reduce((sum: number, p: any) => sum + Number(p.amount), 0),
   }
 
   return (

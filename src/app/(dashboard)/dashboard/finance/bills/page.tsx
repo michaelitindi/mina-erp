@@ -10,12 +10,12 @@ export default async function BillsPage() {
 
   const stats = {
     total: bills.length,
-    draft: bills.filter(b => b.status === 'DRAFT').length,
-    approved: bills.filter(b => b.status === 'APPROVED').length,
-    paid: bills.filter(b => b.status === 'PAID').length,
-    totalAmount: bills.reduce((sum, b) => sum + Number(b.totalAmount), 0),
-    paidAmount: bills.filter(b => b.status === 'PAID').reduce((sum, b) => sum + Number(b.totalAmount), 0),
-    pendingAmount: bills.filter(b => ['DRAFT', 'APPROVED', 'OVERDUE'].includes(b.status)).reduce((sum, b) => sum + Number(b.totalAmount), 0),
+    draft: bills.filter((b: any) => b.status === 'DRAFT').length,
+    approved: bills.filter((b: any) => b.status === 'APPROVED').length,
+    paid: bills.filter((b: any) => b.status === 'PAID').length,
+    totalAmount: bills.reduce((sum: number, b: any) => sum + Number(b.totalAmount), 0),
+    paidAmount: bills.filter((b: any) => b.status === 'PAID').reduce((sum: number, b: any) => sum + Number(b.totalAmount), 0),
+    pendingAmount: bills.filter((b: any) => ['DRAFT', 'APPROVED', 'OVERDUE'].includes(b.status)).reduce((sum: number, b: any) => sum + Number(b.totalAmount), 0),
   }
 
   return (

@@ -8,10 +8,10 @@ export default async function LeadsPage() {
 
   const stats = {
     total: leads.length,
-    new: leads.filter(l => l.status === 'NEW').length,
-    qualified: leads.filter(l => l.status === 'QUALIFIED').length,
-    hot: leads.filter(l => l.rating === 'HOT').length,
-    totalValue: leads.reduce((sum, l) => sum + Number(l.estimatedValue || 0), 0),
+    new: leads.filter((l: any) => l.status === 'NEW').length,
+    qualified: leads.filter((l: any) => l.status === 'QUALIFIED').length,
+    hot: leads.filter((l: any) => l.rating === 'HOT').length,
+    totalValue: leads.reduce((sum: number, l: any) => sum + Number(l.estimatedValue || 0), 0),
   }
 
   return (
