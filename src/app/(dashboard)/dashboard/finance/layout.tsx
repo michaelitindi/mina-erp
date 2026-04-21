@@ -9,9 +9,9 @@ export default async function FinanceLayout({
   await checkModuleAccess('FINANCE')
   
   return (
-    <div className="space-y-0">
+    <div className="flex flex-col min-h-full">
       <FinanceModuleNav />
-      <div>
+      <div className="flex-1 p-4 md:p-6">
         {children}
       </div>
     </div>

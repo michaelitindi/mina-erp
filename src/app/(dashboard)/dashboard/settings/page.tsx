@@ -56,7 +56,7 @@ export default function SettingsPage() {
   ]
 
   return (
-    <div className="max-w-4xl space-y-8">
+    <div className="p-4 md:p-6 max-w-4xl space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-white">Settings</h1>
         <p className="text-zinc-500">Global configuration for your organization</p>

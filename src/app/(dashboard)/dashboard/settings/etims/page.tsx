@@ -60,7 +60,7 @@ export default function EtimsSettingsPage() {
   if (loading) return <div className="p-8 text-zinc-500">Loading KRA Configuration...</div>
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="p-4 md:p-6 max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Kenya Compliance (eTIMS)</h1>
         <p className="text-zinc-500">Configure your direct connection to the KRA Tax Invoice Management System</p>

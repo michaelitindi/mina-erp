@@ -10,9 +10,9 @@ export default async function CRMLayout({
   await checkModuleAccess('CRM')
   
   return (
-    <div className="space-y-0">
+    <div className="flex flex-col min-h-full">
       <CRMModuleNav />
-      <div>
+      <div className="flex-1 p-4 md:p-6">
         {children}
       </div>
     </div>

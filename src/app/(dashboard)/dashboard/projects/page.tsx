@@ -9,7 +9,7 @@ export default async function ProjectsPage() {
   const [projects, stats] = await Promise.all([getProjects(), getProjectStats()])
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Project Management</h1>
