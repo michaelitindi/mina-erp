@@ -45,7 +45,7 @@ async function generateOpportunityNumber(orgId: string): Promise<string> {
   return `OPP-${String(lastNum + 1).padStart(6, '0')}`
 }
 
-export async function getOpportunities() {
+export async function getOpportunities(): Promise<any[]> {
   const { orgId } = await getOrganization()
   return serializeDecimal(await prisma.opportunity.findMany({
     where: { organizationId: orgId, deletedAt: null },

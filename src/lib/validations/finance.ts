@@ -79,6 +79,7 @@ export const createVendorSchema = z.object({
   state: z.string().nullable().optional(),
   country: z.string().nullable().optional(),
   taxId: z.string().nullable().optional(),
+  pinNumber: z.string().nullable().optional().describe('KRA PIN for Kenya Compliance'),
   paymentTerms: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
 })

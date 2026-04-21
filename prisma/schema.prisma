@@ -784,6 +784,7 @@ model Lead {
   status         String    @default("NEW") // NEW, CONTACTED, QUALIFIED, UNQUALIFIED, CONVERTED
   rating         String?   // HOT, WARM, COLD
   industry       String?
+  pinNumber      String?   // KRA PIN for Kenya Compliance
   estimatedValue Decimal?  @db.Decimal(15, 2)
   notes          String?
   assignedTo     String?   // Clerk user ID

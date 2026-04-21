@@ -163,6 +163,17 @@ export function CreateCustomerButton() {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">
+                    KRA PIN (Kenya Compliance)
+                  </label>
+                  <input
+                    name="pinNumber"
+                    className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="P0XXXXXXXXX"
+                  />
+                </div>
+
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-zinc-400 mb-1">
                     Payment Terms

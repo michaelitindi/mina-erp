@@ -17,6 +17,7 @@ const createLeadSchema = z.object({
   source: z.enum(['WEBSITE', 'REFERRAL', 'COLD_CALL', 'EMAIL', 'TRADE_SHOW', 'OTHER']),
   rating: z.enum(['HOT', 'WARM', 'COLD']).nullable().optional(),
   industry: z.string().nullable().optional(),
+  pinNumber: z.string().nullable().optional().describe('KRA PIN for Kenya Compliance'),
   estimatedValue: z.number().nullable().optional(),
   notes: z.string().nullable().optional(),
 })
@@ -124,6 +125,7 @@ export async function convertLeadToCustomer(leadId: string) {
         contactPerson: `${lead.firstName} ${lead.lastName}`,
         email: lead.email,
         phone: lead.phone,
+        pinNumber: lead.pinNumber,
         customerType: lead.companyName ? 'BUSINESS' : 'INDIVIDUAL',
         organizationId: orgId,
         createdBy: userId,

@@ -2,135 +2,139 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { deleteOpportunity, updateOpportunityStage } from '@/app/actions/opportunities'
-import { Trash2, ArrowRight, Trophy, XCircle } from 'lucide-react'
+import { updateOpportunityStage, deleteOpportunity } from '@/app/actions/opportunities'
+import { Trash2, Target, TrendingUp, ChevronRight, ExternalLink } from 'lucide-react'
+import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
 interface Opportunity {
   id: string
   opportunityNumber: string
   name: string
-  stage: string
+  customerId: string
+  amount: number
   probability: number
-  amount: number | { toNumber: () => number }
-  expectedCloseDate: Date | null
+  stage: string
+  expectedCloseDate: Date | string | null
   customer: { companyName: string }
-  _count?: { activities: number }
 }
-
-const stageOrder = ['PROSPECTING', 'QUALIFICATION', 'PROPOSAL', 'NEGOTIATION', 'CLOSED_WON', 'CLOSED_LOST']
 
 export function OpportunitiesTable({ opportunities }: { opportunities: Opportunity[] }) {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const router = useRouter()
 
-  const getAmount = (amt: number | { toNumber: () => number }): number => typeof amt === 'number' ? amt : amt?.toNumber?.() || 0
+  const getAmount = (amt: number | { toNumber: () => number }): number => {
+    if (typeof amt === 'number') return amt
+    if (typeof amt.toNumber === 'function') return amt.toNumber()
+    return 0
+  }
 
   const stageColors: Record<string, string> = {
-    PROSPECTING: 'text-zinc-500 bg-zinc-500/10',
-    QUALIFICATION: 'text-blue-400 bg-blue-400/10',
-    PROPOSAL: 'text-purple-400 bg-purple-400/10',
-    NEGOTIATION: 'text-orange-400 bg-orange-400/10',
-    CLOSED_WON: 'text-green-400 bg-green-400/10',
-    CLOSED_LOST: 'text-red-400 bg-red-400/10',
+    PROSPECTING: 'text-blue-400 bg-blue-400/10 border-blue-500/20',
+    QUALIFICATION: 'text-cyan-400 bg-cyan-400/10 border-cyan-500/20',
+    PROPOSAL: 'text-indigo-400 bg-indigo-400/10 border-indigo-500/20',
+    NEGOTIATION: 'text-orange-400 bg-orange-400/10 border-orange-500/20',
+    CLOSED_WON: 'text-green-400 bg-green-400/10 border-green-500/20',
+    CLOSED_LOST: 'text-red-400 bg-red-400/10 border-red-500/20',
   }
 
-  async function handleAdvanceStage(id: string, currentStage: string) {
-    const currentIndex = stageOrder.indexOf(currentStage)
-    if (currentIndex < 0 || currentIndex >= 3) return // Can't advance past Negotiation
-    
-    const nextStage = stageOrder[currentIndex + 1]
+  async function handleStageChange(id: string, stage: string) {
     setProcessingId(id)
-    try { await updateOpportunityStage(id, nextStage); router.refresh() }
-    catch (err) { alert(err instanceof Error ? err.message : 'Failed to update') }
-    finally { setProcessingId(null) }
-  }
-
-  async function handleWin(id: string) {
-    if (!confirm('Mark this opportunity as Won?')) return
-    setProcessingId(id)
-    try { await updateOpportunityStage(id, 'CLOSED_WON'); router.refresh() }
-    catch (err) { alert(err instanceof Error ? err.message : 'Failed to update') }
-    finally { setProcessingId(null) }
-  }
-
-  async function handleLose(id: string) {
-    const reason = prompt('Reason for losing this opportunity?')
-    if (reason === null) return
-    setProcessingId(id)
-    try { await updateOpportunityStage(id, 'CLOSED_LOST', reason); router.refresh() }
-    catch (err) { alert(err instanceof Error ? err.message : 'Failed to update') }
-    finally { setProcessingId(null) }
+    try {
+      await updateOpportunityStage(id, stage)
+      router.refresh()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update')
+    } finally {
+      setProcessingId(null)
+    }
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this opportunity?')) return
     setProcessingId(id)
-    try { await deleteOpportunity(id); router.refresh() }
-    catch (err) { alert(err instanceof Error ? err.message : 'Failed to delete') }
-    finally { setProcessingId(null) }
+    try {
+      await deleteOpportunity(id)
+      router.refresh()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete')
+    } finally {
+      setProcessingId(null)
+    }
   }
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 overflow-hidden shadow-sm backdrop-blur-sm">
       <table className="w-full">
         <thead>
           <tr className="border-b border-zinc-800 bg-zinc-900">
-            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Opportunity</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Customer</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase">Amount</th>
-            <th className="px-6 py-3 text-center text-xs font-medium text-zinc-500 uppercase">Probability</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Expected Close</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase">Stage</th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase">Actions</th>
+            <th className="px-6 py-3 text-left text-[10px] font-black text-zinc-500 uppercase tracking-widest">Opportunity</th>
+            <th className="px-6 py-3 text-left text-[10px] font-black text-zinc-500 uppercase tracking-widest">Customer</th>
+            <th className="px-6 py-3 text-right text-[10px] font-black text-zinc-500 uppercase tracking-widest">Amount</th>
+            <th className="px-6 py-3 text-center text-[10px] font-black text-zinc-500 uppercase tracking-widest">Probability</th>
+            <th className="px-6 py-3 text-left text-[10px] font-black text-zinc-500 uppercase tracking-widest">Stage</th>
+            <th className="px-6 py-3 text-right text-[10px] font-black text-zinc-500 uppercase tracking-widest">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-800">
-          {opportunities.map((opp) => {
-            const isClosed = opp.stage.startsWith('CLOSED')
-            const canAdvance = !isClosed && stageOrder.indexOf(opp.stage) < 4
-            
-            return (
-              <tr key={opp.id} className="hover:bg-zinc-800/30 transition-colors">
-                <td className="px-6 py-4">
-                  <p className="text-sm font-medium text-white">{opp.name}</p>
-                  <p className="text-xs text-zinc-500 font-mono">{opp.opportunityNumber}</p>
-                </td>
-                <td className="px-6 py-4"><span className="text-sm text-zinc-400">{opp.customer.companyName}</span></td>
-                <td className="px-6 py-4 text-right"><span className="text-sm text-white font-mono">${getAmount(opp.amount).toLocaleString()}</span></td>
-                <td className="px-6 py-4 text-center">
-                  <span className={`text-sm font-medium ${opp.probability >= 70 ? 'text-green-400' : opp.probability >= 40 ? 'text-yellow-400' : 'text-zinc-500'}`}>{opp.probability}%</span>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="text-sm text-zinc-400">{opp.expectedCloseDate ? new Date(opp.expectedCloseDate).toLocaleDateString() : '—'}</span>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${stageColors[opp.stage]}`}>{opp.stage.replace('_', ' ')}</span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex justify-end gap-1">
-                    {canAdvance && (
-                      <button onClick={() => handleAdvanceStage(opp.id, opp.stage)} disabled={processingId === opp.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-blue-600/20 hover:text-blue-400 transition-colors disabled:opacity-50" title="Advance Stage">
-                        <ArrowRight className="h-4 w-4" />
-                      </button>
-                    )}
-                    {!isClosed && (
-                      <>
-                        <button onClick={() => handleWin(opp.id)} disabled={processingId === opp.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-green-600/20 hover:text-green-400 transition-colors disabled:opacity-50" title="Mark Won">
-                          <Trophy className="h-4 w-4" />
-                        </button>
-                        <button onClick={() => handleLose(opp.id)} disabled={processingId === opp.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Mark Lost">
-                          <XCircle className="h-4 w-4" />
-                        </button>
-                      </>
-                    )}
-                    <button onClick={() => handleDelete(opp.id)} disabled={processingId === opp.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Delete">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+          {opportunities.map((opp) => (
+            <tr key={opp.id} className="group hover:bg-zinc-800/30 transition-all duration-200">
+              <td className="px-6 py-4">
+                <Link href={`/dashboard/crm/opportunities/${opp.id}`} className="block group/link">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-bold text-white group-hover/link:text-blue-400 transition-colors leading-tight">
+                      {opp.name}
+                    </p>
+                    <ExternalLink className="h-3 w-3 text-zinc-600 opacity-0 group-hover/link:opacity-100 transition-opacity" />
                   </div>
-                </td>
-              </tr>
-            )
-          })}
+                  <p className="text-[10px] text-zinc-500 font-black uppercase tracking-widest mt-0.5">
+                    {opp.opportunityNumber}
+                  </p>
+                </Link>
+              </td>
+              <td className="px-6 py-4">
+                <Link href={`/dashboard/crm/customers/${opp.customerId}`} className="text-xs font-bold text-zinc-400 hover:text-white transition-colors">
+                  {opp.customer.companyName}
+                </Link>
+              </td>
+              <td className="px-6 py-4 text-right">
+                <span className="text-sm font-black text-white font-mono">
+                  ${getAmount(opp.amount).toLocaleString()}
+                </span>
+              </td>
+              <td className="px-6 py-4">
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-16 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-blue-500 transition-all duration-500" 
+                      style={{ width: `${opp.probability}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase">{opp.probability}%</span>
+                </div>
+              </td>
+              <td className="px-6 py-4">
+                <span className={cn(
+                  "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest border",
+                  stageColors[opp.stage]
+                )}>
+                  {opp.stage.replace('_', ' ')}
+                </span>
+              </td>
+              <td className="px-6 py-4 text-right">
+                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <button
+                    onClick={() => handleDelete(opp.id)}
+                    disabled={processingId === opp.id}
+                    className="rounded-lg p-2 text-zinc-500 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50"
+                    title="Delete Opportunity"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
