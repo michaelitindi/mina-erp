@@ -9,7 +9,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-zinc-800 bg-zinc-950/50 px-4 md:px-6 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 flex h-16 w-full flex-shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-950/50 px-4 md:px-6 backdrop-blur-xl">
       {/* Left side: Menu & Search */}
       <div className="flex items-center gap-4">
         {/* Mobile Menu Toggle */}
