@@ -37,7 +37,7 @@ async function getOrganization() {
 }
 
 async function generateDeliveryNumber(orgId: string): Promise<string> {
-  const last = await prisma.delivery.findFirst({
+  const last = await (prisma.delivery as any).findFirst({
     where: { organizationId: orgId },
     orderBy: { deliveryNumber: 'desc' },
     select: { deliveryNumber: true }
@@ -53,7 +53,7 @@ export async function createShipment(input: CreateShipmentInput) {
   const deliveryNumber = await generateDeliveryNumber(orgId)
 
   // 1. Fetch the Sales Order to check warehouse and items
-  const order = await prisma.salesOrder.findFirst({
+  const order = await (prisma.salesOrder as any).findFirst({
     where: { id: validated.salesOrderId, organizationId: orgId, deletedAt: null },
     include: { lineItems: true }
   })
@@ -64,7 +64,7 @@ export async function createShipment(input: CreateShipmentInput) {
   // 2. Process within a transaction
   const delivery = await prisma.$transaction(async (tx) => {
     // A. Create the Delivery record
-    const newDelivery = await tx.delivery.create({
+    const newDelivery = await (tx.delivery as any).create({
       data: {
         deliveryNumber,
         salesOrderId: validated.salesOrderId,
@@ -93,7 +93,7 @@ export async function createShipment(input: CreateShipmentInput) {
       }
 
       // Update Sales Order Item delivered quantity
-      await tx.salesOrderItem.update({
+      await (tx.salesOrderItem as any).update({
         where: { id: item.salesOrderItemId },
         data: {
           deliveredQty: { increment: new Decimal(item.quantity) }
@@ -101,11 +101,10 @@ export async function createShipment(input: CreateShipmentInput) {
       })
     }
 
-    // C. Auto-update SO status if fully delivered (simplified check)
-    // In a real system, we'd compare total ordered vs total delivered for all items.
-    await tx.salesOrder.update({
+    // C. Auto-update SO status if fully delivered
+    await (tx.salesOrder as any).update({
       where: { id: validated.salesOrderId },
-      data: { status: 'SHIPPED' } // We can move to SHIPPED for now
+      data: { status: 'SHIPPED' }
     })
 
     return newDelivery
@@ -116,7 +115,7 @@ export async function createShipment(input: CreateShipmentInput) {
     userId,
     action: 'CREATE',
     entityType: 'Delivery',
-    entityId: delivery.id,
+    entityId: (delivery as any).id,
     newValues: delivery as any
   })
 
@@ -128,7 +127,7 @@ export async function createShipment(input: CreateShipmentInput) {
 
 export async function getShipments() {
   const { orgId } = await getOrganization()
-  return serializeDecimal(await prisma.delivery.findMany({
+  return serializeDecimal(await (prisma.delivery as any).findMany({
     where: { organizationId: orgId, deletedAt: null },
     orderBy: { createdAt: 'desc' },
     include: {

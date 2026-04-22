@@ -49,7 +49,7 @@ async function getOrganization() {
 }
 
 async function generateOrderNumber(orgId: string): Promise<string> {
-  const lastOrder = await prisma.salesOrder.findFirst({
+  const lastOrder = await (prisma.salesOrder as any).findFirst({
     where: { organizationId: orgId },
     orderBy: { orderNumber: 'desc' },
     select: { orderNumber: true }
@@ -66,7 +66,7 @@ export async function getSalesOrders(page: number = 1, limit: number = 50) {
   const take = Math.min(limit, 100)
 
   const [orders, total] = await Promise.all([
-    prisma.salesOrder.findMany({
+    (prisma.salesOrder as any).findMany({
       where: { organizationId: orgId, deletedAt: null },
       orderBy: { createdAt: 'desc' },
       skip,
@@ -76,7 +76,7 @@ export async function getSalesOrders(page: number = 1, limit: number = 50) {
         _count: { select: { lineItems: true, deliveries: true } }
       }
     }),
-    prisma.salesOrder.count({
+    (prisma.salesOrder as any).count({
       where: { organizationId: orgId, deletedAt: null }
     })
   ])
@@ -87,9 +87,9 @@ export async function getSalesOrders(page: number = 1, limit: number = 50) {
   })
 }
 
-export async function getSalesOrder(id: string) {
+export async function getSalesOrder(id: string): Promise<any> {
   const { orgId } = await getOrganization()
-  return serializeDecimal(await prisma.salesOrder.findFirst({
+  return serializeDecimal(await (prisma.salesOrder as any).findFirst({
     where: { id, organizationId: orgId, deletedAt: null },
     include: { 
       customer: true,
@@ -148,7 +148,7 @@ export async function createSalesOrder(input: CreateSalesOrderInput) {
   const shippingAmount = validated.shippingAmount || 0
   const totalAmount = subtotal + taxAmount + shippingAmount
 
-  const order = await prisma.salesOrder.create({
+  const order = await (prisma.salesOrder as any).create({
     data: {
       orderNumber,
       customerId: validated.customerId,
@@ -181,7 +181,7 @@ export async function createSalesOrder(input: CreateSalesOrderInput) {
 export async function updateSalesOrderStatus(id: string, status: string): Promise<any> {
   const { userId, orgId } = await getOrganization()
   
-  const existing = await prisma.salesOrder.findFirst({ 
+  const existing = await (prisma.salesOrder as any).findFirst({ 
     where: { id, organizationId: orgId, deletedAt: null },
     include: { lineItems: true }
   })
@@ -202,7 +202,7 @@ export async function updateSalesOrderStatus(id: string, status: string): Promis
         }
       }
       
-      await tx.salesOrder.update({
+      await (tx.salesOrder as any).update({
         where: { id },
         data: { stockReserved: true }
       })
@@ -218,14 +218,14 @@ export async function updateSalesOrderStatus(id: string, status: string): Promis
         }
       }
 
-      await tx.salesOrder.update({
+      await (tx.salesOrder as any).update({
         where: { id },
         data: { stockReserved: false }
       })
     }
 
     // Update the actual status
-    const updated = await tx.salesOrder.update({
+    const updated = await (tx.salesOrder as any).update({
       where: { id },
       data: { status, updatedBy: userId }
     })
@@ -250,7 +250,7 @@ export async function updateSalesOrderStatus(id: string, status: string): Promis
 
 export async function deleteSalesOrder(id: string) {
   const { userId, orgId } = await getOrganization()
-  const existing = await prisma.salesOrder.findFirst({ where: { id, organizationId: orgId, deletedAt: null } })
+  const existing = await (prisma.salesOrder as any).findFirst({ where: { id, organizationId: orgId, deletedAt: null } })
   if (!existing) throw new Error('Sales order not found')
 
   // If deleting a confirmed order, we should probably release stock, but typically 
@@ -259,7 +259,7 @@ export async function deleteSalesOrder(id: string) {
     throw new Error('Only DRAFT or CANCELLED orders can be deleted. Please cancel the order first to release stock.')
   }
 
-  await prisma.salesOrder.update({ where: { id }, data: { deletedAt: new Date(), deletedBy: userId } })
+  await (prisma.salesOrder as any).update({ where: { id }, data: { deletedAt: new Date(), deletedBy: userId } })
   await logAudit({ organizationId: orgId, userId, action: 'DELETE', entityType: 'SalesOrder', entityId: id, oldValues: existing as unknown as Record<string, unknown> })
   revalidatePath('/dashboard/sales/orders')
   return { success: true }
@@ -268,7 +268,7 @@ export async function deleteSalesOrder(id: string) {
 export async function createInvoiceFromSalesOrder(orderId: string) {
   const { userId, orgId } = await getOrganization()
 
-  const order = await prisma.salesOrder.findFirst({
+  const order = await (prisma.salesOrder as any).findFirst({
     where: { id: orderId, organizationId: orgId, deletedAt: null },
     include: { lineItems: true }
   })
@@ -285,7 +285,7 @@ export async function createInvoiceFromSalesOrder(orderId: string) {
     invoiceDate: new Date(),
     dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // Default 15 days
     notes: `Generated from Sales Order ${order.orderNumber}. ${order.notes || ''}`,
-    lineItems: order.lineItems.map(item => ({
+    lineItems: order.lineItems.map((item: any) => ({
       description: item.description,
       sku: item.sku,
       productId: item.productId,
@@ -298,7 +298,7 @@ export async function createInvoiceFromSalesOrder(orderId: string) {
   const invoice = await processInvoiceCreation(orgId, userId, invoiceData as any)
 
   // Link invoice back to Sales Order
-  await prisma.salesOrder.update({
+  await (prisma.salesOrder as any).update({
     where: { id: orderId },
     data: { invoiceId: invoice.id }
   })
@@ -313,11 +313,11 @@ export async function getSalesOrderStats() {
   const { orgId } = await getOrganization()
   
   const [total, draft, confirmed, shipped, delivered] = await Promise.all([
-    prisma.salesOrder.aggregate({ where: { organizationId: orgId, deletedAt: null }, _sum: { totalAmount: true }, _count: true }),
-    prisma.salesOrder.aggregate({ where: { organizationId: orgId, status: 'DRAFT', deletedAt: null }, _sum: { totalAmount: true }, _count: true }),
-    prisma.salesOrder.aggregate({ where: { organizationId: orgId, status: 'CONFIRMED', deletedAt: null }, _sum: { totalAmount: true }, _count: true }),
-    prisma.salesOrder.aggregate({ where: { organizationId: orgId, status: 'SHIPPED', deletedAt: null }, _sum: { totalAmount: true }, _count: true }),
-    prisma.salesOrder.aggregate({ where: { organizationId: orgId, status: 'DELIVERED', deletedAt: null }, _sum: { totalAmount: true }, _count: true }),
+    (prisma.salesOrder as any).aggregate({ where: { organizationId: orgId, deletedAt: null }, _sum: { totalAmount: true }, _count: true }),
+    (prisma.salesOrder as any).aggregate({ where: { organizationId: orgId, status: 'DRAFT', deletedAt: null }, _sum: { totalAmount: true }, _count: true }),
+    (prisma.salesOrder as any).aggregate({ where: { organizationId: orgId, status: 'CONFIRMED', deletedAt: null }, _sum: { totalAmount: true }, _count: true }),
+    (prisma.salesOrder as any).aggregate({ where: { organizationId: orgId, status: 'SHIPPED', deletedAt: null }, _sum: { totalAmount: true }, _count: true }),
+    (prisma.salesOrder as any).aggregate({ where: { organizationId: orgId, status: 'DELIVERED', deletedAt: null }, _sum: { totalAmount: true }, _count: true }),
   ])
 
   return serializeDecimal({
