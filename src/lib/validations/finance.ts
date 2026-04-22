@@ -32,6 +32,8 @@ export type UpdateAccountInput = z.input<typeof updateAccountSchema>
 // Invoice Schemas
 export const invoiceLineItemSchema = z.object({
   description: z.string().min(1, 'Description is required'),
+  sku: z.string().nullable().optional(),
+  productId: z.string().nullable().optional(),
   quantity: z.number().positive('Quantity must be positive'),
   unitPrice: z.number().nonnegative('Unit price must be non-negative'),
   taxRate: z.number().min(0).max(100).default(0),
@@ -60,6 +62,7 @@ export const createCustomerSchema = z.object({
   country: z.string().nullable().optional(),
   postalCode: z.string().nullable().optional(),
   taxId: z.string().nullable().optional(),
+  pinNumber: z.string().nullable().optional().describe('KRA PIN for Kenya Compliance'),
   customerType: z.enum(['INDIVIDUAL', 'BUSINESS']).default('BUSINESS'),
   creditLimit: z.number().nonnegative().nullable().optional(),
   paymentTerms: z.string().nullable().optional(),
@@ -85,3 +88,4 @@ export const createVendorSchema = z.object({
 })
 
 export type CreateVendorInput = z.infer<typeof createVendorSchema>
+

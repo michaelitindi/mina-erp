@@ -53,7 +53,7 @@ export async function getInvoices(page: number = 1, limit: number = 50) {
   const { orgId } = await getOrganization()
 
   const skip = (page - 1) * limit
-  const take = Math.min(limit, 100) // Cap at 100
+  const take = Math.min(limit, 100)
 
   const [invoices, total] = await Promise.all([
     prisma.invoice.findMany({
@@ -65,30 +65,18 @@ export async function getInvoices(page: number = 1, limit: number = 50) {
       skip,
       take,
       include: {
-        customer: {
-          select: { companyName: true, email: true }
-        },
-        _count: {
-          select: { lineItems: true, payments: true }
-        }
+        customer: { select: { companyName: true, email: true } },
+        _count: { select: { lineItems: true, payments: true } }
       }
     }),
     prisma.invoice.count({
-      where: {
-        organizationId: orgId,
-        deletedAt: null,
-      }
+      where: { organizationId: orgId, deletedAt: null }
     })
   ])
 
   return serializeDecimal({
     items: invoices,
-    pagination: {
-      page,
-      limit: take,
-      total,
-      pages: Math.ceil(total / take),
-    }
+    pagination: { page, limit: take, total, pages: Math.ceil(total / take) }
   })
 }
 
@@ -105,32 +93,37 @@ export async function getInvoice(id: string) {
       organization: true,
       customer: true,
       lineItems: true,
-      payments: {
-        where: { deletedAt: null }
-      }
+      payments: { where: { deletedAt: null } }
     }
   })
 
   return serializeDecimal(invoice)
 }
 
-export async function createInvoice(input: CreateInvoiceInput) {
-  const { userId, orgId } = await getOrganization()
-  
-  const validated = createInvoiceSchema.parse(input)
+/**
+ * Core internal function to create an invoice.
+ * Extracted to allow creation from Sales Orders or direct input.
+ */
+export async function processInvoiceCreation(
+  orgId: string,
+  userId: string,
+  input: CreateInvoiceInput
+) {
   const invoiceNumber = await generateInvoiceNumber(orgId)
 
   // Calculate totals
   let subtotal = 0
   let taxAmount = 0
   
-  const lineItemsWithAmount = validated.lineItems.map(item => {
+  const lineItemsWithAmount = input.lineItems.map(item => {
     const amount = item.quantity * item.unitPrice
     const tax = amount * (item.taxRate / 100)
     subtotal += amount
     taxAmount += tax
     return {
-      ...item,
+      description: item.description,
+      sku: item.sku,
+      productId: (item as any).productId,
       quantity: new Decimal(item.quantity),
       unitPrice: new Decimal(item.unitPrice),
       taxRate: new Decimal(item.taxRate),
@@ -144,13 +137,13 @@ export async function createInvoice(input: CreateInvoiceInput) {
     const newInvoice = await tx.invoice.create({
       data: {
         invoiceNumber,
-        customerId: validated.customerId,
-        invoiceDate: validated.invoiceDate,
-        dueDate: validated.dueDate,
+        customerId: input.customerId,
+        invoiceDate: input.invoiceDate,
+        dueDate: input.dueDate,
         subtotal: new Decimal(subtotal),
         taxAmount: new Decimal(taxAmount),
         totalAmount: new Decimal(totalAmount),
-        notes: validated.notes,
+        notes: input.notes,
         organizationId: orgId,
         createdBy: userId,
         lineItems: {
@@ -166,7 +159,7 @@ export async function createInvoice(input: CreateInvoiceInput) {
     // Post to General Ledger
     await postToLedger(tx, {
       organizationId: orgId,
-      transactionDate: validated.invoiceDate,
+      transactionDate: input.invoiceDate,
       description: `Invoice ${invoiceNumber} - ${newInvoice.customer.companyName}`,
       referenceNumber: invoiceNumber,
       userId,
@@ -180,7 +173,7 @@ export async function createInvoice(input: CreateInvoiceInput) {
     return newInvoice
   })
 
-  // Validate with eTIMS (Kenya Compliance) - Outside the transaction
+  // Validate with eTIMS (Kenya Compliance)
   await validateWithEtims(invoice.id)
 
   await logAudit({
@@ -192,6 +185,14 @@ export async function createInvoice(input: CreateInvoiceInput) {
     newValues: { ...invoice, lineItems: invoice.lineItems } as unknown as Record<string, unknown>,
   })
 
+  return invoice
+}
+
+export async function createInvoice(input: CreateInvoiceInput) {
+  const { userId, orgId } = await getOrganization()
+  const validated = createInvoiceSchema.parse(input)
+  const invoice = await processInvoiceCreation(orgId, userId, validated)
+  
   revalidatePath('/dashboard/finance/invoices')
   return serializeDecimal(invoice)
 }
@@ -203,16 +204,11 @@ export async function updateInvoiceStatus(id: string, status: string) {
     where: { id, organizationId: orgId, deletedAt: null }
   })
 
-  if (!existing) {
-    throw new Error('Invoice not found')
-  }
+  if (!existing) throw new Error('Invoice not found')
 
   const invoice = await prisma.invoice.update({
     where: { id },
-    data: {
-      status,
-      updatedBy: userId,
-    }
+    data: { status, updatedBy: userId }
   })
 
   await logAudit({
@@ -236,20 +232,12 @@ export async function deleteInvoice(id: string) {
     where: { id, organizationId: orgId, deletedAt: null }
   })
 
-  if (!existing) {
-    throw new Error('Invoice not found')
-  }
+  if (!existing) throw new Error('Invoice not found')
+  if (existing.status === 'PAID') throw new Error('Cannot delete a paid invoice')
 
-  if (existing.status === 'PAID') {
-    throw new Error('Cannot delete a paid invoice')
-  }
-
-  const invoice = await prisma.invoice.update({
+  await prisma.invoice.update({
     where: { id },
-    data: {
-      deletedAt: new Date(),
-      deletedBy: userId,
-    }
+    data: { deletedAt: new Date(), deletedBy: userId }
   })
 
   await logAudit({
@@ -257,7 +245,7 @@ export async function deleteInvoice(id: string) {
     userId,
     action: 'DELETE',
     entityType: 'Invoice',
-    entityId: invoice.id,
+    entityId: id,
     oldValues: existing as unknown as Record<string, unknown>,
   })
 

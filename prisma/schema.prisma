@@ -785,6 +785,9 @@ model Lead {
   rating         String?   // HOT, WARM, COLD
   industry       String?
   pinNumber      String?   // KRA PIN for Kenya Compliance
+  address        String?
+  city           String?
+  country        String?
   estimatedValue Decimal?  @db.Decimal(15, 2)
   notes          String?
   assignedTo     String?   // Clerk user ID
@@ -946,6 +949,7 @@ model SalesOrder {
 model SalesOrderItem {
   id            String  @id @default(cuid())
   salesOrderId  String
+  productId     String?
   description   String
   sku           String?
   quantity      Decimal @db.Decimal(15, 2)
@@ -957,8 +961,10 @@ model SalesOrderItem {
   returnedQty   Decimal @default(0) @db.Decimal(15, 2)
 
   salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  product    Product?   @relation(fields: [productId], references: [id])
 
   @@index([salesOrderId])
+  @@index([productId])
 }
 
 // Delivery - Shipment tracking
@@ -998,13 +1004,16 @@ model Delivery {
 model DeliveryItem {
   id          String  @id @default(cuid())
   deliveryId  String
+  productId   String?
   description String
   sku         String?
   quantity    Decimal @db.Decimal(15, 2)
 
   delivery Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  product  Product? @relation(fields: [productId], references: [id])
 
   @@index([deliveryId])
+  @@index([productId])
 }
 
 // Returns - Handle customer returns
@@ -1102,6 +1111,8 @@ model Product {
   stockLevels   StockLevel[]
   stockMovements StockMovement[]
   posSaleItems  POSSaleItem[]
+  salesOrderItems SalesOrderItem[]
+  deliveryItems DeliveryItem[]
 
   @@unique([organizationId, sku])
   @@index([organizationId])

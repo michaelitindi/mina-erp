@@ -7,10 +7,13 @@ import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
 import { serializeDecimal } from '@/lib/utils'
+import { reserveStock, releaseStock } from '@/lib/inventory'
+import { processInvoiceCreation } from './invoices'
 
 const lineItemSchema = z.object({
   description: z.string().min(1),
   sku: z.string().nullable().optional(),
+  productId: z.string().nullable().optional(),
   quantity: z.number().positive(),
   unitPrice: z.number().nonnegative(),
   taxRate: z.number().min(0).max(100).default(0),
@@ -19,6 +22,7 @@ const lineItemSchema = z.object({
 
 const createSalesOrderSchema = z.object({
   customerId: z.string().min(1),
+  warehouseId: z.string().nullable().optional(),
   orderDate: z.coerce.date(),
   expectedDeliveryDate: z.coerce.date().nullable().optional(),
   lineItems: z.array(lineItemSchema).min(1),
@@ -89,7 +93,10 @@ export async function getSalesOrder(id: string) {
     where: { id, organizationId: orgId, deletedAt: null },
     include: { 
       customer: true,
-      lineItems: true,
+      warehouse: true,
+      lineItems: {
+        include: { product: true }
+      },
       deliveries: { where: { deletedAt: null } },
       returns: { where: { deletedAt: null } }
     }
@@ -101,10 +108,22 @@ export async function createSalesOrder(input: CreateSalesOrderInput) {
   const validated = createSalesOrderSchema.parse(input)
   const orderNumber = await generateOrderNumber(orgId)
 
+  // Resolve product IDs if they are missing but SKU is present
+  const resolvedItems = await Promise.all(validated.lineItems.map(async (item) => {
+    let productId = item.productId
+    if (!productId && item.sku) {
+      const product = await prisma.product.findFirst({
+        where: { sku: item.sku, organizationId: orgId, deletedAt: null }
+      })
+      productId = product?.id || null
+    }
+    return { ...item, productId }
+  }))
+
   // Calculate totals
   let subtotal = 0
   let taxAmount = 0
-  const lineItemsData = validated.lineItems.map(item => {
+  const lineItemsData = resolvedItems.map(item => {
     const lineSubtotal = item.quantity * item.unitPrice
     const discount = lineSubtotal * (item.discountPercent || 0) / 100
     const lineAfterDiscount = lineSubtotal - discount
@@ -117,6 +136,7 @@ export async function createSalesOrder(input: CreateSalesOrderInput) {
     return {
       description: item.description,
       sku: item.sku,
+      productId: item.productId,
       quantity: new Decimal(item.quantity),
       unitPrice: new Decimal(item.unitPrice),
       taxRate: new Decimal(item.taxRate || 0),
@@ -132,6 +152,7 @@ export async function createSalesOrder(input: CreateSalesOrderInput) {
     data: {
       orderNumber,
       customerId: validated.customerId,
+      warehouseId: validated.warehouseId,
       orderDate: validated.orderDate,
       expectedDeliveryDate: validated.expectedDeliveryDate,
       subtotal: new Decimal(subtotal),
@@ -154,19 +175,77 @@ export async function createSalesOrder(input: CreateSalesOrderInput) {
   return serializeDecimal(order)
 }
 
+/**
+ * Advanced status update with Inventory Reservation logic
+ */
 export async function updateSalesOrderStatus(id: string, status: string) {
   const { userId, orgId } = await getOrganization()
-  const existing = await prisma.salesOrder.findFirst({ where: { id, organizationId: orgId, deletedAt: null } })
+  
+  const existing = await prisma.salesOrder.findFirst({ 
+    where: { id, organizationId: orgId, deletedAt: null },
+    include: { lineItems: true }
+  })
   if (!existing) throw new Error('Sales order not found')
 
-  const order = await prisma.salesOrder.update({
-    where: { id },
-    data: { status, updatedBy: userId }
+  // Prevent invalid transitions
+  if (existing.status === 'CANCELLED') throw new Error('Cannot update a cancelled order')
+  if (existing.status === 'DELIVERED') throw new Error('Cannot update a delivered order')
+
+  const result = await prisma.$transaction(async (tx) => {
+    // Logic 1: Moving to CONFIRMED - Reserve Stock
+    if (status === 'CONFIRMED' && existing.status === 'DRAFT' && !existing.stockReserved) {
+      if (!existing.warehouseId) throw new Error('Cannot confirm order without a warehouse selected')
+      
+      for (const item of existing.lineItems) {
+        if (item.productId) {
+          await reserveStock(item.productId, existing.warehouseId, item.quantity, orgId, tx)
+        }
+      }
+      
+      await tx.salesOrder.update({
+        where: { id },
+        data: { stockReserved: true }
+      })
+    }
+
+    // Logic 2: Moving to CANCELLED - Release Stock if it was reserved
+    if (status === 'CANCELLED' && existing.stockReserved) {
+      if (!existing.warehouseId) throw new Error('Critical error: reserved stock has no warehouse link')
+      
+      for (const item of existing.lineItems) {
+        if (item.productId) {
+          await releaseStock(item.productId, existing.warehouseId, item.quantity, orgId, tx)
+        }
+      }
+
+      await tx.salesOrder.update({
+        where: { id },
+        data: { stockReserved: false }
+      })
+    }
+
+    // Update the actual status
+    const updated = await tx.salesOrder.update({
+      where: { id },
+      data: { status, updatedBy: userId }
+    })
+
+    return updated
   })
 
-  await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'SalesOrder', entityId: order.id, oldValues: { status: existing.status }, newValues: { status: order.status } })
+  await logAudit({ 
+    organizationId: orgId, 
+    userId, 
+    action: 'UPDATE', 
+    entityType: 'SalesOrder', 
+    entityId: existing.id, 
+    oldValues: { status: existing.status }, 
+    newValues: { status: result.status } 
+  })
+  
   revalidatePath('/dashboard/sales/orders')
-  return serializeDecimal(order)
+  revalidatePath(`/dashboard/sales/orders/${id}`)
+  return serializeDecimal(result)
 }
 
 export async function deleteSalesOrder(id: string) {
@@ -174,10 +253,60 @@ export async function deleteSalesOrder(id: string) {
   const existing = await prisma.salesOrder.findFirst({ where: { id, organizationId: orgId, deletedAt: null } })
   if (!existing) throw new Error('Sales order not found')
 
+  // If deleting a confirmed order, we should probably release stock, but typically 
+  // enterprise systems block deletion of confirmed orders. We'll block it for safety.
+  if (existing.status !== 'DRAFT' && existing.status !== 'CANCELLED') {
+    throw new Error('Only DRAFT or CANCELLED orders can be deleted. Please cancel the order first to release stock.')
+  }
+
   await prisma.salesOrder.update({ where: { id }, data: { deletedAt: new Date(), deletedBy: userId } })
   await logAudit({ organizationId: orgId, userId, action: 'DELETE', entityType: 'SalesOrder', entityId: id, oldValues: existing as unknown as Record<string, unknown> })
   revalidatePath('/dashboard/sales/orders')
   return { success: true }
+}
+
+export async function createInvoiceFromSalesOrder(orderId: string) {
+  const { userId, orgId } = await getOrganization()
+
+  const order = await prisma.salesOrder.findFirst({
+    where: { id: orderId, organizationId: orgId, deletedAt: null },
+    include: { lineItems: true }
+  })
+
+  if (!order) throw new Error('Sales order not found')
+  if (order.status === 'DRAFT' || order.status === 'CANCELLED') {
+    throw new Error('Invoices can only be generated for confirmed, processing, or shipped orders.')
+  }
+  if (order.invoiceId) throw new Error('An invoice has already been generated for this order.')
+
+  // Map Sales Order items to Invoice input
+  const invoiceData = {
+    customerId: order.customerId,
+    invoiceDate: new Date(),
+    dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // Default 15 days
+    notes: `Generated from Sales Order ${order.orderNumber}. ${order.notes || ''}`,
+    lineItems: order.lineItems.map(item => ({
+      description: item.description,
+      sku: item.sku,
+      productId: item.productId,
+      quantity: Number(item.quantity),
+      unitPrice: Number(item.unitPrice),
+      taxRate: Number(item.taxRate),
+    }))
+  }
+
+  const invoice = await processInvoiceCreation(orgId, userId, invoiceData as any)
+
+  // Link invoice back to Sales Order
+  await prisma.salesOrder.update({
+    where: { id: orderId },
+    data: { invoiceId: invoice.id }
+  })
+
+  revalidatePath(`/dashboard/sales/orders/${orderId}`)
+  revalidatePath('/dashboard/finance/invoices')
+
+  return serializeDecimal(invoice)
 }
 
 export async function getSalesOrderStats() {
