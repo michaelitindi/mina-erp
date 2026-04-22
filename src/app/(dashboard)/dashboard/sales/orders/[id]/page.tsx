@@ -23,9 +23,11 @@ import { SalesOrderStatusButtons } from '@/components/sales/order-status-buttons
 
 export default async function SalesOrderDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params
-  const order = await getSalesOrder(id)
-
-  if (!order) redirect('/dashboard/sales/orders')
+  const orderData = await getSalesOrder(id)
+  
+  if (!orderData) redirect('/dashboard/sales/orders')
+  
+  const order = orderData as any
 
   const statusColors: Record<string, string> = {
     DRAFT: 'text-zinc-500 bg-zinc-500/10 border-zinc-700',

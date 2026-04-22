@@ -178,7 +178,7 @@ export async function createSalesOrder(input: CreateSalesOrderInput) {
 /**
  * Advanced status update with Inventory Reservation logic
  */
-export async function updateSalesOrderStatus(id: string, status: string) {
+export async function updateSalesOrderStatus(id: string, status: string): Promise<any> {
   const { userId, orgId } = await getOrganization()
   
   const existing = await prisma.salesOrder.findFirst({ 
