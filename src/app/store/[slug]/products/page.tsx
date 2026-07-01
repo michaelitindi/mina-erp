@@ -2,7 +2,7 @@ import { getPublicStore, getPublicProducts, getPublicCategories } from '@/app/ac
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ShoppingBag, Search, Filter, ChevronLeft } from 'lucide-react'
-import { AddToCartButton } from '@/components/storefront/cart-buttons'
+import { AddToCartButton, CartIcon } from '@/components/storefront/cart-buttons'
 
 export default async function ProductsPage({ 
   params, 
@@ -42,9 +42,7 @@ export default async function ProductsPage({
               <span className="text-xl font-bold text-white">{store.name}</span>
             </Link>
             <div className="flex items-center gap-4">
-              <Link href={`/store/${slug}/cart`} className="relative text-slate-400 hover:text-white">
-                <ShoppingBag className="h-5 w-5" />
-              </Link>
+              <CartIcon slug={slug} />
             </div>
           </div>
         </div>

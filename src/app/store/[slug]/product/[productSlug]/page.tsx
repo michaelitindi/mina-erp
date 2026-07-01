@@ -2,7 +2,7 @@ import { getPublicStore, getPublicProduct, getPublicProducts } from '@/app/actio
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ShoppingBag, ChevronLeft, Minus, Plus, Star } from 'lucide-react'
-import { AddToCartButton } from '@/components/storefront/cart-buttons'
+import { AddToCartButton, CartIcon } from '@/components/storefront/cart-buttons'
 
 export default async function ProductDetailPage({ 
   params 
@@ -38,10 +38,8 @@ export default async function ProductDetailPage({
               </div>
               <span className="text-xl font-bold text-white">{store.name}</span>
             </Link>
-            <div className="flex items-center gap-4">
-              <Link href={`/store/${slug}/cart`} className="relative text-slate-400 hover:text-white">
-                <ShoppingBag className="h-5 w-5" />
-              </Link>
+             <div className="flex items-center gap-4">
+              <CartIcon slug={slug} />
             </div>
           </div>
         </div>

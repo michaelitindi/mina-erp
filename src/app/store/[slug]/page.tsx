@@ -2,6 +2,7 @@ import { getPublicStore, getPublicProducts, getPublicCategories } from '@/app/ac
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ShoppingBag, Search, ChevronRight } from 'lucide-react'
+import { CartIcon } from '@/components/storefront/cart-buttons'
 
 export default async function StorefrontPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -36,9 +37,7 @@ export default async function StorefrontPage({ params }: { params: Promise<{ slu
             </nav>
             <div className="flex items-center gap-4">
               <Link href={`/store/${slug}/products`} className="text-slate-400 hover:text-white"><Search className="h-5 w-5" /></Link>
-              <Link href={`/store/${slug}/cart`} className="relative text-slate-400 hover:text-white">
-                <ShoppingBag className="h-5 w-5" />
-              </Link>
+              <CartIcon slug={slug} />
             </div>
           </div>
         </div>

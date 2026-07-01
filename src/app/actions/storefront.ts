@@ -8,9 +8,28 @@ import { Decimal } from '@prisma/client/runtime/library'
 export async function getPublicStore(slug: string) {
   return prisma.onlineStore.findFirst({
     where: { slug, isActive: true },
-    include: {
-      categories: { where: { isActive: true }, orderBy: { sortOrder: 'asc' } },
-      _count: { select: { products: { where: { isActive: true } } } }
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      logo: true,
+      primaryColor: true,
+      currency: true,
+      shippingEnabled: true,
+      taxEnabled: true,
+      paymentProvider: true,
+      stripePublicKey: true,
+      paystackPublicKey: true,
+      flutterwavePublicKey: true,
+      createdAt: true,
+      categories: { 
+        where: { isActive: true }, 
+        orderBy: { sortOrder: 'asc' } 
+      },
+      _count: { 
+        select: { products: { where: { isActive: true } } } 
+      }
     }
   })
 }
@@ -108,6 +127,14 @@ export async function createGuestOrder(input: CheckoutInput & { baseUrl: string 
   })
 
   if (products.length !== productIds.length) throw new Error('Some products are unavailable')
+
+  // Validate stock quantities
+  for (const item of validated.items) {
+    const product = products.find(p => p.id === item.productId)!
+    if (product.stockTracking && product.stockQuantity < item.quantity) {
+      throw new Error(`Insufficient stock for ${product.name}. Only ${product.stockQuantity} items available.`)
+    }
+  }
 
   // Calculate totals
   let subtotal = 0
