@@ -22,17 +22,11 @@ const createBOMSchema = z.object({
 
 type CreateBOMInput = z.input<typeof createBOMSchema>
 
+import { getOrgWithModuleCheck } from '@/lib/module-access'
+
 async function getOrganization() {
-  const { userId, orgId } = await auth()
-  if (!userId || !orgId) throw new Error('Unauthorized')
-  
-  let org = await prisma.organization.findUnique({ where: { clerkOrgId: orgId } })
-  if (!org) {
-    org = await prisma.organization.create({
-      data: { clerkOrgId: orgId, name: 'My Organization', slug: orgId.toLowerCase().replace(/[^a-z0-9]/g, '-') }
-    })
-  }
-  return { userId, orgId: org.id }
+  const { userId, orgId } = await getOrgWithModuleCheck('MANUFACTURING')
+  return { userId, orgId }
 }
 
 async function generateBOMNumber(orgId: string): Promise<string> {

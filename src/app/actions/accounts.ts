@@ -6,29 +6,11 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { createAccountSchema, updateAccountSchema, type CreateAccountInput, type UpdateAccountInput } from '@/lib/validations/finance'
 
+import { getOrgWithModuleCheck } from '@/lib/module-access'
+
 async function getOrganization() {
-  const { userId, orgId } = await auth()
-  
-  if (!userId || !orgId) {
-    throw new Error('Unauthorized')
-  }
-
-  let org = await prisma.organization.findUnique({
-    where: { clerkOrgId: orgId }
-  })
-
-  if (!org) {
-    // Create organization if it doesn't exist
-    org = await prisma.organization.create({
-      data: {
-        clerkOrgId: orgId,
-        name: 'My Organization',
-        slug: orgId.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-      }
-    })
-  }
-
-  return { userId, orgId: org.id, clerkOrgId: orgId }
+  const { userId, orgId } = await getOrgWithModuleCheck('FINANCE')
+  return { userId, orgId, clerkOrgId: orgId }
 }
 
 export async function getAccounts() {

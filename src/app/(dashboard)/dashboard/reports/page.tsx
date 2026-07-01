@@ -34,7 +34,7 @@ export default async function ReportsPage() {
   // Handle case where organization is not yet set up or ledger is empty
   if (!pnl || !balanceSheet) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 text-center">
+      <div className="p-4 md:p-6 flex min-h-[400px] flex-col items-center justify-center space-y-4 text-center">
         <div className="p-4 rounded-full bg-blue-500/10 text-blue-400">
           <BarChart3 className="h-12 w-12" />
         </div>
@@ -56,7 +56,7 @@ export default async function ReportsPage() {
   const profitMargin = pnl.totalRevenue > 0 ? ((pnl.netIncome / pnl.totalRevenue) * 100).toFixed(1) : '0'
 
   return (
-    <div className="space-y-8">
+    <div className="p-4 md:p-6 space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Financial Center</h1>

@@ -16,6 +16,7 @@ export class AppError extends Error {
     code: string = 'INTERNAL_ERROR'
   ) {
     super(message)
+    this.name = this.constructor.name
     this.statusCode = statusCode
     this.code = code
     this.isOperational = true // Distinguishes from programming errors

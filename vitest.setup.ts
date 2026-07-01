@@ -32,6 +32,8 @@ vi.mock('@/lib/prisma', () => ({
       findUnique: vi.fn(),
       create: vi.fn(),
     },
-    // Add more models as needed for tests
+    employee: {
+      findFirst: vi.fn(),
+    },
   },
 }))

@@ -5,16 +5,11 @@ import { auth } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
 import { getAvailableProviders } from '@/lib/payments'
 
+import { getOrgWithModuleCheck } from '@/lib/module-access'
+
 async function getOrganization() {
-  const { userId, orgId } = await auth()
-  if (!userId || !orgId) throw new Error('Unauthorized')
-  
-  const org = await prisma.organization.findUnique({
-    where: { clerkOrgId: orgId }
-  })
-  if (!org) throw new Error('Organization not found')
-  
-  return { userId, orgId: org.id }
+  const { userId, orgId } = await getOrgWithModuleCheck('FINANCE')
+  return { userId, orgId }
 }
 
 /**

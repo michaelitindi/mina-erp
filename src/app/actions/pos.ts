@@ -6,16 +6,11 @@ import { revalidatePath } from 'next/cache'
 import { Decimal } from '@prisma/client/runtime/library'
 import { serializeDecimal } from '@/lib/utils'
 
+import { getOrgWithModuleCheck } from '@/lib/module-access'
+
 async function getOrganization() {
-  const { userId, orgId } = await auth()
-  if (!userId || !orgId) throw new Error('Unauthorized')
-  
-  const org = await prisma.organization.findUnique({
-    where: { clerkOrgId: orgId }
-  })
-  if (!org) throw new Error('Organization not found')
-  
-  return { clerkUserId: userId, orgId: org.id }
+  const { userId, orgId } = await getOrgWithModuleCheck('POS')
+  return { clerkUserId: userId, orgId }
 }
 
 // ============================================

@@ -7,14 +7,11 @@ import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
 
 // Get organization context
+import { getOrgWithModuleCheck } from '@/lib/module-access'
+
 async function getOrgContext() {
-  const { userId, orgId } = await auth()
-  if (!userId || !orgId) throw new Error('Unauthorized')
-  
-  const org = await prisma.organization.findUnique({ where: { clerkOrgId: orgId } })
-  if (!org) throw new Error('Organization not found')
-  
-  return { userId, orgId: org.id, clerkOrgId: orgId }
+  const { userId, orgId } = await getOrgWithModuleCheck('HR')
+  return { userId, orgId, clerkOrgId: orgId }
 }
 
 // ============================================

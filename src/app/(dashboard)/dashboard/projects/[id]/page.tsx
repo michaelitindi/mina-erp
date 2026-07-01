@@ -27,7 +27,7 @@ const stats = {
 
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/dashboard/projects" className="rounded-lg p-2 text-zinc-500 hover:bg-zinc-800 hover:text-white transition-colors">

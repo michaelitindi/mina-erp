@@ -35,17 +35,11 @@ const createSalesOrderSchema = z.object({
 
 type CreateSalesOrderInput = z.input<typeof createSalesOrderSchema>
 
+import { getOrgWithModuleCheck } from '@/lib/module-access'
+
 async function getOrganization() {
-  const { userId, orgId } = await auth()
-  if (!userId || !orgId) throw new Error('Unauthorized')
-  
-  let org = await prisma.organization.findUnique({ where: { clerkOrgId: orgId } })
-  if (!org) {
-    org = await prisma.organization.create({
-      data: { clerkOrgId: orgId, name: 'My Organization', slug: orgId.toLowerCase().replace(/[^a-z0-9]/g, '-') }
-    })
-  }
-  return { userId, orgId: org.id }
+  const { userId, orgId } = await getOrgWithModuleCheck('SALES')
+  return { userId, orgId }
 }
 
 async function generateOrderNumber(orgId: string): Promise<string> {

@@ -17,16 +17,11 @@ const createCreditNoteSchema = z.object({
 
 type CreateCreditNoteInput = z.infer<typeof createCreditNoteSchema>
 
+import { getOrgWithModuleCheck } from '@/lib/module-access'
+
 async function getOrganization() {
-  const { userId, orgId } = await auth()
-  if (!userId || !orgId) throw new Error('Unauthorized')
-
-  const org = await prisma.organization.findUnique({
-    where: { clerkOrgId: orgId }
-  })
-
-  if (!org) throw new Error('Organization not found')
-  return { userId, orgId: org.id }
+  const { userId, orgId } = await getOrgWithModuleCheck('FINANCE')
+  return { userId, orgId }
 }
 
 async function generateCNNumber(orgId: string): Promise<string> {
