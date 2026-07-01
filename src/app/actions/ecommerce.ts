@@ -210,3 +210,76 @@ export async function deleteOnlineProduct(id: string) {
   return { success: true }
 }
 
+// Update Store
+const updateStoreSchema = z.object({
+  name: z.string().min(1),
+  slug: z.string().min(1).regex(/^[a-z0-9-]+$/),
+  description: z.string().nullable().optional(),
+  primaryColor: z.string().default('#3B82F6'),
+  currency: z.string().default('USD'),
+  paymentProvider: z.enum(['COD', 'STRIPE', 'PAYSTACK', 'FLUTTERWAVE', 'LEMONSQUEEZY']).default('COD'),
+  stripePublicKey: z.string().nullable().optional(),
+  stripeSecretKey: z.string().nullable().optional(),
+  paystackPublicKey: z.string().nullable().optional(),
+  paystackSecretKey: z.string().nullable().optional(),
+  flutterwavePublicKey: z.string().nullable().optional(),
+  flutterwaveSecretKey: z.string().nullable().optional(),
+  lemonSqueezyApiKey: z.string().nullable().optional(),
+  lemonSqueezyStoreId: z.string().nullable().optional(),
+})
+
+export async function updateStore(id: string, input: z.input<typeof updateStoreSchema>) {
+  const { userId, orgId } = await getOrganization()
+  const validated = updateStoreSchema.parse(input)
+
+  const existing = await prisma.onlineStore.findFirst({
+    where: { id, organizationId: orgId }
+  })
+  if (!existing) throw new Error('Store not found')
+
+  const store = await prisma.onlineStore.update({
+    where: { id },
+    data: validated
+  })
+
+  await logAudit({
+    organizationId: orgId,
+    userId,
+    action: 'UPDATE',
+    entityType: 'OnlineStore',
+    entityId: store.id,
+    oldValues: existing as unknown as Record<string, unknown>,
+    newValues: store as unknown as Record<string, unknown>
+  })
+
+  revalidatePath('/dashboard/ecommerce')
+  return store
+}
+
+// Delete Store
+export async function deleteStore(id: string) {
+  const { userId, orgId } = await getOrganization()
+
+  const existing = await prisma.onlineStore.findFirst({
+    where: { id, organizationId: orgId }
+  })
+  if (!existing) throw new Error('Store not found')
+
+  await prisma.onlineStore.delete({
+    where: { id }
+  })
+
+  await logAudit({
+    organizationId: orgId,
+    userId,
+    action: 'DELETE',
+    entityType: 'OnlineStore',
+    entityId: id,
+    oldValues: existing as unknown as Record<string, unknown>
+  })
+
+  revalidatePath('/dashboard/ecommerce')
+  return { success: true }
+}
+
+
