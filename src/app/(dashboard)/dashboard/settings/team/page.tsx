@@ -61,7 +61,7 @@ export default function SettingsTeamPage() {
               membersTableCell: "text-white py-3 px-4",
               memberRoleSelectButton: "bg-zinc-900 border border-zinc-800 text-white rounded-lg px-2.5 py-1 text-xs hover:bg-zinc-800",
               button: "text-xs font-semibold px-3.5 py-2 rounded-lg transition-all cursor-pointer",
-              formButtonPrimary: "bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98]",
+              formButtonPrimary: "bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all rounded-lg",
               formButtonReset: "bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white",
               formFieldInput: "bg-zinc-950/80 border border-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 text-white rounded-lg text-sm px-3.5 py-2",
               formFieldLabel: "text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1",

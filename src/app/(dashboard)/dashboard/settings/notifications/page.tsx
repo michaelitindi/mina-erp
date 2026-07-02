@@ -108,7 +108,7 @@ export default function SettingsNotificationsPage() {
                 type="button"
                 className={`w-11 h-6 flex items-center rounded-full p-1 transition-all duration-300 shrink-0 ${
                   item.value 
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-650 shadow-md shadow-blue-500/25 justify-end' 
+                    ? 'bg-blue-600 justify-end' 
                     : 'bg-zinc-800 justify-start'
                 }`}
               >
@@ -118,12 +118,12 @@ export default function SettingsNotificationsPage() {
           ))}
         </div>
 
-        <div className="flex justify-end pt-5 border-t border-zinc-800/80">
+        <div className="flex justify-end pt-4 border-t border-zinc-800/80">
           <button
             type="submit"
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-650 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold text-sm flex items-center gap-2 cursor-pointer shadow-lg shadow-blue-500/10 hover:shadow-blue-500/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+            className="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Save className="h-4 w-4 text-white" />
+            <Save className="h-3.5 w-3.5" />
             Save Preferences
           </button>
         </div>
