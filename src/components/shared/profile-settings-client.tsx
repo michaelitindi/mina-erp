@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateOrganizationProfile } from '@/app/actions/settings'
-import { Building2, Save, ArrowLeft, Loader2 } from 'lucide-react'
+import { Building2, Save, ArrowLeft, Loader2, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 
 export function ProfileSettingsClient({ initialProfile }: { initialProfile: any }) {
@@ -34,6 +34,7 @@ export function ProfileSettingsClient({ initialProfile }: { initialProfile: any 
       })
       setSuccess('Organization profile updated successfully!')
       router.refresh()
+      setTimeout(() => setSuccess(''), 4000)
     } catch (err: any) {
       setError(err?.message || 'Failed to update organization details.')
     } finally {
@@ -42,77 +43,85 @@ export function ProfileSettingsClient({ initialProfile }: { initialProfile: any 
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-2xl space-y-6">
-      <div className="flex items-center gap-3">
+    <div className="p-4 md:p-6 max-w-2xl space-y-6 select-none">
+      {/* Header */}
+      <div className="flex items-center gap-4">
         <Link
           href="/dashboard/settings"
-          className="rounded-lg p-1.5 border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+          className="rounded-xl p-2 border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-zinc-900 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
         >
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-zinc-400" />
+          <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            <Building2 className="h-6 w-6 text-blue-500" />
             Profile Settings
           </h1>
-          <p className="text-zinc-500 text-sm">Update your company name, website, and currency standards</p>
+          <p className="text-zinc-500 text-sm mt-0.5">Configure your company identity, website standards, and metrics settings</p>
         </div>
       </div>
 
+      {/* Alerts */}
       {success && (
-        <div className="p-3 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-xs font-semibold">
-          {success}
+        <div className="flex items-center gap-2.5 p-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl text-xs font-semibold shadow-lg shadow-green-500/5 animate-in fade-in slide-in-from-top-2 duration-300">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-green-400" />
+          <span>{success}</span>
         </div>
       )}
 
       {error && (
-        <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-xs font-semibold">
-          {error}
+        <div className="flex items-center gap-2.5 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-semibold shadow-lg shadow-red-500/5 animate-in fade-in slide-in-from-top-2 duration-300">
+          <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
+          <span>{error}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 space-y-4">
-        <div>
-          <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1">Company / Organization Name *</label>
-          <input
-            type="text"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full bg-zinc-950 border border-zinc-800 px-3 py-2 text-xs text-white rounded focus:outline-none focus:border-blue-500"
-          />
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="bg-zinc-900/30 border border-zinc-800/80 rounded-2xl p-6 md:p-8 space-y-6 backdrop-blur-sm shadow-xl">
+        <div className="space-y-1">
+          <label className="block text-xs font-black text-zinc-400 uppercase tracking-widest mb-1.5 ml-0.5">Company / Organization Name *</label>
+          <div className="relative group">
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Acme Corp"
+              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/20 transition-all duration-200"
+            />
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1">Website URL</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-1">
+            <label className="block text-xs font-black text-zinc-400 uppercase tracking-widest mb-1.5 ml-0.5">Website URL</label>
             <input
               type="text"
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
               placeholder="e.g. https://mycompany.com"
-              className="w-full bg-zinc-950 border border-zinc-800 px-3 py-2 text-xs text-white rounded focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/20 transition-all duration-200"
             />
           </div>
-          <div>
-            <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1">Industry</label>
+          <div className="space-y-1">
+            <label className="block text-xs font-black text-zinc-400 uppercase tracking-widest mb-1.5 ml-0.5">Industry</label>
             <input
               type="text"
               value={industry}
               onChange={(e) => setIndustry(e.target.value)}
               placeholder="e.g. Education, Tech, Logistics"
-              className="w-full bg-zinc-950 border border-zinc-800 px-3 py-2 text-xs text-white rounded focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/20 transition-all duration-200"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1">Standard Currency</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-1">
+            <label className="block text-xs font-black text-zinc-400 uppercase tracking-widest mb-1.5 ml-0.5">Standard Currency</label>
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 px-2.5 py-2 text-xs text-white rounded focus:outline-none"
+              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer"
             >
               <option value="USD">USD - United States Dollar ($)</option>
               <option value="KES">KES - Kenyan Shilling (KSh)</option>
@@ -120,12 +129,12 @@ export function ProfileSettingsClient({ initialProfile }: { initialProfile: any 
               <option value="GBP">GBP - British Pound (£)</option>
             </select>
           </div>
-          <div>
-            <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1">Timezone</label>
+          <div className="space-y-1">
+            <label className="block text-xs font-black text-zinc-400 uppercase tracking-widest mb-1.5 ml-0.5">Timezone</label>
             <select
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 px-2.5 py-2 text-xs text-white rounded focus:outline-none"
+              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer"
             >
               <option value="UTC">UTC (Coordinated Universal Time)</option>
               <option value="Africa/Nairobi">Africa/Nairobi (EAT)</option>
@@ -135,21 +144,21 @@ export function ProfileSettingsClient({ initialProfile }: { initialProfile: any 
           </div>
         </div>
 
-        <div className="flex justify-end pt-4 border-t border-zinc-850">
+        <div className="flex justify-end pt-5 border-t border-zinc-800/80">
           <button
             type="submit"
             disabled={isLoading}
-            className="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-650 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold text-sm flex items-center gap-2 cursor-pointer shadow-lg shadow-blue-500/10 hover:shadow-blue-500/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Saving Profile...
+                <Loader2 className="h-4 w-4 animate-spin text-white" />
+                Saving Changes...
               </>
             ) : (
               <>
-                <Save className="h-3.5 w-3.5" />
-                Save Changes
+                <Save className="h-4 w-4 text-white" />
+                Save Preferences
               </>
             )}
           </button>
