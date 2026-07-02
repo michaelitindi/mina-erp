@@ -41,7 +41,7 @@ export function CreateProductButton() {
 
   return (
     <>
-      <button onClick={() => setIsOpen(true)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors">
+      <button onClick={() => setIsOpen(true)} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors cursor-pointer">
         <Plus className="h-4 w-4" />New Product
       </button>
 
@@ -146,8 +146,8 @@ export function CreateProductButton() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors">Cancel</button>
-                <button type="submit" disabled={isLoading} className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors disabled:opacity-50">{isLoading ? 'Creating...' : 'Add Product'}</button>
+                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors cursor-pointer">Cancel</button>
+                <button type="submit" disabled={isLoading} className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">{isLoading ? 'Creating...' : 'Add Product'}</button>
               </div>
             </form>
           </div>

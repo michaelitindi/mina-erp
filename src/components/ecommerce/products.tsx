@@ -60,7 +60,7 @@ export function CreateProductButton({ stores }: { stores: Store[] }) {
 
   return (
     <>
-      <button onClick={() => setIsOpen(true)} disabled={stores.length === 0} className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors disabled:opacity-50">
+      <button onClick={() => setIsOpen(true)} disabled={stores.length === 0} className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
         <Plus className="h-4 w-4" />Add Product
       </button>
 
@@ -131,8 +131,8 @@ export function CreateProductButton({ stores }: { stores: Store[] }) {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors">Cancel</button>
-                <button type="submit" disabled={isLoading} className="flex-1 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors disabled:opacity-50">{isLoading ? 'Adding...' : 'Add Product'}</button>
+                <button type="button" onClick={() => setIsOpen(false)} className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 transition-colors cursor-pointer">Cancel</button>
+                <button type="submit" disabled={isLoading} className="flex-1 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">{isLoading ? 'Adding...' : 'Add Product'}</button>
               </div>
             </form>
           </div>
