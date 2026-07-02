@@ -38,6 +38,13 @@ export default function SettingsPage() {
           color: 'text-zinc-400 bg-zinc-400/10'
         },
         { 
+          name: 'Modules Management', 
+          description: 'Enable or disable ERP modules and custom builder consoles',
+          href: '/dashboard/settings/modules',
+          icon: Settings,
+          color: 'text-blue-400 bg-blue-400/10'
+        },
+        { 
           name: 'Team & Roles', 
           description: 'Manage user permissions and invitations',
           href: '#',
