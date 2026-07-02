@@ -22,6 +22,7 @@ import {
   User2,
   X,
   Globe,
+  CreditCard,
 } from 'lucide-react'
 
 const navigation = [
@@ -38,6 +39,7 @@ const navigation = [
   { name: 'Manufacturing', href: '/dashboard/manufacturing', icon: Cog, moduleKey: 'MANUFACTURING' },
   { name: 'E-Commerce', href: '/dashboard/ecommerce', icon: Store, moduleKey: 'ECOMMERCE' },
   { name: 'Website Builder', href: '/dashboard/website-builder', icon: Globe, moduleKey: 'WEBSITE_BUILDER' },
+  { name: 'Point of Sale', href: '/dashboard/pos', icon: CreditCard, moduleKey: 'POS' },
   { name: 'Reports', href: '/dashboard/reports', icon: BarChart3, moduleKey: null }, // Admin only
   { name: 'Settings', href: '/dashboard/settings', icon: Settings, moduleKey: null }, // Admin only
 ]
