@@ -77,6 +77,7 @@ model Organization {
   posSales       POSSale[]
   creditNotes    CreditNote[]
   debitNotes     DebitNote[]
+  websites       Website[]
 
   @@index([clerkOrgId])
   @@index([status])
@@ -1946,4 +1947,146 @@ model POSPayment {
   
   @@index([saleId])
   @@index([providerType])
+}
+
+// ============================================
+// WEBSITE BUILDER MODULE
+// ============================================
+
+enum WebsiteType {
+  GENERAL
+  SCHOOL
+  COURSE
+  PORTFOLIO
+}
+
+model Website {
+  id              String         @id @default(cuid())
+  organizationId  String
+  name            String
+  slug            String
+  description     String?
+  logo            String?
+  type            WebsiteType    @default(GENERAL)
+  
+  // Theme & Styling
+  primaryColor    String         @default("#3B82F6")
+  secondaryColor  String         @default("#10B981")
+  fontFamily      String         @default("sans") // sans, serif, mono, outfit, inter
+  customCss       String?
+  
+  // Layout Options (JSON stringified header/footer config)
+  headerConfig    String?        // logo, navigation links, action buttons
+  footerConfig    String?        // copyright text, social links, footer menus
+  
+  // Payment Integration (for course sites or gated pages)
+  paymentProvider String         @default("COD") // COD, STRIPE, PAYSTACK, FLUTTERWAVE, LEMONSQUEEZY
+  stripePublicKey   String?
+  stripeSecretKey   String?
+  paystackPublicKey String?
+  paystackSecretKey String?
+  lemonSqueezyApiKey   String?
+  lemonSqueezyStoreId  String?
+  
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdBy       String
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  pages           WebPage[]
+  courses         WebCourse[]
+  submissions     FormSubmission[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+}
+
+model WebPage {
+  id              String         @id @default(cuid())
+  websiteId       String
+  title           String
+  slug            String         // e.g. "home", "about", "courses", "contact"
+  seoTitle        String?
+  seoDescription  String?
+  isActive        Boolean        @default(true)
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  website         Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  sections        WebSection[]
+
+  @@unique([websiteId, slug])
+  @@index([websiteId])
+}
+
+model WebSection {
+  id              String         @id @default(cuid())
+  pageId          String
+  type            String         // HERO, FEATURES, COURSE_GRID, PRICING, CONTACT_FORM, TESTIMONIALS, RICH_TEXT, HTML
+  sortOrder       Int            @default(0)
+  
+  // JSON content: e.g. { title: "Welcome", subtitle: "...", bgImage: "...", ctaText: "...", ctaUrl: "..." }
+  content         String
+  
+  // Section layout / padding settings (JSON stringified)
+  styles          String?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  page            WebPage        @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId])
+}
+
+model WebCourse {
+  id              String         @id @default(cuid())
+  websiteId       String
+  title           String
+  slug            String
+  description     String?
+  price           Decimal        @db.Decimal(15, 2) @default(0.00)
+  isPublished     Boolean        @default(false)
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  website         Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  lessons         WebLesson[]
+
+  @@unique([websiteId, slug])
+  @@index([websiteId])
+}
+
+model WebLesson {
+  id              String         @id @default(cuid())
+  courseId        String
+  title           String
+  slug            String
+  content         String         // Markdown or HTML lesson body
+  videoUrl        String?
+  isFree          Boolean        @default(false)
+  sortOrder       Int            @default(0)
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  course          WebCourse      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+}
+
+model FormSubmission {
+  id              String         @id @default(cuid())
+  websiteId       String
+  formType        String         // CONTACT, ADMISSION, NEWSLETTER
+  payload         String         // JSON payload containing the form inputs
+  isRead          Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+
+  website         Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  @@index([websiteId])
 }
