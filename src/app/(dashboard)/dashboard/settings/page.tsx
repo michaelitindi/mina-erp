@@ -33,7 +33,7 @@ export default function SettingsPage() {
         { 
           name: 'Profile', 
           description: 'Company name, logo, and general details',
-          href: '#',
+          href: '/dashboard/settings/profile',
           icon: Building2,
           color: 'text-zinc-400 bg-zinc-400/10'
         },
@@ -47,14 +47,14 @@ export default function SettingsPage() {
         { 
           name: 'Team & Roles', 
           description: 'Manage user permissions and invitations',
-          href: '#',
+          href: '/dashboard/settings/team',
           icon: Users,
           color: 'text-zinc-400 bg-zinc-400/10'
         },
         { 
           name: 'Notifications', 
           description: 'Email and system alert preferences',
-          href: '#',
+          href: '/dashboard/settings/notifications',
           icon: Bell,
           color: 'text-zinc-400 bg-zinc-400/10'
         },

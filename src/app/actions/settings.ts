@@ -77,3 +77,71 @@ export async function getOrganizationSettings() {
     }
   })
 }
+
+const updateProfileSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  website: z.string().nullable().optional(),
+  industry: z.string().nullable().optional(),
+  currency: z.string().default('USD'),
+  timezone: z.string().default('UTC'),
+})
+
+type UpdateProfileInput = z.infer<typeof updateProfileSchema>
+
+export async function getFullOrganizationSettings() {
+  const { orgId } = await getOrganization()
+  return prisma.organization.findUnique({
+    where: { id: orgId },
+    select: {
+      name: true,
+      website: true,
+      industry: true,
+      currency: true,
+      timezone: true,
+      logo: true,
+    }
+  })
+}
+
+export async function updateOrganizationProfile(input: UpdateProfileInput) {
+  const { userId, orgId, existing } = await getOrganization()
+  const validated = updateProfileSchema.parse(input)
+
+  const updated = await prisma.organization.update({
+    where: { id: orgId },
+    data: {
+      name: validated.name,
+      website: validated.website,
+      industry: validated.industry,
+      currency: validated.currency,
+      timezone: validated.timezone,
+    }
+  })
+
+  await logAudit({
+    organizationId: orgId,
+    userId,
+    action: 'UPDATE',
+    entityType: 'Organization',
+    entityId: orgId,
+    oldValues: {
+      name: existing.name,
+      website: existing.website,
+      industry: existing.industry,
+      currency: existing.currency,
+      timezone: existing.timezone,
+    },
+    newValues: {
+      name: updated.name,
+      website: updated.website,
+      industry: updated.industry,
+      currency: updated.currency,
+      timezone: updated.timezone,
+    }
+  })
+
+  revalidatePath('/dashboard/settings')
+  revalidatePath('/dashboard/settings/profile')
+  return { success: true }
+}
+
