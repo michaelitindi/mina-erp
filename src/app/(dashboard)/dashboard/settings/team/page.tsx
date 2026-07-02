@@ -21,13 +21,13 @@ export default function SettingsTeamPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/10 p-2 overflow-hidden">
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/10 p-4 md:p-6 overflow-x-auto">
         <OrganizationProfile 
           routing="hash"
           appearance={{
             elements: {
-              rootBox: "w-full",
-              cardBox: "w-full bg-zinc-950 border border-zinc-850 shadow-none text-white",
+              rootBox: "w-full max-w-full",
+              cardBox: "w-full max-w-full bg-zinc-950 border border-zinc-850 shadow-none text-white",
               navbar: "hidden", // Hide navigation so it focuses purely on member list if needed, or keep it standard
               headerTitle: "text-white text-lg font-bold",
               headerSubtitle: "text-zinc-500 text-xs",
