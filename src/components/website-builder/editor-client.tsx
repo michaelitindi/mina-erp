@@ -32,7 +32,8 @@ import {
   ChevronDown,
   ListCollapse,
   Video,
-  DollarSign
+  DollarSign,
+  X
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -108,7 +109,7 @@ export function EditorClient({ website: initialWebsite }: { website: any }) {
       const page = await createWebPage(website.id, newPageTitle, newPageSlug)
       setWebsite((prev: any) => ({
         ...prev,
-        pages: [...prev.pages, { ...page, sections: page.sections || [] }]
+        pages: [...prev.pages, { ...page, sections: (page as any).sections || [] }]
       }))
       setActivePageId(page.id)
       setShowAddPage(false)
