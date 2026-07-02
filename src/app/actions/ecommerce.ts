@@ -31,6 +31,9 @@ const createStoreSchema = z.object({
   flutterwaveSecretKey: z.string().nullable().optional(),
   lemonSqueezyApiKey: z.string().nullable().optional(),
   lemonSqueezyStoreId: z.string().nullable().optional(),
+  announcementText: z.string().nullable().optional(),
+  announcementActive: z.boolean().default(false),
+  heroImage: z.string().nullable().optional(),
 })
 
 type CreateStoreInput = z.input<typeof createStoreSchema>
@@ -226,6 +229,9 @@ const updateStoreSchema = z.object({
   flutterwaveSecretKey: z.string().nullable().optional(),
   lemonSqueezyApiKey: z.string().nullable().optional(),
   lemonSqueezyStoreId: z.string().nullable().optional(),
+  announcementText: z.string().nullable().optional(),
+  announcementActive: z.boolean().default(false),
+  heroImage: z.string().nullable().optional(),
 })
 
 export async function updateStore(id: string, input: z.input<typeof updateStoreSchema>) {

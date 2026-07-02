@@ -7,6 +7,7 @@
 import { randomUUID } from 'crypto'
 import * as fs from 'fs'
 import * as path from 'path'
+import sharp from 'sharp'
 
 // Upload provider type
 type UploadProvider = 'local' | 's3' | 'r2'
@@ -85,11 +86,41 @@ async function uploadLocal(
     fs.mkdirSync(uploadPath, { recursive: true })
   }
 
-  const filename = generateFilename(file.name)
+  const isImage = file.type.startsWith('image/')
+  let filename = generateFilename(file.name)
+  if (isImage) {
+    const ext = path.extname(filename)
+    filename = filename.replace(ext, '.webp')
+  }
+
   const filepath = path.join(uploadPath, filename)
   
   try {
-    const buffer = Buffer.from(await file.arrayBuffer())
+    let buffer = Buffer.from(await file.arrayBuffer())
+    let finalMimeType = file.type
+    let finalSize = file.size
+
+    if (isImage) {
+      try {
+        const pipeline = sharp(buffer)
+        const metadata = await pipeline.metadata()
+        
+        if (metadata.width && metadata.width > 1200) {
+          pipeline.resize(1200, null, { withoutEnlargement: true })
+        }
+        
+        const optimizedBuffer = await pipeline
+          .webp({ quality: 80 })
+          .toBuffer()
+          
+        buffer = optimizedBuffer
+        finalMimeType = 'image/webp'
+        finalSize = optimizedBuffer.length
+      } catch (sharpErr) {
+        console.error('Sharp optimization failed, using raw buffer:', sharpErr)
+      }
+    }
+
     fs.writeFileSync(filepath, buffer)
     
     return {
@@ -97,8 +128,8 @@ async function uploadLocal(
       url: `/uploads/${folder}/${filename}`,
       key: `${folder}/${filename}`,
       filename,
-      size: file.size,
-      mimeType: file.type,
+      size: finalSize,
+      mimeType: finalMimeType,
     }
   } catch (error) {
     return {

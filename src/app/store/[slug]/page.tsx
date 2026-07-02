@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ShoppingBag, Search, ChevronRight } from 'lucide-react'
 import { CartIcon } from '@/components/storefront/cart-buttons'
+import { StorefrontSeo } from '@/components/storefront/seo'
 
 export default async function StorefrontPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -19,6 +20,25 @@ export default async function StorefrontPage({ params }: { params: Promise<{ slu
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0f172a' }}>
+      <StorefrontSeo 
+        type="store" 
+        data={{ 
+          name: store.name, 
+          description: store.description, 
+          logo: store.logo, 
+          url: `/store/${slug}`, 
+          currency: store.currency 
+        }} 
+      />
+
+      {/* Announcement Bar */}
+      {store.announcementActive && store.announcementText && (
+        <div className="w-full text-center py-2.5 px-4 text-xs font-bold text-white tracking-wide border-b border-white/10 flex items-center justify-center gap-2" style={{ background: `linear-gradient(90deg, ${store.primaryColor}, ${store.primaryColor}dd)` }}>
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+          <span>{store.announcementText}</span>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-900/80 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,10 +64,19 @@ export default async function StorefrontPage({ params }: { params: Promise<{ slu
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
-        <div className="absolute inset-0 opacity-30" style={{ background: `radial-gradient(ellipse at 50% 0%, ${store.primaryColor}40, transparent 70%)` }} />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative py-24 overflow-hidden flex items-center justify-center min-h-[400px]">
+        {store.heroImage ? (
+          <>
+            <div className="absolute inset-0 bg-slate-950/70 z-10" />
+            <img src={store.heroImage} alt={`${store.name} Hero Banner`} className="absolute inset-0 w-full h-full object-cover" />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+            <div className="absolute inset-0 opacity-30" style={{ background: `radial-gradient(ellipse at 50% 0%, ${store.primaryColor}40, transparent 70%)` }} />
+          </>
+        )}
+        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
             Welcome to <span style={{ color: store.primaryColor }}>{store.name}</span>
           </h1>

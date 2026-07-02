@@ -21,10 +21,37 @@ export function CreateStoreButton() {
   const [error, setError] = useState('')
   const [selectedProvider, setSelectedProvider] = useState<PaymentProvider>('COD')
   const [showSecrets, setShowSecrets] = useState(false)
+  const [heroImage, setHeroImage] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
   const router = useRouter()
 
   function generateSlug(name: string): string {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  }
+
+  async function handleHeroUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setIsUploading(true)
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('folder', 'stores')
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await res.json()
+      if (data.url) {
+        setHeroImage(data.url)
+      } else {
+        alert(data.error || 'Failed to upload image')
+      }
+    } catch (err) {
+      alert('Error uploading file')
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -48,9 +75,13 @@ export function CreateStoreButton() {
         flutterwaveSecretKey: formData.get('flutterwaveSecretKey') as string || null,
         lemonSqueezyApiKey: formData.get('lemonSqueezyApiKey') as string || null,
         lemonSqueezyStoreId: formData.get('lemonSqueezyStoreId') as string || null,
+        announcementText: formData.get('announcementText') as string || null,
+        announcementActive: formData.get('announcementActive') === 'true',
+        heroImage,
       })
       setIsOpen(false)
       setSelectedProvider('COD')
+      setHeroImage(null)
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create store')
@@ -117,6 +148,44 @@ export function CreateStoreButton() {
               <div>
                 <label className="block text-sm font-medium text-zinc-400 mb-1">Description</label>
                 <textarea name="description" rows={2} className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
+              </div>
+
+              {/* Announcements Section */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-800 pt-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Announcement Text</label>
+                  <input name="announcementText" placeholder="e.g. Free shipping on orders over $50!" className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none" />
+                </div>
+                <div className="flex items-end pb-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input name="announcementActive" type="checkbox" value="true" className="rounded border-zinc-700 bg-zinc-800 text-blue-500 focus:ring-blue-500" />
+                    <span className="text-sm text-zinc-400">Show Announcement</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Hero Banner Upload Section */}
+              <div className="border-t border-zinc-800 pt-4">
+                <label className="block text-sm font-medium text-zinc-400 mb-1 font-semibold text-white">Storefront Hero Banner Image</label>
+                <div className="mt-1 flex items-center gap-4">
+                  <label className="flex h-24 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-zinc-700 bg-zinc-800/30 hover:bg-zinc-800/50 cursor-pointer transition-colors">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <span className="text-xs text-zinc-400 font-semibold">
+                        {isUploading ? 'Uploading...' : 'Click to upload hero banner'}
+                      </span>
+                      <span className="text-[10px] text-zinc-500 mt-1">PNG, JPG, WEBP (optimized with Sharp to WebP)</span>
+                    </div>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleHeroUpload} disabled={isUploading} />
+                  </label>
+                </div>
+                {heroImage && (
+                  <div className="mt-3 relative rounded-lg overflow-hidden border border-zinc-800 h-32 w-full">
+                    <img src={heroImage} alt="Hero Banner Preview" className="object-cover w-full h-full" />
+                    <button type="button" onClick={() => setHeroImage(null)} className="absolute top-2 right-2 rounded-full bg-black/60 p-1 text-white hover:bg-black/80 transition-colors">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Payment Provider Section */}

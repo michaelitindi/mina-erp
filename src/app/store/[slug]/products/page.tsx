@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ShoppingBag, Search, Filter, ChevronLeft } from 'lucide-react'
 import { AddToCartButton, CartIcon } from '@/components/storefront/cart-buttons'
+import { StorefrontSeo } from '@/components/storefront/seo'
 
 export default async function ProductsPage({ 
   params, 
@@ -31,6 +32,25 @@ export default async function ProductsPage({
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0f172a' }}>
+      <StorefrontSeo 
+        type="store" 
+        data={{ 
+          name: store.name, 
+          description: store.description, 
+          logo: store.logo, 
+          url: `/store/${slug}/products`, 
+          currency: store.currency 
+        }} 
+      />
+
+      {/* Announcement Bar */}
+      {store.announcementActive && store.announcementText && (
+        <div className="w-full text-center py-2.5 px-4 text-xs font-bold text-white tracking-wide border-b border-white/10 flex items-center justify-center gap-2" style={{ background: `linear-gradient(90deg, ${store.primaryColor}, ${store.primaryColor}dd)` }}>
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+          <span>{store.announcementText}</span>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-900/80 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -22,6 +22,9 @@ export async function getPublicStore(slug: string) {
       stripePublicKey: true,
       paystackPublicKey: true,
       flutterwavePublicKey: true,
+      announcementText: true,
+      announcementActive: true,
+      heroImage: true,
       createdAt: true,
       categories: { 
         where: { isActive: true }, 
