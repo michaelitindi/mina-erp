@@ -21,6 +21,7 @@ import {
   Store,
   User2,
   X,
+  Globe,
 } from 'lucide-react'
 
 const navigation = [
@@ -36,6 +37,7 @@ const navigation = [
   { name: 'Documents', href: '/dashboard/documents', icon: FolderOpen, moduleKey: 'DOCUMENTS' },
   { name: 'Manufacturing', href: '/dashboard/manufacturing', icon: Cog, moduleKey: 'MANUFACTURING' },
   { name: 'E-Commerce', href: '/dashboard/ecommerce', icon: Store, moduleKey: 'ECOMMERCE' },
+  { name: 'Website Builder', href: '/dashboard/website-builder', icon: Globe, moduleKey: 'WEBSITE_BUILDER' },
   { name: 'Reports', href: '/dashboard/reports', icon: BarChart3, moduleKey: null }, // Admin only
   { name: 'Settings', href: '/dashboard/settings', icon: Settings, moduleKey: null }, // Admin only
 ]
