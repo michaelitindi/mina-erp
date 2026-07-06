@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://michaelitindi.github.io/erp/sitemap.xml

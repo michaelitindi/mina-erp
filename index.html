@@ -6,10 +6,86 @@
   <title>MinaERP - Modern, Modular Multi-Tenant ERP</title>
   <meta name="description" content="A modern, full-featured Enterprise Resource Planning (ERP) system built with Next.js 16, designed for small to medium businesses. Features multi-tenant architecture, beautiful dark mode UI, and modular design.">
   
-  <!-- SEO Meta Tags -->
-  <meta property="og:title" content="MinaERP - Modern, Modular Multi-Tenant ERP">
-  <meta property="og:description" content="A full-featured ERP built with Next.js 16. Power your finances, CRM, inventory, HR, and e-commerce from a single multi-tenant platform.">
+  <!-- SEO & Search Engine Optimization Meta Tags -->
+  <meta name="keywords" content="MinaERP, Open Source ERP, Next.js ERP, Modular ERP, Multi-Tenant SaaS, eTIMS compliant billing, Safaricom M-Pesa Daraja payment integration, accounting double entry ledger, Point of Sale Next.js, inventory management software, CRM leads opportunities, Kenya compliance ERP, Nigeria Paystack billing">
+  <link rel="canonical" href="https://michaelitindi.github.io/erp/">
+
+  <!-- Open Graph / Facebook Meta Tags -->
+  <meta property="og:title" content="MinaERP - Modern, Modular Multi-Tenant ERP Platform">
+  <meta property="og:description" content="A modern modular ERP built with Next.js 16. Manage checking balances, eTIMS invoicing, stock movements, and customer relationships in fully isolated workspaces.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://michaelitindi.github.io/erp/">
+  <meta property="og:image" content="https://michaelitindi.github.io/erp/og-image.png">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MinaERP - Modern, Modular Multi-Tenant ERP Platform">
+  <meta name="twitter:description" content="A modular business switchboard on Next.js 16. Support local M-Pesa payments, eTIMS compliance, POS, and HR out-of-the-box.">
+  <meta name="twitter:image" content="https://michaelitindi.github.io/erp/og-image.png">
+
+  <!-- Geographical & Local Geo-SEO Tags -->
+  <meta name="geo.region" content="KE-110" />
+  <meta name="geo.placename" content="Nairobi" />
+  <meta name="geo.position" content="-1.2921;36.8219" />
+  <meta name="ICBM" content="-1.2921, 36.8219" />
+
+  <!-- Schema.org JSON-LD Structured Data for Search Engine & AI Indexing -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "MinaERP",
+    "operatingSystem": "All",
+    "applicationCategory": "BusinessApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "description": "A modern, modular, multi-tenant Enterprise Resource Planning (ERP) system built with Next.js 16. Features isolated multi-tenant databases, eTIMS compliance, and real-time M-Pesa reconciliation.",
+    "softwareVersion": "1.0.0",
+    "applicationSubCategory": "Enterprise Resource Planning / Accounting Software",
+    "genre": "Open Source Software",
+    "author": {
+      "@type": "Person",
+      "name": "Michael Itindi"
+    },
+    "codeRepository": "https://github.com/michaelitindi/mina-erp",
+    "downloadUrl": "https://github.com/michaelitindi/mina-erp"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is MinaERP?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "MinaERP is a modern, modular, multi-tenant Enterprise Resource Planning (ERP) platform built with Next.js 16, TypeScript, Tailwind CSS, and Prisma. It isolates client organizations securely using Clerk auth and allows companies to activate only the business modules they need."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which payment gateways are supported for automatic reconciliation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "MinaERP features local and international payment integrations including Stripe, Paystack, Flutterwave, and direct Safaricom M-Pesa Daraja (supporting STK Push callbacks and C2B confirmations). Payments trigger webhook handlers that automatically reconcile outstanding invoices and orders in the general ledger."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is MinaERP compliant with regional tax systems like Kenya's eTIMS?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, MinaERP is designed with geographic and compliance integrations, specifically supporting the Kenya Revenue Authority (KRA) eTIMS system. It allows organizations to configure their eTIMS device ID, serial numbers, security keys, and KRA PIN parameters directly in their profile for fully compliant transaction logging."
+        }
+      }
+    ]
+  }
+  </script>
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -906,6 +982,21 @@
         gap: 2rem;
       }
     }
+
+    /* FAQ Open Accordion Styles */
+    .faq-details[open] {
+      border-color: rgba(255, 255, 255, 0.15);
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+    
+    .faq-details[open] .faq-icon {
+      transform: rotate(45deg);
+      color: var(--accent) !important;
+    }
+
+    .faq-details summary::-webkit-details-marker {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -1367,6 +1458,66 @@
           <a href="https://www.paypal.com/donate/?hosted_button_id=YOUR_BUTTON_ID_3" target="_blank" class="btn btn-github" style="margin-top:auto;">Donate $250</a>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- FAQ SECTION (SEO & AI Search Engine Optimization) -->
+  <section id="faq" class="container" style="padding: 100px 0; border-top: 1px solid var(--border-color);">
+    <div class="section-header">
+      <h2>Frequently Asked Questions</h2>
+      <p>Instant answers to help human visitors and AI assistants understand the details of MinaERP.</p>
+    </div>
+    
+    <div style="max-width: 800px; margin: 3rem auto 0; display: flex; flex-direction: column; gap: 1rem;">
+      <details class="card-preview faq-details" style="padding: 1.25rem; cursor: pointer; border-radius: 12px; transition: var(--transition);">
+        <summary style="font-family: var(--font-outfit); font-weight: 600; font-size: 1.05rem; list-style: none; display: flex; align-items: center; justify-content: space-between; color: white;">
+          What is MinaERP?
+          <span class="faq-icon" style="color: var(--primary); font-weight: 700; font-size: 1.2rem; transition: transform 0.2s;">+</span>
+        </summary>
+        <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+          MinaERP is a modern, modular, multi-tenant Enterprise Resource Planning (ERP) platform built with Next.js 16, TypeScript, Tailwind CSS, and Prisma. It isolates client organizations securely using Clerk auth and allows companies to activate only the business modules they need, saving system resources and reducing visual complexity.
+        </p>
+      </details>
+
+      <details class="card-preview faq-details" style="padding: 1.25rem; cursor: pointer; border-radius: 12px; transition: var(--transition);">
+        <summary style="font-family: var(--font-outfit); font-weight: 600; font-size: 1.05rem; list-style: none; display: flex; align-items: center; justify-content: space-between; color: white;">
+          Which payment gateways are supported for automatic reconciliation?
+          <span class="faq-icon" style="color: var(--primary); font-weight: 700; font-size: 1.2rem; transition: transform 0.2s;">+</span>
+        </summary>
+        <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+          MinaERP features local and international payment integrations including <strong>Stripe</strong>, <strong>Paystack</strong>, <strong>Flutterwave</strong>, and direct <strong>Safaricom M-Pesa Daraja</strong> (supporting STK Push callbacks and C2B validations). Payments trigger webhook handlers that automatically reconcile outstanding invoices and orders in the general ledger.
+        </p>
+      </details>
+
+      <details class="card-preview faq-details" style="padding: 1.25rem; cursor: pointer; border-radius: 12px; transition: var(--transition);">
+        <summary style="font-family: var(--font-outfit); font-weight: 600; font-size: 1.05rem; list-style: none; display: flex; align-items: center; justify-content: space-between; color: white;">
+          Is MinaERP compliant with regional tax systems like Kenya's eTIMS?
+          <span class="faq-icon" style="color: var(--primary); font-weight: 700; font-size: 1.2rem; transition: transform 0.2s;">+</span>
+        </summary>
+        <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+          Yes, MinaERP is designed with geographic and compliance integrations, specifically supporting the <strong>Kenya Revenue Authority (KRA) eTIMS</strong> system. It allows organizations to configure their eTIMS device ID, serial numbers, security keys, and KRA PIN parameters directly in their profile for fully compliant transaction logging.
+        </p>
+      </details>
+
+      <details class="card-preview faq-details" style="padding: 1.25rem; cursor: pointer; border-radius: 12px; transition: var(--transition);">
+        <summary style="font-family: var(--font-outfit); font-weight: 600; font-size: 1.05rem; list-style: none; display: flex; align-items: center; justify-content: space-between; color: white;">
+          How does the double-entry bookkeeping system work?
+          <span class="faq-icon" style="color: var(--primary); font-weight: 700; font-size: 1.2rem; transition: transform 0.2s;">+</span>
+        </summary>
+        <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+          Every invoice or storefront order paid online automatically triggers general ledger transactions using balanced double-entry accounting. Upon payment validation, checking asset account <code>1010</code> is debited, and accounts receivable <code>1100</code> (or sales revenue <code>4000</code>) is credited.
+        </p>
+      </details>
+
+      <details class="card-preview faq-details" style="padding: 1.25rem; cursor: pointer; border-radius: 12px; transition: var(--transition);">
+        <summary style="font-family: var(--font-outfit); font-weight: 600; font-size: 1.05rem; list-style: none; display: flex; align-items: center; justify-content: space-between; color: white;">
+          Can I self-host MinaERP on my own servers?
+          <span class="faq-icon" style="color: var(--primary); font-weight: 700; font-size: 1.2rem; transition: transform 0.2s;">+</span>
+        </summary>
+        <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+          Yes! MinaERP is completely open source under the MIT License. You can clone the repository from GitHub, configure your environment variables (Database URL, Clerk credentials, and Resend mail API keys), run the Prisma migrations, and deploy it to platforms like Vercel, Railway, Docker, or traditional VPS hosts.
+        </p>
+      </details>
     </div>
   </section>
 
