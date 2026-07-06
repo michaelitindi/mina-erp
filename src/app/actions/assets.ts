@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
+import { postToLedger } from '@/lib/finance'
 
 const createAssetSchema = z.object({
   name: z.string().min(1),
@@ -108,7 +109,25 @@ export async function getAssetStats() {
   return { total, active, totalValue: Number(totalValue._sum.currentValue || 0) }
 }
 
-// Calculate depreciation for an asset
+async function getOrCreateAccount(tx: any, orgId: string, userId: string, accountNumber: string, accountName: string, accountType: string) {
+  let acc = await tx.account.findFirst({
+    where: { organizationId: orgId, accountNumber, deletedAt: null }
+  })
+  if (!acc) {
+    acc = await tx.account.create({
+      data: {
+        organizationId: orgId,
+        accountNumber,
+        accountName,
+        accountType,
+        createdBy: userId,
+      }
+    })
+  }
+  return acc
+}
+
+// Calculate depreciation for an asset and post to General Ledger
 export async function calculateDepreciation(assetId: string) {
   const { userId, orgId } = await getOrganization()
   const asset = await prisma.asset.findFirst({ where: { id: assetId, organizationId: orgId, deletedAt: null } })
@@ -131,19 +150,44 @@ export async function calculateDepreciation(assetId: string) {
   const accumulated = Math.min(accumulatedPrev + monthlyDepreciation, purchasePrice - salvageValue)
   const bookValue = purchasePrice - accumulated
 
-  const record = await prisma.assetDepreciation.create({
-    data: {
-      assetId,
-      period,
-      depreciationAmount: new Decimal(monthlyDepreciation),
-      accumulatedDepreciation: new Decimal(accumulated),
-      bookValue: new Decimal(bookValue),
-      createdBy: userId,
-    }
-  })
+  const record = await prisma.$transaction(async (tx) => {
+    // 1. Ensure chart of accounts has the required accounts
+    await getOrCreateAccount(tx, orgId, userId, '6500', 'Depreciation Expense', 'EXPENSE')
+    await getOrCreateAccount(tx, orgId, userId, '1800', 'Accumulated Depreciation', 'ASSET')
 
-  // Update asset current value
-  await prisma.asset.update({ where: { id: assetId }, data: { currentValue: new Decimal(bookValue), updatedBy: userId } })
+    // 2. Create the depreciation record
+    const depRecord = await tx.assetDepreciation.create({
+      data: {
+        assetId,
+        period,
+        depreciationAmount: new Decimal(monthlyDepreciation),
+        accumulatedDepreciation: new Decimal(accumulated),
+        bookValue: new Decimal(bookValue),
+        createdBy: userId,
+      }
+    })
+
+    // 3. Update asset current value
+    await tx.asset.update({ 
+      where: { id: assetId }, 
+      data: { currentValue: new Decimal(bookValue), updatedBy: userId } 
+    })
+
+    // 4. Post depreciation to General Ledger
+    await postToLedger(tx, {
+      organizationId: orgId,
+      transactionDate: period,
+      description: `Asset Depreciation - ${asset.name} (${asset.assetNumber})`,
+      referenceNumber: asset.assetNumber,
+      userId,
+      entries: [
+        { accountNumber: '6500', debit: monthlyDepreciation, description: 'Depreciation Expense' },
+        { accountNumber: '1800', credit: monthlyDepreciation, description: 'Accumulated Depreciation' }
+      ]
+    })
+
+    return depRecord
+  })
 
   revalidatePath('/dashboard/assets')
   return record

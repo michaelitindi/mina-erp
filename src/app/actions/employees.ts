@@ -7,6 +7,7 @@ import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
 import { serializeDecimal } from '@/lib/utils'
+import { postToLedger } from '@/lib/finance'
 
 const createEmployeeSchema = z.object({
   firstName: z.string().min(1),
@@ -238,4 +239,123 @@ export async function updateEmployeeModules(id: string, modules: string[]) {
   })
   revalidatePath('/dashboard/hr/employees')
   return { success: true }
+}
+
+async function getOrCreateAccount(tx: any, orgId: string, userId: string, accountNumber: string, accountName: string, accountType: string) {
+  let acc = await tx.account.findFirst({
+    where: { organizationId: orgId, accountNumber, deletedAt: null }
+  })
+  if (!acc) {
+    acc = await tx.account.create({
+      data: {
+        organizationId: orgId,
+        accountNumber,
+        accountName,
+        accountType,
+        createdBy: userId,
+      }
+    })
+  }
+  return acc
+}
+
+export async function getPayrollRecords() {
+  const { orgId } = await getOrganization()
+  return prisma.payrollRecord.findMany({
+    where: { organizationId: orgId },
+    orderBy: { payPeriodStart: 'desc' },
+    include: {
+      employee: {
+        select: {
+          firstName: true,
+          lastName: true,
+          position: true
+        }
+      }
+    }
+  })
+}
+
+export async function processMonthlyPayroll(year: number, month: number) {
+  const { userId, orgId } = await getOrganization()
+  
+  const payPeriodStart = new Date(year, month - 1, 1)
+  const payPeriodEnd = new Date(year, month, 0)
+
+  const employees = await prisma.employee.findMany({
+    where: { organizationId: orgId, deletedAt: null, status: 'ACTIVE' }
+  })
+
+  if (employees.length === 0) {
+    throw new Error('No active employees found to process payroll for.')
+  }
+
+  const existingCount = await prisma.payrollRecord.count({
+    where: {
+      organizationId: orgId,
+      payPeriodStart,
+      payPeriodEnd
+    }
+  })
+  if (existingCount > 0) {
+    throw new Error(`Payroll for period ${year}-${String(month).padStart(2, '0')} has already been processed.`)
+  }
+
+  const processedRecords = await prisma.$transaction(async (tx) => {
+    await getOrCreateAccount(tx, orgId, userId, '6010', 'Wages & Salary Expense', 'EXPENSE')
+    await getOrCreateAccount(tx, orgId, userId, '1010', 'Checking Account', 'ASSET')
+    await getOrCreateAccount(tx, orgId, userId, '2200', 'Payroll Tax Payable', 'LIABILITY')
+
+    const records = []
+
+    for (const emp of employees) {
+      const basicSalary = emp.salary ? Number(emp.salary) : 2500.00
+      const taxRate = 0.20
+      const taxDeduction = basicSalary * taxRate
+      const netPay = basicSalary - taxDeduction
+
+      const record = await tx.payrollRecord.create({
+        data: {
+          organizationId: orgId,
+          employeeId: emp.id,
+          payPeriodStart,
+          payPeriodEnd,
+          baseSalary: new Decimal(basicSalary),
+          deductions: new Decimal(taxDeduction),
+          taxWithheld: new Decimal(taxDeduction),
+          netPay: new Decimal(netPay),
+          status: 'PAID',
+          createdBy: userId
+        }
+      })
+      records.push(record)
+
+      await postToLedger(tx, {
+        organizationId: orgId,
+        transactionDate: payPeriodEnd,
+        description: `Payroll Processing - ${emp.firstName} ${emp.lastName} (${year}-${String(month).padStart(2, '0')})`,
+        referenceNumber: `PAY-${record.id.slice(-6).toUpperCase()}`,
+        userId,
+        entries: [
+          { accountNumber: '6010', debit: basicSalary, description: 'Wages & Salary Expense' },
+          { accountNumber: '1010', credit: netPay, description: 'Cash Outflow' },
+          { accountNumber: '2200', credit: taxDeduction, description: 'Payroll Tax Withheld' }
+        ]
+      })
+    }
+
+    return records
+  })
+
+  await logAudit({
+    organizationId: orgId,
+    userId,
+    action: 'CREATE',
+    entityType: 'PayrollRecord',
+    entityId: `BATCH-${year}-${month}`,
+    newValues: { processedCount: processedRecords.length, year, month }
+  })
+
+  revalidatePath('/dashboard/hr/payroll')
+  return serializeDecimal(processedRecords)
 }
