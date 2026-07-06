@@ -6,7 +6,7 @@ MinaERP is a modern, modular, multi-tenant Enterprise Resource Planning (ERP) pl
 
 - **Multi-Tenant Separation**: Dynamic organization scoping using Clerk authentication.
 - **Double-Entry Ledger Posting**: Automatic accounting entries logged under a Chart of Accounts structure. Checking Asset (1010), Accounts Receivable (1100), and Sales Revenue (4000) are balanced synchronously on checkout transactions.
-- **Local & Regional Compliance**: Out-of-the-box support for Safaricom M-Pesa Daraja (STK Push and C2B validations) and eTIMS (Kenya Revenue Authority PIN invoice reporting).
+- **Internationalization & Regional Plugins**: Supports multi-currency profiles, customizable timezones, global payment routing, and regional compliance integrations (such as Safaricom M-Pesa payments and KRA eTIMS tax reporting).
 - **Global Gateways**: Integrated with Stripe, Paystack, Flutterwave, and Lemon Squeezy with auto-reconciling webhooks.
 - **Modular Switchboard**: Activates/deactivates modules (Finance, CRM, Inventory, Sales, HR, etc.) dynamically.
 
