@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
 
 // Types
-export type WebsiteType = 'GENERAL' | 'SCHOOL' | 'COURSE' | 'PORTFOLIO'
+export type WebsiteType = 'GENERAL' | 'SCHOOL' | 'COURSE' | 'PORTFOLIO' | 'BLOG' | 'EVENT' | 'SERVICES' | 'LANDING_PAGE'
 
 async function getOrganization() {
   const { userId, orgId } = await auth()
@@ -35,7 +35,7 @@ const createWebsiteSchema = z.object({
   name: z.string().min(1),
   slug: z.string().min(1).regex(/^[a-z0-9-]+$/),
   description: z.string().nullable().optional(),
-  type: z.enum(['GENERAL', 'SCHOOL', 'COURSE', 'PORTFOLIO']).default('GENERAL'),
+  type: z.enum(['GENERAL', 'SCHOOL', 'COURSE', 'PORTFOLIO', 'BLOG', 'EVENT', 'SERVICES', 'LANDING_PAGE']).default('GENERAL'),
   primaryColor: z.string().default('#3B82F6'),
   secondaryColor: z.string().default('#10B981'),
   fontFamily: z.string().default('sans'),
@@ -435,6 +435,22 @@ export async function generateWebsiteWithAI(prompt: string, type: WebsiteType) {
     primaryColor = '#EC4899' // Pink
     secondaryColor = '#6366F1' // Indigo
     fontFamily = 'outfit'
+  } else if (type === 'BLOG') {
+    primaryColor = '#0F172A' // Slate
+    secondaryColor = '#F43F5E' // Rose
+    fontFamily = 'inter'
+  } else if (type === 'EVENT') {
+    primaryColor = '#D946EF' // Fuchsia
+    secondaryColor = '#4F46E5' // Indigo
+    fontFamily = 'outfit'
+  } else if (type === 'SERVICES') {
+    primaryColor = '#0D9488' // Teal
+    secondaryColor = '#0F766E' // Dark Teal
+    fontFamily = 'inter'
+  } else if (type === 'LANDING_PAGE') {
+    primaryColor = '#2563EB' // Blue
+    secondaryColor = '#4F46E5' // Indigo
+    fontFamily = 'outfit'
   }
 
   const website = await prisma.website.create({
@@ -452,6 +468,8 @@ export async function generateWebsiteWithAI(prompt: string, type: WebsiteType) {
         logo: name.toUpperCase(),
         links: [
           { label: 'Home', url: '/' },
+          ...(type === 'BLOG' ? [{ label: 'Articles', url: '/posts' }] : []),
+          ...(type === 'SERVICES' ? [{ label: 'Book Appointment', url: '/book' }] : []),
           { label: 'About', url: '/about' },
           { label: 'Contact', url: '/contact' },
           ...(type === 'COURSE' ? [{ label: 'Courses', url: '/courses' }] : []),
@@ -713,6 +731,256 @@ export async function generateWebsiteWithAI(prompt: string, type: WebsiteType) {
           }
         }
       })
+    } else if (type === 'BLOG') {
+      pagesData = [
+        {
+          title: 'Home',
+          slug: 'home',
+          sections: [
+            {
+              type: 'HERO',
+              content: {
+                title: 'The Tech & Business Chronicle',
+                subtitle: 'Deep-dive tutorials, industry reports, and leadership strategies from top developers.',
+                ctaText: 'Browse Articles',
+                ctaUrl: '/posts',
+                bgImage: 'https://images.unsplash.com/photo-1501504905252-473c47e087f8?q=80&w=1200'
+              }
+            },
+            {
+              type: 'FEATURES',
+              content: {
+                title: 'What We Write About',
+                subtitle: 'Curated articles to keep you ahead of the digital curve.',
+                items: [
+                  { title: 'Serverless Tech', desc: 'Deploying React and database APIs globally with low latency.' },
+                  { title: 'System Security', desc: 'Managing keys, credentials, and secure role accesses.' },
+                  { title: 'UX Masterclass', desc: 'Design tokens and responsive layout configurations.' }
+                ]
+              }
+            },
+            {
+              type: 'BLOG_POSTS',
+              content: {
+                title: 'Recent Publications',
+                subtitle: 'Read our latest insights'
+              }
+            }
+          ]
+        },
+        {
+          title: 'Contact',
+          slug: 'contact',
+          sections: [
+            {
+              type: 'CONTACT_FORM',
+              content: {
+                title: 'Connect with the Editors',
+                subtitle: 'Pitch a story, suggest a feature, or report a typo.',
+                buttonText: 'Submit Inquiry',
+                formType: 'CONTACT'
+              }
+            }
+          ]
+        }
+      ]
+
+      // Pre-create mock articles
+      await prisma.webBlogPost.create({
+        data: {
+          websiteId: website.id,
+          title: 'Next.js 15 Architecture Foundations',
+          slug: 'nextjs-15-architecture',
+          summary: 'An in-depth exploration of Server Components, React Server Actions, and partial pre-rendering.',
+          content: 'In this article, we cover how Next.js 15 optimizes page load times. By utilizing Server Components, standard HTML structure is sent to the client, removing heavy JS hydration overhead. Server actions handle form submissions securely without REST controllers.',
+          coverImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=600'
+        }
+      })
+
+      await prisma.webBlogPost.create({
+        data: {
+          websiteId: website.id,
+          title: 'Building Scalable Web Layouts',
+          slug: 'scalable-web-layouts',
+          summary: 'Best practices for responsive CSS grids, HSL design tokens, and smooth page scaling.',
+          content: 'Responsive UI layout design requires a consistent scale. Using HSL color configurations allows generating dynamic themes (light, dark, glassmorphic) on the fly. Grids ensure columns wrap gracefully on mobile devices.',
+          coverImage: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=600'
+        }
+      })
+    } else if (type === 'EVENT') {
+      pagesData = [
+        {
+          title: 'Home',
+          slug: 'home',
+          sections: [
+            {
+              type: 'HERO',
+              content: {
+                title: 'Enterprise Tech Summit 2026',
+                subtitle: 'Join thousands of developers, designers, and systems architects in Nairobi for 3 days of learning.',
+                ctaText: 'Reserve Your RSVP',
+                ctaUrl: '#rsvp',
+                bgImage: 'https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200'
+              }
+            },
+            {
+              type: 'FEATURES',
+              content: {
+                title: 'Summit Tracks',
+                subtitle: 'Choose your focus area and dive deep with experts.',
+                items: [
+                  { title: 'AI Engineering', desc: 'Gemini prompts, model tuning, and semantic vector DBs.' },
+                  { title: 'ERP Scale', desc: 'Managing POS terminals, inventory logs, and accounting audits.' },
+                  { title: 'Decentralized Data', desc: 'Secure cryptography and cloud data synchronization.' }
+                ]
+              }
+            },
+            {
+              type: 'EVENT_INFO',
+              content: {
+                title: 'Venue & Schedule Details',
+                date: 'October 14-16, 2026',
+                location: 'Nairobi Global Convention Center',
+                schedule: [
+                  { time: '09:00 AM', event: 'Opening Keynote: Next-Gen ERP Systems' },
+                  { time: '11:00 AM', event: 'Panel: AI Agent Autonomy in Logistics' },
+                  { time: '02:00 PM', event: 'Interactive Lab: Figma Design Systems' }
+                ]
+              }
+            },
+            {
+              type: 'CONTACT_FORM',
+              content: {
+                title: 'Register RSVP',
+                subtitle: 'Submit this form to secure your free event pass.',
+                buttonText: 'Get RSVP Pass',
+                formType: 'CONTACT'
+              }
+            }
+          ]
+        }
+      ]
+    } else if (type === 'SERVICES') {
+      pagesData = [
+        {
+          title: 'Home',
+          slug: 'home',
+          sections: [
+            {
+              type: 'HERO',
+              content: {
+                title: 'Premium Advisory Services',
+                subtitle: 'Scale your business operations, audit financial accounts, and train your crew with direct bootcamps.',
+                ctaText: 'Book Consultation',
+                ctaUrl: '/book',
+                bgImage: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1200'
+              }
+            },
+            {
+              type: 'FEATURES',
+              content: {
+                title: 'Our Service Portfolio',
+                subtitle: 'Direct execution plans customized for your organization.',
+                items: [
+                  { title: 'Tax & Compliance Auditing', desc: 'eTIMS setups, direct VAT filing, and corporate audits.' },
+                  { title: 'Logistics Optimization', desc: 'Warehouse reorder calculations and inventory flow audits.' },
+                  { title: 'Custom ERP Tuning', desc: 'Integrating website builders and payment channels.' }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          title: 'Book Appointment',
+          slug: 'book',
+          sections: [
+            {
+              type: 'BOOKING_FORM',
+              content: {
+                title: 'Schedule a Consultation',
+                subtitle: 'Select your service track and request an appointment time slot.'
+              }
+            }
+          ]
+        },
+        {
+          title: 'Contact',
+          slug: 'contact',
+          sections: [
+            {
+              type: 'CONTACT_FORM',
+              content: {
+                title: 'Contact Our Advisors',
+                subtitle: 'Have a customized request? Send us a direct inquiry message.',
+                buttonText: 'Submit Inquiry',
+                formType: 'CONTACT'
+              }
+            }
+          ]
+        }
+      ]
+    } else if (type === 'LANDING_PAGE') {
+      pagesData = [
+        {
+          title: 'Home',
+          slug: 'home',
+          sections: [
+            {
+              type: 'HERO',
+              content: {
+                title: 'Unleash Enterprise Productivity',
+                subtitle: 'The single unified dashboard to manage finances, teams, warehouses, storefronts, and websites.',
+                ctaText: 'View Pricing',
+                ctaUrl: '#pricing',
+                bgImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200'
+              }
+            },
+            {
+              type: 'FEATURES',
+              content: {
+                title: 'Built-in Superpowers',
+                subtitle: 'Everything you need to launch and operate at scale.',
+                items: [
+                  { title: 'Audit Trail', desc: 'Log every transaction, document edit, and model modification.' },
+                  { title: 'Clerk Gated Team Settings', desc: 'Invite organization members and configure permissions.' },
+                  { title: 'Direct eTIMS Connector', desc: 'Automate tax registrations with direct KRA compliance.' }
+                ]
+              }
+            },
+            {
+              type: 'PRICING_TABLE',
+              content: {
+                title: 'Simple, Flexible Pricing',
+                subtitle: 'Choose the cockpit size that fits your team.',
+                plans: [
+                  { name: 'Starter', price: '$29/mo', desc: 'Up to 5 team members, standard modules, basic support.' },
+                  { name: 'Growth', price: '$79/mo', desc: 'Unlimited members, custom modules, API tokens, premium support.' }
+                ]
+              }
+            },
+            {
+              type: 'FAQ_ACCORDION',
+              content: {
+                title: 'Frequently Asked Questions',
+                subtitle: 'Have questions? We have answers.',
+                faqs: [
+                  { q: 'Is my data secure?', a: 'Yes. All data is isolated per Clerk Organization with secure role privileges.' },
+                  { q: 'Can I add or remove modules?', a: 'Absolutely. Visit Organization Settings -> Modules Management to toggle cockpit links.' }
+                ]
+              }
+            },
+            {
+              type: 'CONTACT_FORM',
+              content: {
+                title: 'Request a Live Demo',
+                subtitle: 'Fill out this form and a solution architect will set up a sandbox for your company.',
+                buttonText: 'Submit Request',
+                formType: 'CONTACT'
+              }
+            }
+          ]
+        }
+      ]
     } else {
       // General/Portfolio Website Mock
       pagesData = [
@@ -784,4 +1052,79 @@ export async function generateWebsiteWithAI(prompt: string, type: WebsiteType) {
   await logAudit({ organizationId: orgId, userId, action: 'CREATE', entityType: 'Website', entityId: website.id, newValues: website as any })
   revalidatePath('/dashboard/website-builder')
   return website
+}
+
+// Blog CRUD Actions
+export async function createWebBlogPost(
+  websiteId: string,
+  data: { title: string; content: string; summary?: string; coverImage?: string }
+) {
+  const { userId } = await getOrganization()
+  const slug = data.title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+
+  const post = await prisma.webBlogPost.create({
+    data: {
+      websiteId,
+      title: data.title,
+      slug,
+      content: data.content,
+      summary: data.summary,
+      coverImage: data.coverImage,
+    },
+  })
+
+  revalidatePath(`/site/${websiteId}`)
+  return post
+}
+
+export async function getWebBlogPosts(websiteId: string) {
+  return prisma.webBlogPost.findMany({
+    where: { websiteId, isPublished: true },
+    orderBy: { createdAt: 'desc' },
+  })
+}
+
+export async function getWebBlogPostBySlug(websiteId: string, slug: string) {
+  return prisma.webBlogPost.findUnique({
+    where: { websiteId_slug: { websiteId, slug } },
+  })
+}
+
+// Booking Actions
+export async function createWebBooking(
+  websiteId: string,
+  data: {
+    clientName: string
+    clientEmail: string
+    bookingDate: string
+    timeSlot: string
+    serviceName: string
+    notes?: string
+  }
+) {
+  const booking = await prisma.webBooking.create({
+    data: {
+      websiteId,
+      clientName: data.clientName,
+      clientEmail: data.clientEmail,
+      bookingDate: new Date(data.bookingDate),
+      timeSlot: data.timeSlot,
+      serviceName: data.serviceName,
+      notes: data.notes,
+    },
+  })
+
+  return booking
+}
+
+export async function getWebBookings(websiteId: string) {
+  const { orgId } = await getOrganization() // Authorization check
+  return prisma.webBooking.findMany({
+    where: { websiteId },
+    orderBy: { bookingDate: 'desc' },
+  })
 }

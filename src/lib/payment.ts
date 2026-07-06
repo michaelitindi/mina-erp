@@ -3,13 +3,14 @@
  * Supports: Stripe, Paystack, Flutterwave, LemonSqueezy, and COD
  */
 
-export type PaymentProvider = 'COD' | 'STRIPE' | 'PAYSTACK' | 'FLUTTERWAVE' | 'LEMONSQUEEZY'
+export type PaymentProvider = 'COD' | 'STRIPE' | 'PAYSTACK' | 'FLUTTERWAVE' | 'LEMONSQUEEZY' | 'MPESA'
 
 export interface PaymentConfig {
   provider: PaymentProvider
   publicKey?: string
   secretKey?: string
   storeId?: string // For LemonSqueezy
+  config?: any
 }
 
 export interface PaymentInitParams {
@@ -19,6 +20,7 @@ export interface PaymentInitParams {
   currency: string
   customerEmail: string
   customerName: string
+  customerPhone?: string
   description?: string
   callbackUrl: string
   metadata?: Record<string, unknown>
@@ -64,6 +66,9 @@ async function initStripePayment(config: PaymentConfig, params: PaymentInitParam
         'line_items[0][quantity]': '1',
         'metadata[orderId]': params.orderId,
         'metadata[orderNumber]': params.orderNumber,
+        ...Object.fromEntries(
+          Object.entries(params.metadata || {}).map(([k, v]) => [`metadata[${k}]`, String(v)])
+        )
       }).toString(),
     })
 
@@ -149,6 +154,7 @@ async function initFlutterwavePayment(config: PaymentConfig, params: PaymentInit
         meta: {
           orderId: params.orderId,
           orderNumber: params.orderNumber,
+          ...params.metadata,
         },
       }),
     })
@@ -219,6 +225,56 @@ async function initLemonSqueezyPayment(config: PaymentConfig, params: PaymentIni
   }
 }
 
+export async function initMpesaPayment(config: PaymentConfig, params: PaymentInitParams): Promise<PaymentResult> {
+  try {
+    const mpesaConfig = config.config as Record<string, string> || {}
+    const consumerKey = mpesaConfig.consumerKey || config.publicKey || '' // fallback to publicKey
+    const consumerSecret = mpesaConfig.consumerSecret || config.secretKey || '' // fallback to secretKey
+    const shortcode = mpesaConfig.shortcode || ''
+    const passkey = mpesaConfig.passkey || ''
+    const isSandbox = mpesaConfig.isSandbox !== 'false'
+
+    const { initiateStkPush } = await import('@/lib/payments/mpesa')
+    const phone = params.customerPhone || ''
+    if (!phone) {
+      return { success: false, error: 'M-Pesa payment requires a customer phone number.' }
+    }
+
+    const amountInKes = params.amount / 100 // Convert cents equivalent to KES
+
+    const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://yourdomain.com'}/api/webhooks/mpesa?orderId=${params.orderId}&type=${params.metadata?.type || 'ORDER'}`
+
+    const result = await initiateStkPush({
+      amount: amountInKes,
+      phoneNumber: phone,
+      reference: params.orderNumber || params.orderId,
+      callbackUrl,
+      consumerKey,
+      consumerSecret,
+      shortcode,
+      passkey,
+      isSandbox
+    })
+
+    if (result.success) {
+      return {
+        success: true,
+        paymentReference: result.checkoutRequestId || ''
+      }
+    }
+
+    return {
+      success: false,
+      error: result.error || 'Failed to initiate M-Pesa payment'
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err.message || 'M-Pesa initialization error'
+    }
+  }
+}
+
 // ================================
 // MAIN PAYMENT SERVICE
 // ================================
@@ -239,6 +295,9 @@ export async function initializePayment(config: PaymentConfig, params: PaymentIn
     
     case 'LEMONSQUEEZY':
       return initLemonSqueezyPayment(config, params)
+      
+    case 'MPESA':
+      return initMpesaPayment(config, params)
     
     default:
       return { success: false, error: `Unknown payment provider: ${config.provider}` }
@@ -291,4 +350,5 @@ export const paymentProviders: Record<PaymentProvider, { name: string; descripti
   PAYSTACK: { name: 'Paystack', description: 'Cards, Bank, Mobile Money', regions: 'Nigeria, Ghana, South Africa, Kenya' },
   FLUTTERWAVE: { name: 'Flutterwave', description: 'Cards, Mobile Money, Bank', regions: 'Africa, UK, EU' },
   LEMONSQUEEZY: { name: 'Lemon Squeezy', description: 'Digital Products', regions: 'Global' },
+  MPESA: { name: 'M-Pesa Daraja', description: 'M-Pesa STK Push / C2B', regions: 'Kenya, East Africa' },
 }

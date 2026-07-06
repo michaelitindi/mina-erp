@@ -29,8 +29,27 @@ vi.mock('@/lib/prisma', () => ({
     },
     webCourse: {
       create: vi.fn((args) => Promise.resolve({ id: 'course-123', ...args.data })),
+    },
+    webBlogPost: {
+      create: vi.fn((args) => Promise.resolve({ id: 'post-123', ...args.data })),
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+    },
+    webBooking: {
+      create: vi.fn((args) => Promise.resolve({ id: 'booking-123', ...args.data })),
+      findMany: vi.fn(),
     }
   }
+}))
+
+vi.mock('next/headers', () => ({
+  headers: vi.fn(async () => ({
+    get: vi.fn((key: string) => {
+      if (key === 'x-forwarded-for') return '127.0.0.1'
+      if (key === 'user-agent') return 'test-agent'
+      return null
+    })
+  }))
 }))
 
 describe('Website Builder Server Actions', () => {
@@ -83,6 +102,25 @@ describe('Website Builder Server Actions', () => {
       expect(website).toBeDefined()
       expect(website.type).toBe('COURSE')
       expect(website.primaryColor).toBe('#7C3AED')
+    })
+
+    it('should support blog generation when type is BLOG', async () => {
+      const prompt = 'Tech reviews and news'
+      const type = 'BLOG' as const
+
+      const website = await generateWebsiteWithAI(prompt, type)
+      expect(website).toBeDefined()
+      expect(website.type).toBe('BLOG')
+      expect(website.primaryColor).toBe('#0F172A')
+    })
+
+    it('should support landing pages when type is LANDING_PAGE', async () => {
+      const prompt = 'Enterprise dashboard features SaaS'
+      const type = 'LANDING_PAGE' as const
+
+      const website = await generateWebsiteWithAI(prompt, type)
+      expect(website).toBeDefined()
+      expect(website.type).toBe('LANDING_PAGE')
     })
   })
 

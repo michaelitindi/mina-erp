@@ -1958,6 +1958,10 @@ enum WebsiteType {
   SCHOOL
   COURSE
   PORTFOLIO
+  BLOG
+  EVENT
+  SERVICES
+  LANDING_PAGE
 }
 
 model Website {
@@ -1997,6 +2001,8 @@ model Website {
   pages           WebPage[]
   courses         WebCourse[]
   submissions     FormSubmission[]
+  blogPosts       WebBlogPost[]
+  bookings        WebBooking[]
 
   @@unique([organizationId, slug])
   @@index([organizationId])
@@ -2087,6 +2093,41 @@ model FormSubmission {
   createdAt       DateTime       @default(now())
 
   website         Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  @@index([websiteId])
+}
+
+model WebBlogPost {
+  id          String   @id @default(cuid())
+  websiteId   String
+  title       String
+  slug        String
+  content     String   @db.Text
+  summary     String?  @db.Text
+  coverImage  String?
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  website     Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+
+  @@unique([websiteId, slug])
+  @@index([websiteId])
+}
+
+model WebBooking {
+  id              String   @id @default(cuid())
+  websiteId       String
+  clientName      String
+  clientEmail     String
+  bookingDate     DateTime
+  timeSlot        String
+  serviceName     String
+  notes           String?  @db.Text
+  status          String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED
+  createdAt       DateTime @default(now())
+
+  website         Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
 
   @@index([websiteId])
 }

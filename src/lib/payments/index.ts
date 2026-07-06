@@ -36,6 +36,7 @@ export function getPaymentProvider(
 export function getAvailableProviders() {
   return [
     { type: 'STRIPE', name: 'Stripe', description: 'Credit/Debit Cards', forPOS: true, forEcommerce: true },
+    { type: 'PAYSTACK', name: 'Paystack', description: 'Cards, Bank Transfer, Mobile Money', forPOS: true, forEcommerce: true },
     { type: 'PAYPAL', name: 'PayPal', description: 'PayPal Account', forPOS: false, forEcommerce: true },
     { type: 'LEMONSQUEEZY', name: 'LemonSqueezy', description: 'Subscriptions & SaaS', forPOS: false, forEcommerce: true },
     { type: 'RAZORPAY', name: 'Razorpay', description: 'UPI, Cards (India)', forPOS: true, forEcommerce: true },

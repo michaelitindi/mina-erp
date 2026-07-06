@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { 
   CreditCard, Plus, Trash2, Settings, 
   CheckCircle, XCircle, ToggleLeft, ToggleRight,
-  ShoppingCart, Globe, X
+  ShoppingCart, Globe, X, Sparkles
 } from 'lucide-react'
 import { 
   createPaymentProvider, 
@@ -38,6 +38,7 @@ interface PaymentsClientProps {
 
 const PROVIDER_ICONS: Record<string, string> = {
   STRIPE: '💳',
+  PAYSTACK: '🇳🇬',
   PAYPAL: '🅿️',
   LEMONSQUEEZY: '🍋',
   RAZORPAY: '💰',
@@ -52,6 +53,10 @@ const PROVIDER_CONFIG_FIELDS: Record<string, { label: string, key: string, type:
   STRIPE: [
     { label: 'Secret Key', key: 'secretKey', type: 'password' },
     { label: 'Webhook Secret', key: 'webhookSecret', type: 'password' },
+  ],
+  PAYSTACK: [
+    { label: 'Public Key', key: 'publicKey', type: 'text' },
+    { label: 'Secret Key', key: 'secretKey', type: 'password' },
   ],
   PAYPAL: [
     { label: 'Client ID', key: 'clientId', type: 'text' },
@@ -69,6 +74,8 @@ const PROVIDER_CONFIG_FIELDS: Record<string, { label: string, key: string, type:
     { label: 'Consumer Key', key: 'consumerKey', type: 'text' },
     { label: 'Consumer Secret', key: 'consumerSecret', type: 'password' },
     { label: 'Shortcode', key: 'shortcode', type: 'text' },
+    { label: 'Passkey', key: 'passkey', type: 'password' },
+    { label: 'Sandbox Mode (true/false)', key: 'isSandbox', type: 'text' },
   ],
   FLUTTERWAVE: [
     { label: 'Public Key', key: 'publicKey', type: 'text' },
@@ -82,7 +89,38 @@ const PROVIDER_CONFIG_FIELDS: Record<string, { label: string, key: string, type:
   CASH: [],
 }
 
+const COUNTRIES = [
+  { code: 'ALL', name: '🌍 All Countries / Global' },
+  { code: 'US', name: '🇺🇸 United States' },
+  { code: 'KE', name: '🇰🇪 Kenya' },
+  { code: 'NG', name: '🇳🇬 Nigeria' },
+  { code: 'ZA', name: '🇿🇦 South Africa' },
+  { code: 'GH', name: '🇬🇭 Ghana' },
+  { code: 'IN', name: '🇮🇳 India' },
+  { code: 'GB', name: '🇬🇧 United Kingdom' },
+  { code: 'CA', name: '🇨🇦 Canada' },
+  { code: 'EU', name: '🇪🇺 Europe (General)' },
+  { code: 'AE', name: '🇦🇪 United Arab Emirates' },
+  { code: 'OTHER', name: '🌐 Other Region (Global)' },
+]
+
+const COUNTRY_PAYMENT_MAP: Record<string, string[]> = {
+  ALL: ['STRIPE', 'PAYSTACK', 'PAYPAL', 'LEMONSQUEEZY', 'RAZORPAY', 'GPAY', 'MPESA', 'FLUTTERWAVE', 'INTASEND', 'CASH'],
+  US: ['STRIPE', 'PAYPAL', 'GPAY', 'LEMONSQUEEZY', 'CASH'],
+  KE: ['MPESA', 'INTASEND', 'FLUTTERWAVE', 'CASH'],
+  NG: ['PAYSTACK', 'FLUTTERWAVE', 'CASH'],
+  ZA: ['PAYSTACK', 'FLUTTERWAVE', 'CASH'],
+  GH: ['PAYSTACK', 'FLUTTERWAVE', 'CASH'],
+  IN: ['RAZORPAY', 'GPAY', 'PAYPAL', 'CASH'],
+  GB: ['STRIPE', 'PAYPAL', 'GPAY', 'CASH'],
+  CA: ['STRIPE', 'PAYPAL', 'GPAY', 'CASH'],
+  EU: ['STRIPE', 'PAYPAL', 'LEMONSQUEEZY', 'GPAY', 'CASH'],
+  AE: ['STRIPE', 'PAYPAL', 'GPAY', 'CASH'],
+  OTHER: ['STRIPE', 'PAYPAL', 'FLUTTERWAVE', 'CASH'],
+}
+
 export function PaymentsClient({ providers, availableTypes }: PaymentsClientProps) {
+  const [selectedCountry, setSelectedCountry] = useState('ALL')
   const [showAdd, setShowAdd] = useState(false)
   const [showEdit, setShowEdit] = useState<Provider | null>(null)
   const [selectedType, setSelectedType] = useState('')
@@ -143,16 +181,38 @@ export function PaymentsClient({ providers, availableTypes }: PaymentsClientProp
     setConfig({})
   }
 
+  const allowedProviderTypes = COUNTRY_PAYMENT_MAP[selectedCountry] || COUNTRY_PAYMENT_MAP.ALL
+  const filteredAvailableTypes = availableTypes.filter(type => allowedProviderTypes.includes(type.type))
   const selectedTypeInfo = availableTypes.find(t => t.type === selectedType)
   const configFields = PROVIDER_CONFIG_FIELDS[selectedType] || []
 
   return (
     <div className="space-y-6">
+      {/* Country Filter Selector */}
+      <div className="bg-slate-900/30 border border-slate-700/80 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+            <Globe className="h-4 w-4 text-blue-400" />
+            Filter by Country / Region
+          </h3>
+          <p className="text-xs text-slate-400 mt-0.5">Select a country to view recommended payment gateways and configure local methods.</p>
+        </div>
+        <select
+          value={selectedCountry}
+          onChange={(e) => setSelectedCountry(e.target.value)}
+          className="bg-slate-800 border border-slate-700 rounded-lg text-sm text-white px-4 py-2.5 min-w-[220px] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+        >
+          {COUNTRIES.map(c => (
+            <option key={c.code} value={c.code}>{c.name}</option>
+          ))}
+        </select>
+      </div>
+
       {/* Configured Providers */}
       <div className="rounded-xl border border-slate-700 bg-slate-800/50">
         <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
           <h2 className="font-semibold text-white">Configured Providers</h2>
-          {availableTypes.length > 0 && (
+          {filteredAvailableTypes.length > 0 && (
             <button
               onClick={() => setShowAdd(true)}
               className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg"
@@ -219,11 +279,14 @@ export function PaymentsClient({ providers, availableTypes }: PaymentsClientProp
       </div>
 
       {/* Available Providers Info */}
-      {availableTypes.length > 0 && (
+      {filteredAvailableTypes.length > 0 && (
         <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-6">
-          <h3 className="font-medium text-white mb-3">Available to Add</h3>
+          <h3 className="font-medium text-white mb-3 flex items-center gap-1">
+            <Sparkles className="h-4 w-4 text-amber-400 animate-pulse" />
+            Recommended Gateways for {COUNTRIES.find(c => c.code === selectedCountry)?.name.split(' ').slice(1).join(' ') || 'this Region'}
+          </h3>
           <div className="flex flex-wrap gap-2">
-            {availableTypes.map(type => (
+            {filteredAvailableTypes.map(type => (
               <span 
                 key={type.type}
                 className="px-3 py-1.5 bg-slate-700/50 rounded-full text-sm text-slate-300"
@@ -253,17 +316,17 @@ export function PaymentsClient({ providers, availableTypes }: PaymentsClientProp
                   value={selectedType}
                   onChange={(e) => {
                     setSelectedType(e.target.value)
-                    const info = availableTypes.find(t => t.type === e.target.value)
+                    const info = filteredAvailableTypes.find(t => t.type === e.target.value)
                     if (info) {
                       setDisplayName(info.name)
                       setForPOS(info.forPOS)
                       setForEcommerce(info.forEcommerce)
                     }
                   }}
-                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                 >
                   <option value="">Select provider...</option>
-                  {availableTypes.map(type => (
+                  {filteredAvailableTypes.map(type => (
                     <option key={type.type} value={type.type}>
                       {type.name} - {type.description}
                     </option>
@@ -290,7 +353,7 @@ export function PaymentsClient({ providers, availableTypes }: PaymentsClientProp
                         type="checkbox"
                         checked={forPOS}
                         onChange={(e) => setForPOS(e.target.checked)}
-                        className="w-4 h-4 rounded bg-slate-700 border-slate-600"
+                        className="w-4 h-4 rounded bg-slate-700 border-slate-600 cursor-pointer"
                       />
                       <span className="text-sm text-slate-300">Enable for POS</span>
                     </label>
@@ -299,7 +362,7 @@ export function PaymentsClient({ providers, availableTypes }: PaymentsClientProp
                         type="checkbox"
                         checked={forEcommerce}
                         onChange={(e) => setForEcommerce(e.target.checked)}
-                        className="w-4 h-4 rounded bg-slate-700 border-slate-600"
+                        className="w-4 h-4 rounded bg-slate-700 border-slate-600 cursor-pointer"
                       />
                       <span className="text-sm text-slate-300">Enable for E-commerce</span>
                     </label>

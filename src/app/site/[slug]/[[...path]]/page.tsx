@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { submitWebForm } from '@/app/actions/website-builder'
 import { notFound } from 'next/navigation'
-import { Check, Mail, Phone, MapPin, Play, Lock, FileText, ChevronRight, Sparkles, Send } from 'lucide-react'
+import { Check, Mail, Phone, MapPin, Play, Lock, FileText, ChevronRight, Sparkles, Send, Calendar, Clock, BookOpen, User, HelpCircle, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { WebFormClient } from '@/components/website-builder/web-form-client'
 import { LessonViewerClient } from '@/components/website-builder/lesson-viewer-client'
+import { WebBookingClient } from '@/components/website-builder/web-booking-client'
 
 export default async function PublicWebsiteRenderPage({
   params
@@ -32,7 +33,12 @@ export default async function PublicWebsiteRenderPage({
             orderBy: { sortOrder: 'asc' }
           }
         }
-      }
+      },
+      blogPosts: {
+        where: { isPublished: true },
+        orderBy: { createdAt: 'desc' }
+      },
+      bookings: true
     }
   })
 
@@ -73,9 +79,13 @@ export default async function PublicWebsiteRenderPage({
   let activePage: any = null
   let activeCourse: any = null
   let activeLesson: any = null
+  let activePost: any = null
 
   const isCoursesList = path && path[0] === 'courses' && !path[1]
   const isCourseDetail = path && path[0] === 'courses' && path[1]
+  const isBlogList = path && path[0] === 'posts' && !path[1]
+  const isBlogDetail = path && path[0] === 'posts' && path[1]
+  const isBookingPage = path && path[0] === 'book'
 
   if (isCoursesList) {
     // Render e-learning course catalog
@@ -84,12 +94,20 @@ export default async function PublicWebsiteRenderPage({
     activeCourse = website.courses.find((c) => c.slug === courseSlug)
     if (!activeCourse) notFound()
 
-    // If lesson slug is specified, e.g. /site/my-site/courses/intro-to-coding/lessons/lesson-1
+    // If lesson slug is specified
     if (path[2] === 'lessons' && path[3]) {
       const lessonSlug = path[3]
       activeLesson = activeCourse.lessons.find((l: any) => l.slug === lessonSlug)
       if (!activeLesson) notFound()
     }
+  } else if (isBlogList) {
+    // Render blog index list
+  } else if (isBlogDetail) {
+    const postSlug = path[1]
+    activePost = website.blogPosts.find((p) => p.slug === postSlug)
+    if (!activePost) notFound()
+  } else if (isBookingPage) {
+    // Render service appointment booking page
   } else {
     // Normal page matching
     const pageSlug = path && path[0] ? path[0] : 'home'
@@ -251,6 +269,89 @@ export default async function PublicWebsiteRenderPage({
           </div>
         )}
 
+        {/* VIEW D: Blog Posts Index */}
+        {isBlogList && (
+          <div className="max-w-4xl mx-auto px-4 py-16 space-y-8 animate-fade-in">
+            <div className="text-center space-y-3">
+              <span className="text-[10px] uppercase tracking-wider font-bold text-rose-500">Publications</span>
+              <h1 className="text-3xl font-extrabold text-white">Articles & Insights</h1>
+              <p className="text-zinc-500 text-sm max-w-xl mx-auto">
+                Browse our recent guides, industry publications, and thoughts.
+              </p>
+            </div>
+
+            {website.blogPosts.length === 0 ? (
+              <div className="text-center py-12 text-zinc-500 text-sm">No articles published yet.</div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2">
+                {website.blogPosts.map((post) => (
+                  <div key={post.id} className="rounded-xl border border-zinc-900 bg-zinc-900/30 overflow-hidden flex flex-col justify-between hover:border-zinc-800 transition-all">
+                    {post.coverImage && (
+                      <div className="h-48 bg-cover bg-center" style={{ backgroundImage: `url(${post.coverImage})` }} />
+                    )}
+                    <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <h2 className="text-lg font-bold text-white leading-tight">{post.title}</h2>
+                        <p className="text-zinc-500 text-xs line-clamp-3 leading-relaxed">{post.summary}</p>
+                      </div>
+                      <div className="flex justify-between items-center pt-4 border-t border-zinc-900 mt-4">
+                        <span className="text-[10px] text-zinc-500">{new Date(post.createdAt).toLocaleDateString()}</span>
+                        <Link
+                          href={`/site/${slug}/posts/${post.slug}`}
+                          className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 cursor-pointer"
+                        >
+                          Read Article <ChevronRight className="h-3.5 w-3.5" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* VIEW E: Blog Post Detail */}
+        {isBlogDetail && activePost && (
+          <div className="max-w-3xl mx-auto px-4 py-16 space-y-6 animate-fade-in">
+            <Link
+              href={`/site/${slug}/posts`}
+              className="text-xs font-semibold text-zinc-400 hover:text-white flex items-center gap-1.5 cursor-pointer mb-6"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to Articles
+            </Link>
+
+            {activePost.coverImage && (
+              <div className="w-full h-80 rounded-xl bg-cover bg-center shadow-lg" style={{ backgroundImage: `url(${activePost.coverImage})` }} />
+            )}
+
+            <div className="space-y-4">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight">{activePost.title}</h1>
+              <div className="flex items-center gap-4 text-xs text-zinc-500">
+                <span className="flex items-center gap-1"><User className="h-3.5 w-3.5" /> Published by Admin</span>
+                <span>•</span>
+                <span>{new Date(activePost.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+
+            <article className="prose prose-invert max-w-none text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap border-t border-zinc-900 pt-6">
+              {activePost.content}
+            </article>
+          </div>
+        )}
+
+        {/* VIEW F: Service Booking Page */}
+        {isBookingPage && (
+          <div className="max-w-4xl mx-auto px-4 py-16 space-y-6">
+            <WebBookingClient
+              websiteId={website.id}
+              title="Request Appointment Slot"
+              subtitle="Provide details to request a custom consulting slot"
+              primaryColor={website.primaryColor}
+            />
+          </div>
+        )}
+
         {/* VIEW C: Visual section builder page render */}
         {activePage && (
           <div className="space-y-0">
@@ -396,6 +497,134 @@ export default async function PublicWebsiteRenderPage({
                                 Syllabus
                               </Link>
                             </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {sec.type === 'BLOG_POSTS' && (
+                    <div className="py-20 max-w-6xl mx-auto px-4 border-b border-zinc-900/40">
+                      <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+                        <h2 className="text-2xl md:text-3xl font-extrabold text-white">{content.title || 'Recent Publications'}</h2>
+                        <p className="text-zinc-500 text-xs md:text-sm">{content.subtitle || 'Read our latest articles.'}</p>
+                      </div>
+                      {website.blogPosts.length === 0 ? (
+                        <div className="text-center py-6 text-zinc-500 text-xs">No blog posts available.</div>
+                      ) : (
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                          {website.blogPosts.slice(0, 3).map((post) => (
+                            <div key={post.id} className="bg-zinc-900/20 border border-zinc-900 rounded-xl overflow-hidden hover:border-zinc-800 transition-all flex flex-col justify-between">
+                              {post.coverImage && (
+                                <div className="h-40 bg-cover bg-center" style={{ backgroundImage: `url(${post.coverImage})` }} />
+                              )}
+                              <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                                <div>
+                                  <h3 className="text-sm font-bold text-white line-clamp-1">{post.title}</h3>
+                                  <p className="text-zinc-500 text-xs line-clamp-2 mt-1 leading-relaxed">{post.summary}</p>
+                                </div>
+                                <div className="flex justify-between items-center border-t border-zinc-900 pt-3 text-[10px] text-zinc-500">
+                                  <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                                  <Link href={`/site/${slug}/posts/${post.slug}`} className="text-blue-400 hover:text-blue-300 font-bold flex items-center">
+                                    Read <ChevronRight className="h-3 w-3" />
+                                  </Link>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {sec.type === 'EVENT_INFO' && (
+                    <div className="py-20 max-w-5xl mx-auto px-4 border-b border-zinc-900/40 space-y-8">
+                      <div className="text-center max-w-2xl mx-auto mb-6 space-y-2">
+                        <h2 className="text-2xl md:text-3xl font-extrabold text-white">{content.title || 'Event Details'}</h2>
+                      </div>
+                      
+                      <div className="grid gap-6 md:grid-cols-3">
+                        <div className="bg-zinc-900/30 border border-zinc-900 p-5 rounded-xl text-center space-y-1">
+                          <Calendar className="h-5 w-5 text-blue-500 mx-auto" />
+                          <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest pt-2">Date & Time</h4>
+                          <p className="text-sm font-semibold text-white mt-1">{content.date || 'TBD'}</p>
+                        </div>
+                        <div className="bg-zinc-900/30 border border-zinc-900 p-5 rounded-xl text-center space-y-1">
+                          <MapPin className="h-5 w-5 text-blue-500 mx-auto" />
+                          <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest pt-2">Location</h4>
+                          <p className="text-sm font-semibold text-white mt-1">{content.location || 'TBD'}</p>
+                        </div>
+                        <div className="bg-zinc-900/30 border border-zinc-900 p-5 rounded-xl text-center space-y-1">
+                          <Clock className="h-5 w-5 text-blue-500 mx-auto" />
+                          <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest pt-2">Schedule Tracks</h4>
+                          <p className="text-sm font-semibold text-white mt-1">{(content.schedule?.length || 0)} Sessions Listed</p>
+                        </div>
+                      </div>
+
+                      {content.schedule && content.schedule.length > 0 && (
+                        <div className="border border-zinc-900 bg-zinc-900/10 rounded-xl overflow-hidden divide-y divide-zinc-900 max-w-2xl mx-auto">
+                          {content.schedule.map((sch: any, idx: number) => (
+                            <div key={idx} className="p-4 flex items-center justify-between text-xs md:text-sm">
+                              <span className="font-mono text-zinc-500 font-bold">{sch.time}</span>
+                              <span className="text-white font-semibold text-right">{sch.event}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {sec.type === 'BOOKING_FORM' && (
+                    <div className="py-20 px-4 max-w-lg mx-auto border-b border-zinc-900/40">
+                      <WebBookingClient
+                        websiteId={website.id}
+                        title={content.title}
+                        subtitle={content.subtitle}
+                        primaryColor={website.primaryColor}
+                      />
+                    </div>
+                  )}
+
+                  {sec.type === 'FAQ_ACCORDION' && (
+                    <div className="py-20 max-w-3xl mx-auto px-4 border-b border-zinc-900/40">
+                      <div className="text-center mb-12 space-y-2">
+                        <h2 className="text-2xl md:text-3xl font-extrabold text-white">{content.title || 'Frequently Asked Questions'}</h2>
+                        <p className="text-zinc-500 text-xs md:text-sm">{content.subtitle}</p>
+                      </div>
+                      <div className="space-y-4">
+                        {content.faqs?.map((faq: any, idx: number) => (
+                          <div key={idx} className="border border-zinc-900 bg-zinc-900/20 p-5 rounded-xl">
+                            <h4 className="text-sm font-bold text-white flex items-start gap-2">
+                              <HelpCircle className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                              {faq.q}
+                            </h4>
+                            <p className="text-xs text-zinc-500 mt-2 pl-6 leading-relaxed">{faq.a}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {sec.type === 'PRICING_TABLE' && (
+                    <div className="py-20 max-w-6xl mx-auto px-4 border-b border-zinc-900/40">
+                      <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+                        <h2 className="text-2xl md:text-3xl font-extrabold text-white">{content.title || 'Pricing Plans'}</h2>
+                        <p className="text-zinc-500 text-xs md:text-sm">{content.subtitle}</p>
+                      </div>
+                      <div className="grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
+                        {content.plans?.map((plan: any, idx: number) => (
+                          <div key={idx} className="bg-zinc-900/20 border border-zinc-900 rounded-2xl p-6 flex flex-col justify-between hover:border-zinc-800 transition-all text-center">
+                            <div className="space-y-3">
+                              <h3 className="text-xs uppercase font-extrabold tracking-widest text-zinc-500">{plan.name}</h3>
+                              <p className="text-3xl font-black text-white">{plan.price}</p>
+                              <p className="text-xs text-zinc-400 leading-relaxed border-t border-zinc-900/80 pt-3">{plan.desc}</p>
+                            </div>
+                            <button
+                              className="mt-6 w-full py-2.5 rounded-lg text-white font-bold text-xs uppercase tracking-wider cursor-pointer"
+                              style={{ backgroundColor: website.primaryColor }}
+                            >
+                              Get Started
+                            </button>
                           </div>
                         ))}
                       </div>

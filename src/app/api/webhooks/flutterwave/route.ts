@@ -19,64 +19,21 @@ export async function POST(request: NextRequest) {
       const txRef = data.tx_ref
       const metadata = data.meta || {}
       
-      // Find order by payment reference
-      const order = await prisma.onlineOrder.findFirst({
-        where: { paymentReference: txRef },
-        include: { 
-          store: true, 
-          items: true 
-        }
+      const { reconcilePaymentWebhook } = await import('@/app/actions/payments')
+      const amount = data.amount || 0
+      
+      const reconciliationResult = await reconcilePaymentWebhook({
+        amount,
+        reference: txRef,
+        provider: 'Flutterwave',
+        metadata
       })
-      
-      if (!order) {
-        console.log('Order not found for tx_ref:', txRef)
-        return NextResponse.json({ message: 'Order not found' })
+
+      if (reconciliationResult.success) {
+        return NextResponse.json({ message: reconciliationResult.message || 'Payment reconciled successfully' })
+      } else {
+        return NextResponse.json({ error: reconciliationResult.error || 'Reconciliation failed' }, { status: 400 })
       }
-      
-      if (order.paymentStatus === 'PAID') {
-        return NextResponse.json({ message: 'Already processed' })
-      }
-      
-      // Update order status
-      await prisma.onlineOrder.update({
-        where: { id: order.id },
-        data: {
-          paymentStatus: 'PAID',
-          status: 'CONFIRMED',
-          paidAt: new Date(),
-        }
-      })
-      
-      // Send confirmation emails
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-      const trackingUrl = `${baseUrl}/store/${order.store.slug}/order/${order.orderNumber}`
-      
-      await sendPaymentConfirmation({
-        orderNumber: order.orderNumber,
-        customerName: order.customerName,
-        customerEmail: order.customerEmail,
-        storeName: order.store.name,
-        amount: Number(order.totalAmount),
-        paymentMethod: 'Flutterwave',
-        trackingUrl,
-      })
-      
-      // Send admin notification
-      const adminEmail = process.env.ADMIN_EMAIL
-      if (adminEmail) {
-        await sendNewOrderNotification({
-          orderNumber: order.orderNumber,
-          customerName: order.customerName,
-          customerEmail: order.customerEmail,
-          storeName: order.store.name,
-          total: Number(order.totalAmount),
-          itemCount: order.items.length,
-          adminEmail,
-          dashboardUrl: `${baseUrl}/dashboard/ecommerce`,
-        })
-      }
-      
-      return NextResponse.json({ message: 'Payment processed successfully' })
     }
     
     return NextResponse.json({ message: 'Event received' })
