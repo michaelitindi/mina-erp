@@ -120,6 +120,7 @@ const createWorkOrderSchema = z.object({
   plannedStart: z.coerce.date().nullable().optional(),
   plannedEnd: z.coerce.date().nullable().optional(),
   notes: z.string().nullable().optional(),
+  warehouseId: z.string().nullable().optional(),
 })
 
 type CreateWorkOrderInput = z.input<typeof createWorkOrderSchema>
@@ -139,6 +140,7 @@ export async function createWorkOrder(input: CreateWorkOrderInput) {
       plannedStart: validated.plannedStart,
       plannedEnd: validated.plannedEnd,
       notes: validated.notes,
+      warehouseId: validated.warehouseId,
       organizationId: orgId,
       createdBy: userId,
     }
@@ -151,17 +153,178 @@ export async function createWorkOrder(input: CreateWorkOrderInput) {
 
 export async function updateWorkOrderStatus(id: string, status: string) {
   const { userId, orgId } = await getOrganization()
-  const existing = await prisma.workOrder.findFirst({ where: { id, organizationId: orgId } })
+  const existing = await prisma.workOrder.findFirst({
+    where: { id, organizationId: orgId },
+    include: {
+      bom: {
+        include: {
+          components: true
+        }
+      }
+    }
+  })
   if (!existing) throw new Error('Work order not found')
+  if (existing.status === 'COMPLETED') throw new Error('Work order is already completed')
+
+  // If starting or completing, perform shortage check if warehouse is assigned
+  if ((status === 'IN_PROGRESS' || status === 'COMPLETED') && existing.bom) {
+    if (!existing.warehouseId) {
+      throw new Error('A warehouse must be assigned to the work order before starting or completing production')
+    }
+
+    // Check availability for each component
+    for (const c of existing.bom.components) {
+      if (c.productId) {
+        // Calculate requirement: WO qty * component qty * (1 + wastage / 100)
+        const wastageCoeff = new Decimal(1).add(new Decimal(c.wastagePercent).div(100))
+        const requiredQty = new Decimal(existing.quantity).mul(c.quantity).mul(wastageCoeff)
+
+        const stock = await prisma.stockLevel.findUnique({
+          where: {
+            productId_warehouseId: {
+              productId: c.productId,
+              warehouseId: existing.warehouseId
+            }
+          }
+        })
+
+        const available = stock ? new Decimal(stock.quantity) : new Decimal(0)
+        if (available.lt(requiredQty)) {
+          throw new Error(`Insufficient stock for component "${c.description}". Required: ${requiredQty.toFixed(2)}, Available: ${available.toFixed(2)}`)
+        }
+      }
+    }
+  }
 
   const updateData: Record<string, unknown> = { status, updatedBy: userId }
   if (status === 'IN_PROGRESS' && !existing.actualStart) updateData.actualStart = new Date()
   if (status === 'COMPLETED') updateData.actualEnd = new Date()
 
-  const workOrder = await prisma.workOrder.update({ where: { id }, data: updateData })
-  await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'WorkOrder', entityId: workOrder.id, oldValues: { status: existing.status }, newValues: { status } })
+  // If completed, execute inventory movements in a transaction
+  if (status === 'COMPLETED') {
+    await prisma.$transaction(async (tx) => {
+      // Find last SM number
+      const lastMovement = await tx.stockMovement.findFirst({
+        where: { organizationId: orgId },
+        orderBy: { movementNumber: 'desc' },
+        select: { movementNumber: true }
+      })
+      let lastNum = lastMovement ? (parseInt(lastMovement.movementNumber.replace('SM-', '')) || 0) : 0
+
+      // 1. Consume components
+      if (existing.bom) {
+        for (const c of existing.bom.components) {
+          if (c.productId && existing.warehouseId) {
+            const wastageCoeff = new Decimal(1).add(new Decimal(c.wastagePercent).div(100))
+            const requiredQty = new Decimal(existing.quantity).mul(c.quantity).mul(wastageCoeff)
+
+            lastNum++
+            const movementNumber = `SM-${String(lastNum).padStart(6, '0')}`
+
+            // Create movement OUT
+            await tx.stockMovement.create({
+              data: {
+                organizationId: orgId,
+                movementNumber,
+                productId: c.productId,
+                type: 'OUT',
+                reason: 'MANUFACTURING',
+                quantity: requiredQty.negated(),
+                fromWarehouseId: existing.warehouseId,
+                referenceType: 'WORK_ORDER',
+                referenceId: existing.id,
+                notes: `Consumed for Work Order ${existing.workOrderNumber}`,
+                createdBy: userId
+              }
+            })
+
+            // Decrement StockLevel
+            await tx.stockLevel.upsert({
+              where: {
+                productId_warehouseId: {
+                  productId: c.productId,
+                  warehouseId: existing.warehouseId
+                }
+              },
+              create: {
+                organizationId: orgId,
+                productId: c.productId,
+                warehouseId: existing.warehouseId,
+                quantity: requiredQty.negated(),
+                availableQty: requiredQty.negated(),
+              },
+              update: {
+                quantity: { decrement: requiredQty },
+                availableQty: { decrement: requiredQty }
+              }
+            })
+          }
+        }
+      }
+
+      // 2. Receive finished product
+      if (existing.productId && existing.warehouseId) {
+        lastNum++
+        const movementNumber = `SM-${String(lastNum).padStart(6, '0')}`
+
+        // Create movement IN
+        await tx.stockMovement.create({
+          data: {
+            organizationId: orgId,
+            movementNumber,
+            productId: existing.productId,
+            type: 'IN',
+            reason: 'MANUFACTURING',
+            quantity: new Decimal(existing.quantity),
+            toWarehouseId: existing.warehouseId,
+            referenceType: 'WORK_ORDER',
+            referenceId: existing.id,
+            notes: `Produced by Work Order ${existing.workOrderNumber}`,
+            createdBy: userId
+          }
+        })
+
+        // Increment StockLevel
+        await tx.stockLevel.upsert({
+          where: {
+            productId_warehouseId: {
+              productId: existing.productId,
+              warehouseId: existing.warehouseId
+            }
+          },
+          create: {
+            organizationId: orgId,
+            productId: existing.productId,
+            warehouseId: existing.warehouseId,
+            quantity: new Decimal(existing.quantity),
+            availableQty: new Decimal(existing.quantity),
+          },
+          update: {
+            quantity: { increment: new Decimal(existing.quantity) },
+            availableQty: { increment: new Decimal(existing.quantity) }
+          }
+        })
+      }
+
+      // Update work order status in transaction
+      await tx.workOrder.update({
+        where: { id },
+        data: {
+          ...updateData,
+          completedQty: new Decimal(existing.quantity)
+        }
+      })
+    })
+  } else {
+    // Just update status (e.g. IN_PROGRESS or CANCELLED)
+    await prisma.workOrder.update({ where: { id }, data: updateData })
+  }
+
+  // Get the updated WorkOrder to return
+  const updatedWO = await prisma.workOrder.findUnique({ where: { id } })
+  await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'WorkOrder', entityId: id, oldValues: { status: existing.status }, newValues: { status } })
   revalidatePath('/dashboard/manufacturing')
-  return workOrder
+  return updatedWO
 }
 
 export async function getManufacturingStats() {
