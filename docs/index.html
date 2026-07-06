@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MinaERP - Modern, Modular Multi-Tenant ERP</title>
+  <meta name="description" content="A modern, full-featured Enterprise Resource Planning (ERP) system built with Next.js 16, designed for small to medium businesses. Features multi-tenant architecture, beautiful dark mode UI, and modular design.">
+  
+  <!-- SEO Meta Tags -->
+  <meta property="og:title" content="MinaERP - Modern, Modular Multi-Tenant ERP">
+  <meta property="og:description" content="A full-featured ERP built with Next.js 16. Power your finances, CRM, inventory, HR, and e-commerce from a single multi-tenant platform.">
+  <meta property="og:type" content="website">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* --------------------------------------------------
+       DESIGN SYSTEM & RESET
+       -------------------------------------------------- */
+    :root {
+      --bg-dark: #09090b;
+      --bg-card: #121217;
+      --border-color: #222227;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --primary: #3b82f6;      /* Blue */
+      --primary-glow: rgba(59, 130, 246, 0.15);
+      --secondary: #10b981;    /* Emerald */
+      --secondary-glow: rgba(16, 185, 129, 0.15);
+      --accent: #8b5cf6;       /* Violet */
+      --accent-glow: rgba(139, 92, 246, 0.15);
+      --font-outfit: 'Outfit', sans-serif;
+      --font-inter: 'Inter', sans-serif;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-inter);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Ambient background glows */
+    .glow-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.15;
+    }
+
+    .orb-1 {
+      top: -10%;
+      right: 10%;
+      width: 500px;
+      height: 500px;
+      background: var(--primary);
+      animation: float-orb 15s infinite ease-in-out alternate;
+    }
+
+    .orb-2 {
+      top: 40%;
+      left: -5%;
+      width: 450px;
+      height: 450px;
+      background: var(--accent);
+      animation: float-orb 18s infinite ease-in-out alternate-reverse;
+    }
+
+    .orb-3 {
+      bottom: 5%;
+      right: -10%;
+      width: 600px;
+      height: 600px;
+      background: var(--secondary);
+      animation: float-orb 22s infinite ease-in-out alternate;
+    }
+
+    @keyframes float-orb {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(40px, 30px) scale(1.1); }
+    }
+
+    /* Common Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* Typography Utilities */
+    h1, h2, h3, h4 {
+      font-family: var(--font-outfit);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    .btn-primary:hover {
+      background-color: #2563eb;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(139, 92, 246, 0.18) 100%);
+      transform: translateY(-2px);
+    }
+
+    .btn-github {
+      background-color: rgba(255, 255, 255, 0.03);
+      color: var(--text-main);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-github:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* --------------------------------------------------
+       NAVBAR
+       -------------------------------------------------- */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      background-color: rgba(9, 9, 11, 0.7);
+      transition: var(--transition);
+    }
+
+    .navbar {
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: white;
+    }
+
+    .logo-container svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-text {
+      font-family: var(--font-outfit);
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .nav-links a:hover {
+      color: var(--text-main);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* --------------------------------------------------
+       HERO SECTION
+       -------------------------------------------------- */
+    .hero {
+      padding-top: 150px;
+      padding-bottom: 80px;
+      position: relative;
+      text-align: center;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      background-color: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #60a5fa;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .hero h1 {
+      font-size: 4rem;
+      line-height: 1.1;
+      max-width: 800px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .hero-ctas {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 4rem;
+    }
+
+    /* --------------------------------------------------
+       DASHBOARD PREVIEW MOCKUP
+       -------------------------------------------------- */
+    .preview-wrapper {
+      max-width: 1000px;
+      margin: 0 auto;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 40px var(--primary-glow);
+      overflow: hidden;
+      aspect-ratio: 16/10;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-header {
+      background-color: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .preview-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .dot-red { background-color: #ef4444; }
+    .dot-yellow { background-color: #f59e0b; }
+    .dot-green { background-color: #10b981; }
+
+    .preview-url {
+      background-color: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.25rem 3rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    .preview-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      text-align: left;
+    }
+
+    /* Preview Sidebar */
+    .preview-sidebar {
+      background-color: rgba(0, 0, 0, 0.15);
+      border-right: 1px solid var(--border-color);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      list-style: none;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border-radius: 6px;
+    }
+
+    .sidebar-item.active {
+      color: white;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Preview Content Workspace */
+    .preview-content {
+      padding: 1.5rem;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 1.5rem;
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .content-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .content-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .module-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      background-color: var(--secondary-glow);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      color: var(--secondary);
+    }
+
+    .grid-dashboard {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .card-preview {
+      background-color: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .card-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    /* Graph rendering */
+    .preview-graph {
+      height: 150px;
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      padding-top: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .graph-bar {
+      flex: 1;
+      border-radius: 4px 4px 0 0;
+      background: linear-gradient(to top, var(--primary-glow), var(--primary));
+      position: relative;
+    }
+
+    .graph-bar::after {
+      content: attr(data-val);
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    /* Ledger logs visualization */
+    .ledger-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .ledger-item {
+      display: grid;
+      grid-template-columns: 60px 1fr 60px 60px;
+      font-size: 0.7rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.01);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .ledger-header {
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.25rem;
+    }
+
+    .ledger-val-debit {
+      color: var(--secondary);
+    }
+
+    .ledger-val-credit {
+      color: var(--accent);
+    }
+
+    /* Webhook notification alert popup mockup */
+    .mpesa-toast {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background-color: rgba(9, 9, 11, 0.95);
+      border: 1px solid #10b981;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px var(--secondary-glow);
+      animation: slide-toast 4s infinite ease-in-out;
+    }
+
+    @keyframes slide-toast {
+      0%, 100% { transform: translateY(100px); opacity: 0; }
+      10%, 90% { transform: translateY(0); opacity: 1; }
+    }
+
+    .toast-icon {
+      background-color: var(--secondary-glow);
+      color: var(--secondary);
+      border-radius: 50%;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toast-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .toast-desc {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    /* --------------------------------------------------
+       MODULES GRID SECTION
+       -------------------------------------------------- */
+    .modules-section {
+      padding: 100px 0;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .section-header h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-header p {
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .module-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.75rem;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .module-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, var(--primary-glow) 0%, transparent 50%);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .module-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .module-card:hover::before {
+      opacity: 1;
+    }
+
+    .module-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      position: relative;
+      z-index: 1;
+      color: var(--primary);
+    }
+
+    .module-card:nth-child(even) .module-icon-box {
+      color: var(--accent);
+    }
+
+    .module-card:nth-child(3n) .module-icon-box {
+      color: var(--secondary);
+    }
+
+    .module-card h3 {
+      font-size: 1.125rem;
+      margin-bottom: 0.75rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .module-card p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* --------------------------------------------------
+       TECH STACK SECTION
+       -------------------------------------------------- */
+    .tech-section {
+      padding: 80px 0;
+      background-color: rgba(255, 255, 255, 0.01);
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .tech-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 2.5rem;
+      margin-top: 3rem;
+    }
+
+    .tech-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      transition: var(--transition);
+      cursor: default;
+    }
+
+    .tech-item:hover {
+      color: var(--text-main);
+      transform: scale(1.05);
+    }
+
+    .tech-logo {
+      font-size: 2.5rem;
+      font-weight: 800;
+    }
+
+    /* --------------------------------------------------
+       DONATION / SUPPORT SECTION
+       -------------------------------------------------- */
+    .donation-section {
+      padding: 100px 0;
+    }
+
+    .donation-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      max-width: 900px;
+      margin: 3rem auto 0;
+    }
+
+    .donate-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2.5rem;
+      text-align: center;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .donate-card.featured {
+      border: 1.5px solid var(--accent);
+      box-shadow: 0 10px 30px var(--accent-glow);
+    }
+
+    .donate-card.featured::after {
+      content: 'POPULAR';
+      position: absolute;
+      top: 15px;
+      right: -30px;
+      background-color: var(--accent);
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.25rem 2.5rem;
+      transform: rotate(45deg);
+      letter-spacing: 0.05em;
+    }
+
+    .donate-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .tier-name {
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .tier-price {
+      font-size: 2.5rem;
+      font-family: var(--font-outfit);
+      font-weight: 800;
+      color: white;
+      margin-bottom: 1.5rem;
+    }
+
+    .tier-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      flex: 1;
+    }
+
+    .tier-features li {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tier-features svg {
+      width: 16px;
+      height: 16px;
+      color: var(--secondary);
+    }
+
+    /* --------------------------------------------------
+       FOOTER
+       -------------------------------------------------- */
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 4rem 0 2rem;
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 4rem;
+      margin-bottom: 3rem;
+    }
+
+    .footer-brand h3 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .footer-brand p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      max-width: 320px;
+    }
+
+    .footer-col h4 {
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.25rem;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .footer-col a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: var(--transition);
+    }
+
+    .footer-col a:hover {
+      color: white;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* --------------------------------------------------
+       RESPONSIVENESS MEDIA QUERIES
+       -------------------------------------------------- */
+    @media (max-width: 991px) {
+      .hero h1 {
+        font-size: 3rem;
+      }
+      .preview-body {
+        grid-template-columns: 60px 1fr;
+      }
+      .sidebar-logo span,
+      .sidebar-item span {
+        display: none;
+      }
+      .sidebar-item {
+        padding: 0.5rem;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        height: 60px;
+      }
+      .nav-links {
+        display: none; /* Can add burger menu support in JS if needed */
+      }
+      .nav-actions {
+        display: none;
+      }
+      .mobile-menu-btn {
+        display: block;
+      }
+      .hero h1 {
+        font-size: 2.25rem;
+      }
+      .hero-subtitle {
+        font-size: 0.95rem;
+      }
+      .preview-wrapper {
+        aspect-ratio: auto;
+        height: 380px;
+      }
+      .grid-dashboard {
+        grid-template-columns: 1fr;
+      }
+      .card-preview:nth-child(2) {
+        display: none;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient light decorations -->
+  <div class="glow-container">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+  </div>
+
+  <!-- HEADER & NAVIGATION -->
+  <header>
+    <div class="container navbar">
+      <a href="#" class="logo-container">
+        <!-- SVG Logo -->
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="15" y="15" width="70" height="70" rx="16" fill="url(#logoGrad)" stroke="white" stroke-width="3" />
+          <path d="M35 35H65M35 50H65M35 65H55" stroke="white" stroke-width="6" stroke-linecap="round" />
+          <defs>
+            <linearGradient id="logoGrad" x1="15" y1="15" x2="85" y2="85" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#3b82f6"/>
+              <stop offset="0.5" stop-color="#8b5cf6"/>
+              <stop offset="1" stop-color="#10b981"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="logo-text">Mina<span class="gradient-text">ERP</span></span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#modules">Modules</a></li>
+        <li><a href="#tech">Tech Stack</a></li>
+        <li><a href="#donate">Donate</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="https://github.com/michaelitindi/mina-erp" target="_blank" class="btn btn-github">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.11.82-.26.82-.577v-2.234c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.22.694.825.576C20.565 21.795 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a href="https://demo.minaerp.com" target="_blank" class="btn btn-primary">Launch Demo</a>
+      </div>
+
+      <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6H20M4 12H20M4 18H20"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="container hero">
+    <div class="hero-tag">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:var(--secondary);"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+      Open Source ERP Platform
+    </div>
+    <h1>Manage Your Business with <br><span class="gradient-text">Connected Modules</span></h1>
+    <p class="hero-subtitle">
+      A beautiful, next-generation ERP system built on Next.js 16. Turn modules on/off as you grow, with double-entry general ledger posting and local payment integration.
+    </p>
+
+    <div class="hero-ctas">
+      <a href="https://demo.minaerp.com" target="_blank" class="btn btn-primary">
+        Launch Live Demo
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+      </a>
+      <a href="#donate" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        Sponsor Project
+      </a>
+      <a href="https://github.com/michaelitindi/mina-erp" target="_blank" class="btn btn-github">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.11.82-.26.82-.577v-2.234c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.22.694.825.576C20.565 21.795 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        Star on GitHub
+      </a>
+    </div>
+
+    <!-- DASHBOARD VISUAL PREVIEW MOCKUP -->
+    <div class="preview-wrapper">
+      <div class="preview-header">
+        <div class="preview-dots">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+        </div>
+        <div class="preview-url">app.minaerp.com/dashboard</div>
+        <div style="width: 48px;"></div>
+      </div>
+      
+      <div class="preview-body">
+        <!-- Sidebar -->
+        <aside class="preview-sidebar">
+          <div class="sidebar-logo">
+            <svg viewBox="0 0 100 100" fill="none" width="18" height="18">
+              <rect width="100" height="100" rx="20" fill="url(#previewLogoGrad)" />
+              <defs>
+                <linearGradient id="previewLogoGrad" x1="0" y1="0" x2="100" y2="100">
+                  <stop stop-color="#3b82f6"/><stop offset="1" stop-color="#8b5cf6"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span>MinaERP</span>
+          </div>
+          
+          <ul class="sidebar-menu">
+            <li class="sidebar-item active">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+              <span>Dashboard</span>
+            </li>
+            <li class="sidebar-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Finance</span>
+            </li>
+            <li class="sidebar-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>CRM</span>
+            </li>
+            <li class="sidebar-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              <span>Inventory</span>
+            </li>
+            <li class="sidebar-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>Settings</span>
+            </li>
+          </ul>
+        </aside>
+        
+        <!-- Content Area -->
+        <main class="preview-content">
+          <div class="content-top">
+            <span class="content-title">Dashboard Overview</span>
+            <span class="module-badge">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+              Active Orgs Isolated
+            </span>
+          </div>
+          
+          <div class="grid-dashboard">
+            <!-- Left Card: Revenue -->
+            <div class="card-preview">
+              <div class="card-title">Live Transactions (USD)</div>
+              <div class="preview-graph">
+                <div class="graph-bar" data-val="$1.2k" style="height: 40px;"></div>
+                <div class="graph-bar" data-val="$2.8k" style="height: 80px;"></div>
+                <div class="graph-bar" data-val="$1.9k" style="height: 60px;"></div>
+                <div class="graph-bar" data-val="$4.5k" style="height: 120px;"></div>
+                <div class="graph-bar" data-val="$3.2k" style="height: 95px;"></div>
+              </div>
+            </div>
+            
+            <!-- Right Card: Real-time Reconciliation Ledger -->
+            <div class="card-preview">
+              <div class="card-title">Double-Entry Journal Postings</div>
+              <div class="ledger-preview">
+                <div class="ledger-item ledger-header">
+                  <span>Acc No.</span>
+                  <span>Account</span>
+                  <span>Debit</span>
+                  <span>Credit</span>
+                </div>
+                <div class="ledger-item">
+                  <span>1010</span>
+                  <span>Checking Account</span>
+                  <span class="ledger-val-debit">$250.00</span>
+                  <span>-</span>
+                </div>
+                <div class="ledger-item">
+                  <span>1100</span>
+                  <span>Accounts Rec.</span>
+                  <span>-</span>
+                  <span class="ledger-val-credit">$250.00</span>
+                </div>
+                <div class="ledger-item">
+                  <span>4000</span>
+                  <span>Sales Revenue</span>
+                  <span>-</span>
+                  <span class="ledger-val-credit">$15.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- M-Pesa STK push simulation toast -->
+          <div class="mpesa-toast">
+            <div class="toast-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <div>
+              <div class="toast-title">M-Pesa Webhook Callback</div>
+              <div class="toast-desc">Transaction NLJ7RT61SV Reconciled Successfully.</div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES / VALUE PROP -->
+  <section id="features" class="container" style="padding: 60px 0;">
+    <div class="section-header">
+      <h2 class="gradient-text">Open Source. Secure. Compliant.</h2>
+      <p>MinaERP is engineered to deliver enterprise grade capabilities under a permissive Apache-style model.</p>
+    </div>
+    
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+      <div class="card-preview">
+        <h3 style="margin-bottom: 0.5rem; display:flex; align-items:center; gap:8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Multi-Tenant Isolation
+        </h3>
+        <p style="font-size:0.875rem; color:var(--text-muted);">
+          Robust organization boundaries powered by Clerk authentication. Secure database scopes isolate data perfectly for multi-tenant SaaS or local branch operations.
+        </p>
+      </div>
+      
+      <div class="card-preview">
+        <h3 style="margin-bottom: 0.5rem; display:flex; align-items:center; gap:8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Automatic Reconciliation
+        </h3>
+        <p style="font-size:0.875rem; color:var(--text-muted);">
+          Payments received via Stripe, Paystack, Flutterwave, or M-Pesa STK Push trigger callbacks that immediately reconcile invoices and log double-entry bookkeeping items.
+        </p>
+      </div>
+      
+      <div class="card-preview">
+        <h3 style="margin-bottom: 0.5rem; display:flex; align-items:center; gap:8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17v-5H5M19 17v-8h-4"/></svg>
+          Modular Switchboard
+        </h3>
+        <p style="font-size:0.875rem; color:var(--text-muted);">
+          Turn on Finance, CRM, POS, HR, Manufacturing, or E-Commerce dynamically. Users only interact with the parts of the app that are enabled for their workspace.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 CORE MODULES SHOWCASE -->
+  <section id="modules" class="modules-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>12 Connected Core Modules</h2>
+        <p>A unified data schema that connects sales, stock, accounting, and customers seamlessly.</p>
+      </div>
+
+      <div class="modules-grid">
+        <!-- Card 1: Finance -->
+        <div class="module-card">
+          <div class="module-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <h3>💰 Finance</h3>
+          <p>Chart of Accounts, journal transactions, invoices, bill tracking, and ledger posting.</p>
+        </div>
+
+        <!-- Card 2: CRM -->
+        <div class="module-card">
+          <div class="module-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>👥 CRM</h3>
+          <p>Customer registries, supplier records, opportunities, leads funnel, and activity logs.</p>
+        </div>
+
+        <!-- Card 3: Sales -->
+        <div class="module-card">
+          <div class="module-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          </div>
+          <h3>🛒 Sales</h3>
+          <p>Manage quotations, process customer orders, trigger fulfillment shipments, and track logistics.</p>
+        </div>
+
+        <!-- Card 4: Inventory -->
+        <div class="module-card">
+          <div class="module-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          </div>
+          <h3>📦 Inventory</h3>
+          <p>Stock levels, multiple warehouses, reorder triggers, products, and variant matrix management.</p>
+        </div>
+
+        <!-- Card 5: Procurement -->
+        <div class="module-card">
+          <div class="module-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <h3>🛍️ Procurement</h3>
+          <p>Purchase orders to suppliers, goods receipt notes, and automatic inventory stock-in.</p>
+        </div>
+
+        <!-- Card 6: HR -->
+        <div class="module-card">
+          <div class="module-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <h3>👤 HR & Payroll</h3>
+          <p>Employee profiles, leave request approval workflows, timesheets, and basic payroll generation.</p>
+        </div>
+
+        <!-- Card 7: Fixed Assets -->
+        <div class="module-card">
+          <div class="module-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>💾 Fixed Assets</h3>
+          <p>Asset registrations, tracking, location audits, and periodic depreciation logging.</p>
+        </div>
+
+        <!-- Card 8: Projects -->
+        <div class="module-card">
+          <div class="module-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+          </div>
+          <h3>📁 Projects</h3>
+          <p>Collaborative project boards, milestone scheduling, task dependencies, and timesheet links.</p>
+        </div>
+
+        <!-- Card 9: Documents -->
+        <div class="module-card">
+          <div class="module-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <h3>📄 Documents</h3>
+          <p>Secure document attachments, folders, compliance templates, and folder tags.</p>
+        </div>
+
+        <!-- Card 10: Manufacturing -->
+        <div class="module-card">
+          <div class="module-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          </div>
+          <h3>🏭 Manufacturing</h3>
+          <p>Recipe definitions (Bill of Materials), raw ingredient allocations, and work orders processing.</p>
+        </div>
+
+        <!-- Card 11: E-Commerce -->
+        <div class="module-card">
+          <div class="module-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          </div>
+          <h3>🏪 E-Commerce</h3>
+          <p>Deploy online customer storefronts integrated directly with inventory and checkout links.</p>
+        </div>
+
+        <!-- Card 12: POS -->
+        <div class="module-card">
+          <div class="module-icon-box">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="8" rx="2"/><rect x="6" y="12" width="12" height="8" rx="2"/></svg>
+          </div>
+          <h3>💳 Point of Sale</h3>
+          <p>Cash register terminals, shift openings/closings, fast order inputs, and receipt printing.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH STACK SECTION -->
+  <section id="tech" class="tech-section">
+    <div class="container">
+      <h2 style="font-size:2rem; margin-bottom:1rem;">Built On Modern Standards</h2>
+      <p style="color:var(--text-muted); max-width:600px; margin:0 auto 2rem;">MinaERP utilizes high-performance open technologies to guarantee low latency and clean architectures.</p>
+      
+      <div class="tech-grid">
+        <div class="tech-item">
+          <div class="tech-logo">Next.js</div>
+          <span style="font-size:0.75rem;">16 App Router</span>
+        </div>
+        <div class="tech-item">
+          <div class="tech-logo" style="color:#3178c6;">TS</div>
+          <span style="font-size:0.75rem;">TypeScript 5</span>
+        </div>
+        <div class="tech-item">
+          <div class="tech-logo" style="color:#5a67d8;">Prisma</div>
+          <span style="font-size:0.75rem;">ORM Schema</span>
+        </div>
+        <div class="tech-item">
+          <div class="tech-logo" style="color:#ef4444;">Clerk</div>
+          <span style="font-size:0.75rem;">Tenant Auth</span>
+        </div>
+        <div class="tech-item">
+          <div class="tech-logo" style="color:#38b2ac;">Tailwind</div>
+          <span style="font-size:0.75rem;">Tailwind CSS v4</span>
+        </div>
+        <div class="tech-item">
+          <div class="tech-logo" style="color:#336791;">Postgres</div>
+          <span style="font-size:0.75rem;">Relational Database</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DONATION / SUPPORT THE PROJECT -->
+  <section id="donate" class="donation-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="gradient-text">Support Open Source Development</h2>
+        <p>MinaERP is free under the MIT License. Sponsor the project to fund hosting, continuous testing, and new feature integrations.</p>
+      </div>
+
+      <div class="donation-grid">
+        <!-- Sponsor Tier 1 -->
+        <div class="donate-card">
+          <div class="tier-name">Supporter</div>
+          <div class="tier-price">$10<span style="font-size:1rem; font-weight:400; color:var(--text-muted);">/mo</span></div>
+          <ul class="tier-features">
+            <li>
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              Sponsor badge on README
+            </li>
+            <li>
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              Vote on product roadmap
+            </li>
+          </ul>
+          <a href="https://www.paypal.com/donate/?hosted_button_id=YOUR_BUTTON_ID_1" target="_blank" class="btn btn-github" style="margin-top:auto;">Donate $10</a>
+        </div>
+
+        <!-- Sponsor Tier 2: Featured -->
+        <div class="donate-card featured">
+          <div class="tier-name" style="color:var(--accent);">Pro Sponsor</div>
+          <div class="tier-price">$50<span style="font-size:1rem; font-weight:400; color:var(--text-muted);">/mo</span></div>
+          <ul class="tier-features">
+            <li>
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              Prioritized Github Issues
+            </li>
+            <li>
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              Logo placement on website
+            </li>
+            <li>
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              Discord Sponsor Role
+            </li>
+          </ul>
+          <a href="https://www.paypal.com/donate/?hosted_button_id=YOUR_BUTTON_ID_2" target="_blank" class="btn btn-primary" style="margin-top:auto;">Donate $50</a>
+        </div>
+
+        <!-- Sponsor Tier 3 -->
+        <div class="donate-card">
+          <div class="tier-name">Corporate</div>
+          <div class="tier-price">$250<span style="font-size:1rem; font-weight:400; color:var(--text-muted);">/mo</span></div>
+          <ul class="tier-features">
+            <li>
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              1-on-1 Setup Support
+            </li>
+            <li>
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              Prominent Logo placement
+            </li>
+            <li>
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              Custom feature consultancy
+            </li>
+          </ul>
+          <a href="https://www.paypal.com/donate/?hosted_button_id=YOUR_BUTTON_ID_3" target="_blank" class="btn btn-github" style="margin-top:auto;">Donate $250</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <h3>Mina<span class="gradient-text">ERP</span></h3>
+        <p>Connected, multi-tenant modular business management platform built for modern SMBs. Open source under the MIT license.</p>
+      </div>
+      
+      <div class="footer-col">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#modules">Modules</a></li>
+          <li><a href="#tech">Tech Stack</a></li>
+          <li><a href="#donate">Donate</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Links</h4>
+        <ul>
+          <li><a href="https://github.com/michaelitindi/mina-erp" target="_blank">GitHub</a></li>
+          <li><a href="https://demo.minaerp.com" target="_blank">Live Demo</a></li>
+          <li><a href="https://github.com/michaelitindi/mina-erp/blob/main/LICENSE" target="_blank">MIT License</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <span>&copy; 2026 MinaERP. Open source project licensed under the MIT License.</span>
+      <span>Designed with ❤️ by open source developers</span>
+    </div>
+  </footer>
+
+  <script>
+    function toggleMobileMenu() {
+      // Mobile menu script if needed later
+      alert("Mobile menu links are: Features, Modules, Tech Stack, Donate");
+    }
+  </script>
+</body>
+</html>
