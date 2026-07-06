@@ -3,10 +3,9 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  experimental: {
-    turbopack: {
-      root: __dirname,
-    },
+  // @ts-ignore
+  turbopack: {
+    root: __dirname,
   },
 };
 
