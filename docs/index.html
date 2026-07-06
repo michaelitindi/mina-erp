@@ -865,6 +865,112 @@
     }
 
     /* --------------------------------------------------
+       PRODUCT SHOWCASE (SCREENSHOTS)
+       -------------------------------------------------- */
+    .showcase-section {
+      padding: 100px 0;
+      background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 60%);
+    }
+
+    .showcase-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.75rem 1.5rem;
+      border-radius: 99px;
+      font-family: var(--font-outfit);
+      font-weight: 500;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .tab-btn:hover, .tab-btn.active {
+      border-color: var(--primary);
+      color: white;
+      background-color: rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    }
+
+    .showcase-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .showcase-view {
+      display: none;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    .showcase-view.active {
+      display: block;
+    }
+
+    .screenshot-wrapper {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      transition: var(--transition);
+    }
+
+    .screenshot-wrapper:hover {
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: 0 20px 60px rgba(59, 130, 246, 0.15);
+    }
+
+    .screenshot-img-container {
+      position: relative;
+      width: 100%;
+      background-color: #0b0c10;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .screenshot-img-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .screenshot-caption {
+      padding: 2rem;
+      border-top: 1px solid var(--border-color);
+      background: linear-gradient(to bottom, var(--bg-card), rgba(0,0,0,0.4));
+    }
+
+    .screenshot-caption h3 {
+      font-size: 1.5rem;
+      font-family: var(--font-outfit);
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+
+    .screenshot-caption p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --------------------------------------------------
        FOOTER
        -------------------------------------------------- */
     footer {
@@ -1029,15 +1135,12 @@
         <li><a href="#features">Features</a></li>
         <li><a href="#modules">Modules</a></li>
         <li><a href="#tech">Tech Stack</a></li>
-        <li><a href="#donate">Donate</a></li>
+        <li><a href="https://github.com/michaelitindi/mina-erp" target="_blank">GitHub</a></li>
+        <li><a href="https://mina-erp.vercel.app/" target="_blank">Live Demo</a></li>
       </ul>
 
       <div class="nav-actions">
-        <a href="https://github.com/michaelitindi/mina-erp" target="_blank" class="btn btn-github">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.11.82-.26.82-.577v-2.234c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22v3.293c0 .319.22.694.825.576C20.565 21.795 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
-          GitHub
-        </a>
-        <a href="https://mina-erp.vercel.app/" target="_blank" class="btn btn-primary">Launch Demo</a>
+        <a href="#donate" class="btn btn-primary">Donate</a>
       </div>
 
       <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
@@ -1189,6 +1292,113 @@
             </div>
           </div>
         </main>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCT SHOWCASE (SCREENSHOTS) -->
+  <section class="showcase-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="gradient-text">Explore the Interface</h2>
+        <p>Take a closer look at the actual dashboards, ledger entry posting logs, and point of sale screens inside the application.</p>
+      </div>
+
+      <div class="showcase-tabs">
+        <button class="tab-btn active" data-tab="tab-dashboard">Dashboard Overview</button>
+        <button class="tab-btn" data-tab="tab-finance">Finance & Ledger</button>
+        <button class="tab-btn" data-tab="tab-crm">CRM & Sales</button>
+        <button class="tab-btn" data-tab="tab-inventory">Inventory & POS</button>
+      </div>
+
+      <div class="showcase-container">
+        <!-- Dashboard Tab View -->
+        <div id="tab-dashboard" class="showcase-view active">
+          <div class="screenshot-wrapper">
+            <div class="preview-header">
+              <div class="preview-dots">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+              </div>
+              <div class="preview-url">app.minaerp.com/dashboard</div>
+              <div style="width: 48px;"></div>
+            </div>
+            <div class="screenshot-img-container">
+              <img src="images/screenshot-dashboard.png" alt="MinaERP Dashboard Overview Screen" onerror="this.src='favicon.svg'; this.style.width='100px'; this.style.height='100px'; this.style.opacity='0.2';">
+            </div>
+            <div class="screenshot-caption">
+              <h3>Unified Organization Hub</h3>
+              <p>Get a bird's-eye view of your business vitals. Track active modules, total revenue charts, recent bank transactions, and double-entry reconciliation status in one responsive screen.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Finance Tab View -->
+        <div id="tab-finance" class="showcase-view">
+          <div class="screenshot-wrapper">
+            <div class="preview-header">
+              <div class="preview-dots">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+              </div>
+              <div class="preview-url">app.minaerp.com/finance/ledger</div>
+              <div style="width: 48px;"></div>
+            </div>
+            <div class="screenshot-img-container">
+              <img src="images/screenshot-finance.png" alt="MinaERP Finance and General Ledger Screen" onerror="this.src='favicon.svg'; this.style.width='100px'; this.style.height='100px'; this.style.opacity='0.2';">
+            </div>
+            <div class="screenshot-caption">
+              <h3>Double-Entry Bookkeeping Ledger</h3>
+              <p>View automated journal postings showing debit and credit matches for all online sales, payment callbacks, and manually inputted operational business accounts.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CRM Tab View -->
+        <div id="tab-crm" class="showcase-view">
+          <div class="screenshot-wrapper">
+            <div class="preview-header">
+              <div class="preview-dots">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+              </div>
+              <div class="preview-url">app.minaerp.com/crm/customers</div>
+              <div style="width: 48px;"></div>
+            </div>
+            <div class="screenshot-img-container">
+              <img src="images/screenshot-crm.png" alt="MinaERP CRM and Customer Pipeline Screen" onerror="this.src='favicon.svg'; this.style.width='100px'; this.style.height='100px'; this.style.opacity='0.2';">
+            </div>
+            <div class="screenshot-caption">
+              <h3>Customer Lifecycle Management</h3>
+              <p>Organize contacts, invoice history, custom communication settings, and trace customer-level double-entry balances in a clean, comprehensive CRM pipeline.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inventory Tab View -->
+        <div id="tab-inventory" class="showcase-view">
+          <div class="screenshot-wrapper">
+            <div class="preview-header">
+              <div class="preview-dots">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+              </div>
+              <div class="preview-url">app.minaerp.com/inventory/pos</div>
+              <div style="width: 48px;"></div>
+            </div>
+            <div class="screenshot-img-container">
+              <img src="images/screenshot-inventory.png" alt="MinaERP Inventory and POS Register Screen" onerror="this.src='favicon.svg'; this.style.width='100px'; this.style.height='100px'; this.style.opacity='0.2';">
+            </div>
+            <div class="screenshot-caption">
+              <h3>Real-Time Point of Sale</h3>
+              <p>Sell items directly using the built-in POS layout. Sales automatically decrement physical inventory counts, dispatch invoices, and record double-entry tax reconciliation events.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -1393,67 +1603,29 @@
     <div class="container">
       <div class="section-header">
         <h2 class="gradient-text">Support Open Source Development</h2>
-        <p>MinaERP is free under the MIT License. Sponsor the project to fund hosting, continuous testing, and new feature integrations.</p>
+        <p>MinaERP is free, open source under the MIT License. Sponsor the project to support ongoing development, hosting, and features.</p>
       </div>
 
-      <div class="donation-grid">
-        <!-- Sponsor Tier 1 -->
-        <div class="donate-card">
-          <div class="tier-name">Supporter</div>
-          <div class="tier-price">$10<span style="font-size:1rem; font-weight:400; color:var(--text-muted);">/mo</span></div>
-          <ul class="tier-features">
-            <li>
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-              Sponsor badge on README
-            </li>
-            <li>
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-              Vote on product roadmap
-            </li>
-          </ul>
-          <a href="https://www.paypal.com/donate/?hosted_button_id=YOUR_BUTTON_ID_1" target="_blank" class="btn btn-github" style="margin-top:auto;">Donate $10</a>
-        </div>
-
-        <!-- Sponsor Tier 2: Featured -->
-        <div class="donate-card featured">
-          <div class="tier-name" style="color:var(--accent);">Pro Sponsor</div>
-          <div class="tier-price">$50<span style="font-size:1rem; font-weight:400; color:var(--text-muted);">/mo</span></div>
-          <ul class="tier-features">
-            <li>
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-              Prioritized Github Issues
-            </li>
-            <li>
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-              Logo placement on website
-            </li>
-            <li>
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-              Discord Sponsor Role
-            </li>
-          </ul>
-          <a href="https://www.paypal.com/donate/?hosted_button_id=YOUR_BUTTON_ID_2" target="_blank" class="btn btn-primary" style="margin-top:auto;">Donate $50</a>
-        </div>
-
-        <!-- Sponsor Tier 3 -->
-        <div class="donate-card">
-          <div class="tier-name">Corporate</div>
-          <div class="tier-price">$250<span style="font-size:1rem; font-weight:400; color:var(--text-muted);">/mo</span></div>
-          <ul class="tier-features">
-            <li>
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-              1-on-1 Setup Support
-            </li>
-            <li>
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-              Prominent Logo placement
-            </li>
-            <li>
-              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-              Custom feature consultancy
-            </li>
-          </ul>
-          <a href="https://www.paypal.com/donate/?hosted_button_id=YOUR_BUTTON_ID_3" target="_blank" class="btn btn-github" style="margin-top:auto;">Donate $250</a>
+      <div style="max-width: 600px; margin: 3rem auto 0; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 3rem; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🎁</div>
+        <h3 style="font-family: var(--font-outfit); font-size: 1.5rem; color: white; margin-bottom: 1rem;">Custom Sponsorship</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem;">
+          Whether it is a one-time token of appreciation or a recurring monthly sponsorship, your support directly fuels the development of new modules, security updates, and local compliance features. Choose your own amount via one of the trusted services below:
+        </p>
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 320px; margin: 0 auto;">
+          <!-- PayPal Link -->
+          <a href="https://www.paypal.com/donate/" target="_blank" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            Donate via PayPal
+          </a>
+          <!-- Polar.sh Link -->
+          <a href="https://polar.sh/michaelitindi" target="_blank" class="btn btn-secondary" style="display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);">
+            Sponsor on Polar.sh
+          </a>
+          <!-- Buy Me A Coffee -->
+          <a href="https://buymeacoffee.com/michaelitindi" target="_blank" class="btn btn-github" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            Buy Me a Coffee
+          </a>
         </div>
       </div>
     </div>
@@ -1558,6 +1730,18 @@
       // Mobile menu script if needed later
       alert("Mobile menu links are: Features, Modules, Tech Stack, Donate");
     }
+
+    // Product Showcase Switcher
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.showcase-view').forEach(v => v.classList.remove('active'));
+        
+        btn.classList.add('active');
+        const tabId = btn.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
   </script>
 </body>
 </html>
