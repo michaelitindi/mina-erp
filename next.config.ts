@@ -3,6 +3,11 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  experimental: {
+    turbopack: {
+      root: __dirname,
+    },
+  },
 };
 
 // Only wrap with Sentry in production or if DSN is set
