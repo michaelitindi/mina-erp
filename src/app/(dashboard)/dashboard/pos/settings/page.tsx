@@ -2,7 +2,6 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { getTerminals, createTerminal, updateTerminal, deleteTerminal } from '@/app/actions/pos'
-import { POSModuleNav } from '../pos-nav'
 import { ShoppingCart, Plus, Edit2, Trash2, CheckCircle, XCircle } from 'lucide-react'
 
 interface Terminal {
@@ -75,9 +74,7 @@ export default function POSTerminalsSettingsPage() {
   }
 
   return (
-    <div className="space-y-6 select-none p-4 md:p-6">
-      <POSModuleNav />
-
+    <div className="space-y-6 select-none">
       <div className="grid gap-6 md:grid-cols-3">
         {/* Create Form */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 h-fit shadow-lg">
