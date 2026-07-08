@@ -60,6 +60,18 @@ export async function createDelivery(input: CreateDeliveryInput) {
   const validated = createDeliverySchema.parse(input)
   const deliveryNumber = await generateDeliveryNumber(orgId)
 
+  // Look up product IDs by SKU
+  const skus = validated.items.map(i => i.sku).filter(Boolean) as string[]
+  const products = skus.length > 0 ? await prisma.product.findMany({
+    where: { organizationId: orgId, sku: { in: skus }, deletedAt: null },
+    select: { id: true, sku: true }
+  }) : []
+
+  const productMap = products.reduce((acc, p) => {
+    if (p.sku) acc[p.sku] = p.id
+    return acc
+  }, {} as Record<string, string>)
+
   const delivery = await prisma.delivery.create({
     data: {
       deliveryNumber,
@@ -74,6 +86,7 @@ export async function createDelivery(input: CreateDeliveryInput) {
       createdBy: userId,
       items: {
         create: validated.items.map(item => ({
+          productId: item.sku ? productMap[item.sku] || null : null,
           description: item.description,
           sku: item.sku,
           quantity: new Decimal(item.quantity),
@@ -102,16 +115,105 @@ export async function updateDeliveryStatus(id: string, status: string) {
   const updateData: Record<string, unknown> = { status, updatedBy: userId }
   if (status === 'DELIVERED') {
     updateData.deliveredAt = new Date()
-    // Also update the sales order
-    await prisma.salesOrder.update({
-      where: { id: existing.salesOrderId },
-      data: { status: 'DELIVERED', updatedBy: userId }
+
+    // 1. Fetch default warehouse
+    const warehouse = await prisma.warehouse.findFirst({
+      where: { organizationId: orgId, deletedAt: null }
     })
+    if (!warehouse) {
+      throw new Error('A warehouse must be registered before shipments can be processed.')
+    }
+
+    // 2. Fetch delivery items
+    const deliveryWithItems = await prisma.delivery.findFirst({
+      where: { id, organizationId: orgId, deletedAt: null },
+      include: { items: true }
+    })
+    if (!deliveryWithItems) throw new Error('Delivery not found')
+
+    await prisma.$transaction(async (tx) => {
+      // Find last Stock Movement number
+      const lastMovement = await tx.stockMovement.findFirst({
+        where: { organizationId: orgId },
+        orderBy: { movementNumber: 'desc' },
+        select: { movementNumber: true }
+      })
+      let lastNum = lastMovement ? (parseInt(lastMovement.movementNumber.replace('SM-', '')) || 0) : 0
+
+      for (const item of deliveryWithItems.items) {
+        if (item.productId) {
+          const qty = Number(item.quantity)
+
+          // Verify stock levels first
+          const currentStock = await tx.stockLevel.findUnique({
+            where: {
+              productId_warehouseId: {
+                productId: item.productId,
+                warehouseId: warehouse.id
+              }
+            }
+          })
+
+          const available = currentStock ? Number(currentStock.quantity) : 0
+          if (available < qty) {
+            throw new Error(`Insufficient stock for product "${item.description}". Required: ${qty}, Available: ${available}`)
+          }
+
+          // Generate movement number
+          lastNum++
+          const movementNumber = `SM-${String(lastNum).padStart(6, '0')}`
+
+          // Deduct stock
+          await tx.stockLevel.update({
+            where: {
+              productId_warehouseId: {
+                productId: item.productId,
+                warehouseId: warehouse.id
+              }
+            },
+            data: {
+              quantity: { decrement: qty },
+              availableQty: { decrement: qty }
+            }
+          })
+
+          // Create stock movement record
+          await tx.stockMovement.create({
+            data: {
+              organizationId: orgId,
+              movementNumber,
+              productId: item.productId,
+              type: 'OUT',
+              reason: 'SALE',
+              quantity: new Decimal(-qty),
+              fromWarehouseId: warehouse.id,
+              referenceType: 'DELIVERY',
+              referenceId: id,
+              notes: `Flipped to DELIVERED via note ${existing.deliveryNumber}`,
+              createdBy: userId
+            }
+          })
+        }
+      }
+
+      // Update Sales Order
+      await tx.salesOrder.update({
+        where: { id: existing.salesOrderId },
+        data: { status: 'DELIVERED', updatedBy: userId }
+      })
+
+      // Update Delivery status
+      await tx.delivery.update({
+        where: { id },
+        data: updateData
+      })
+    })
+  } else {
+    await prisma.delivery.update({ where: { id }, data: updateData })
   }
 
-  const delivery = await prisma.delivery.update({ where: { id }, data: updateData })
-
-  await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'Delivery', entityId: delivery.id, oldValues: { status: existing.status }, newValues: { status: delivery.status } })
+  const delivery = await prisma.delivery.findUnique({ where: { id } })
+  await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'Delivery', entityId: id, oldValues: { status: existing.status }, newValues: { status } })
   revalidatePath('/dashboard/sales/shipments')
   return serializeDecimal(delivery)
 }
