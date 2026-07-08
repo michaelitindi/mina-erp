@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Shield, CreditCard, Settings, Building2, Users, Bell } from 'lucide-react'
+import { Shield, CreditCard, Settings, Building2, Users, Bell, Cpu } from 'lucide-react'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 
@@ -27,7 +27,7 @@ export default async function SettingsPage() {
       items: complianceItems
     }] : []),
     {
-      title: 'Payments & Integration',
+      title: 'Integrations & API',
       items: [
         { 
           name: 'Payment Providers', 
@@ -37,6 +37,13 @@ export default async function SettingsPage() {
           href: '/dashboard/settings/payments',
           icon: CreditCard,
           color: 'text-purple-400 bg-purple-400/10'
+        },
+        { 
+          name: 'AI Integration', 
+          description: 'Configure Gemini API key and artificial intelligence models',
+          href: '/dashboard/settings/ai',
+          icon: Cpu,
+          color: 'text-blue-400 bg-blue-400/10'
         },
       ]
     },
