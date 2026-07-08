@@ -173,6 +173,7 @@ export async function updateOrganizationProfile(input: UpdateProfileInput) {
     }
   })
 
+  revalidatePath('/dashboard', 'layout')
   revalidatePath('/dashboard/settings')
   revalidatePath('/dashboard/settings/profile')
   return { success: true }

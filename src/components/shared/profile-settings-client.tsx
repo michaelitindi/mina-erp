@@ -35,8 +35,7 @@ export function ProfileSettingsClient({ initialProfile }: { initialProfile: any 
         country
       })
       setSuccess('Organization profile updated successfully!')
-      router.refresh()
-      setTimeout(() => setSuccess(''), 4000)
+      window.location.reload()
     } catch (err: any) {
       setError(err?.message || 'Failed to update organization details.')
     } finally {
