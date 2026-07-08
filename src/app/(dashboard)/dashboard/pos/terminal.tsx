@@ -39,9 +39,10 @@ interface POSTerminalProps {
   session: Session | null
   terminals: Terminal[]
   products: Product[]
+  isAdmin?: boolean
 }
 
-export function POSTerminal({ session, terminals, products }: POSTerminalProps) {
+export function POSTerminal({ session, terminals, products, isAdmin = false }: POSTerminalProps) {
   const [cart, setCart] = useState<CartItem[]>([])
   const [search, setSearch] = useState('')
   const [showPayment, setShowPayment] = useState(false)
@@ -211,12 +212,18 @@ export function POSTerminal({ session, terminals, products }: POSTerminalProps) 
               <p className="text-amber-400 text-sm">
                 No terminals configured.
               </p>
-              <Link 
-                href="/dashboard/pos/settings" 
-                className="inline-flex items-center text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                Go to POS Settings to configure one &rarr;
-              </Link>
+              {isAdmin ? (
+                <Link 
+                  href="/dashboard/pos/settings" 
+                  className="inline-flex items-center text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Go to POS Settings to configure one &rarr;
+                </Link>
+              ) : (
+                <p className="text-zinc-500 text-xs">
+                  Please contact your system administrator to configure a terminal.
+                </p>
+              )}
             </div>
           )}
         </div>
