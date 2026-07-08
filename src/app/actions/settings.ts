@@ -1,6 +1,6 @@
 'use server'
 
-import { auth } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
@@ -90,7 +90,25 @@ const updateProfileSchema = z.object({
 type UpdateProfileInput = z.infer<typeof updateProfileSchema>
 
 export async function getFullOrganizationSettings() {
-  const { orgId } = await getOrganization()
+  const { orgId, existing } = await getOrganization()
+  
+  // Sync name from Clerk in case it was updated on Clerk's dashboard
+  try {
+    const client = await clerkClient()
+    const clerkOrg = await client.organizations.getOrganization({
+      organizationId: existing.clerkOrgId
+    })
+    if (clerkOrg && clerkOrg.name !== existing.name) {
+      await prisma.organization.update({
+        where: { id: orgId },
+        data: { name: clerkOrg.name }
+      })
+      existing.name = clerkOrg.name
+    }
+  } catch (e) {
+    console.error("Clerk sync failed:", e)
+  }
+
   return prisma.organization.findUnique({
     where: { id: orgId },
     select: {
@@ -108,6 +126,16 @@ export async function getFullOrganizationSettings() {
 export async function updateOrganizationProfile(input: UpdateProfileInput) {
   const { userId, orgId, existing } = await getOrganization()
   const validated = updateProfileSchema.parse(input)
+
+  // Sync to Clerk
+  try {
+    const client = await clerkClient()
+    await client.organizations.updateOrganization(existing.clerkOrgId, {
+      name: validated.name
+    })
+  } catch (e) {
+    console.error("Failed to sync organization name to Clerk:", e)
+  }
 
   const updated = await prisma.organization.update({
     where: { id: orgId },
