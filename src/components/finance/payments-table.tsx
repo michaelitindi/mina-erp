@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { deletePayment } from '@/app/actions/payments'
 import { Trash2, ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 interface Payment {
   id: string
@@ -16,7 +17,7 @@ interface Payment {
   bill?: { billNumber: string; vendor: { companyName: string } } | null
 }
 
-export function PaymentsTable({ payments }: { payments: Payment[] }) {
+export function PaymentsTable({ payments, currency = 'USD' }: { payments: Payment[], currency?: string }) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const router = useRouter()
 
@@ -71,7 +72,7 @@ export function PaymentsTable({ payments }: { payments: Payment[] }) {
                 </td>
                 <td className="px-6 py-4"><span className="text-sm text-zinc-400">{new Date(payment.paymentDate).toLocaleDateString()}</span></td>
                 <td className="px-6 py-4"><span className="text-sm text-zinc-400">{payment.paymentMethod.replace('_', ' ')}</span></td>
-                <td className="px-6 py-4 text-right"><span className={`text-sm font-mono ${isReceived ? 'text-green-400' : 'text-red-400'}`}>{isReceived ? '+' : '-'}${getAmount(payment.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></td>
+                <td className="px-6 py-4 text-right"><span className={`text-sm font-mono ${isReceived ? 'text-green-400' : 'text-red-400'}`}>{isReceived ? '+' : '-'}{formatCurrency(getAmount(payment.amount), currency)}</span></td>
                 <td className="px-6 py-4 text-right">
                   <button onClick={() => handleDelete(payment.id)} disabled={deletingId === payment.id} className="rounded-lg p-1.5 text-zinc-500 hover:bg-red-600/20 hover:text-red-400 transition-colors disabled:opacity-50" title="Delete"><Trash2 className="h-4 w-4" /></button>
                 </td>

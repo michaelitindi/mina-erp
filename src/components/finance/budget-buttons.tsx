@@ -4,11 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBudget } from '@/app/actions/budgets'
 import { Plus, X, Trash2 } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 interface Account { id: string; accountName: string; accountNumber: string; accountType: string }
 interface LineItem { accountId: string; amount: number; period: string }
 
-export function CreateBudgetButton({ accounts }: { accounts: Account[] }) {
+export function CreateBudgetButton({ accounts, currency = 'USD' }: { accounts: Account[], currency?: string }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -120,7 +121,7 @@ export function CreateBudgetButton({ accounts }: { accounts: Account[] }) {
               </div>
 
               <div className="flex justify-end text-sm text-zinc-400 bg-zinc-800/50 p-3 rounded-lg">
-                <span>Total Budget: <strong className="text-green-400 text-lg">${total.toLocaleString()}</strong></span>
+                <span>Total Budget: <strong className="text-green-400 text-lg">{formatCurrency(total, currency)}</strong></span>
               </div>
 
               <div className="flex gap-3 pt-4">

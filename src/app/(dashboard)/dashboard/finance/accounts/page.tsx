@@ -2,8 +2,17 @@ import { getAccounts, seedDefaultAccounts } from '@/app/actions/accounts'
 import { AccountsTable } from '@/components/finance/accounts-table'
 import { CreateAccountButton, SeedAccountsButton } from '@/components/finance/account-buttons'
 import { FileText, Plus } from 'lucide-react'
+import { auth } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma'
 
 export default async function AccountsPage() {
+  const { orgId } = await auth()
+  const org = orgId ? await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId },
+    select: { currency: true }
+  }) : null
+  const currency = org?.currency || 'USD'
+
   const accounts = await getAccounts()
 
   const grouped = {
@@ -68,7 +77,7 @@ export default async function AccountsPage() {
           </div>
         </div>
       ) : (
-        <AccountsTable accounts={accounts} />
+        <AccountsTable accounts={accounts} currency={currency} />
       )}
     </div>
   )

@@ -3,8 +3,18 @@ import { getAccounts } from '@/app/actions/accounts'
 import { BudgetsTable } from '@/components/finance/budgets-table'
 import { CreateBudgetButton } from '@/components/finance/budget-buttons'
 import { PiggyBank, CheckCircle, Calendar, DollarSign } from 'lucide-react'
+import { auth } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma'
+import { formatCurrency } from '@/lib/utils'
 
 export default async function BudgetsPage() {
+  const { orgId } = await auth()
+  const org = orgId ? await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId },
+    select: { currency: true }
+  }) : null
+  const currency = org?.currency || 'USD'
+
   const [budgets, stats, accounts] = await Promise.all([
     getBudgets(),
     getBudgetStats(),
@@ -20,7 +30,7 @@ export default async function BudgetsPage() {
           <h1 className="text-2xl font-bold text-white">Budgets</h1>
           <p className="text-zinc-500">Manage financial budgets and track variance</p>
         </div>
-        <CreateBudgetButton accounts={accounts} />
+        <CreateBudgetButton accounts={accounts} currency={currency} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -45,7 +55,7 @@ export default async function BudgetsPage() {
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-orange-500/10 p-2"><DollarSign className="h-5 w-5 text-orange-400" /></div>
-            <div><p className="text-sm text-zinc-500 font-medium">{currentYear} Budget</p><p className="text-2xl font-bold text-white">${stats.currentYearTotal.toLocaleString()}</p></div>
+            <div><p className="text-sm text-zinc-500 font-medium">{currentYear} Budget</p><p className="text-2xl font-bold text-white">{formatCurrency(stats.currentYearTotal, currency)}</p></div>
           </div>
         </div>
       </div>
@@ -55,10 +65,10 @@ export default async function BudgetsPage() {
           <PiggyBank className="mx-auto h-12 w-12 text-zinc-700" />
           <h3 className="mt-4 text-lg font-semibold text-white">No budgets yet</h3>
           <p className="mt-2 text-zinc-500">Create your first budget to start tracking spending against targets.</p>
-          <div className="mt-6"><CreateBudgetButton accounts={accounts} /></div>
+          <div className="mt-6"><CreateBudgetButton accounts={accounts} currency={currency} /></div>
         </div>
       ) : (
-        <BudgetsTable budgets={budgets} />
+        <BudgetsTable budgets={budgets} currency={currency} />
       )}
     </div>
   )

@@ -3,8 +3,18 @@ import { getCustomers } from '@/app/actions/customers'
 import { InvoicesTable } from '@/components/finance/invoices-table'
 import { CreateInvoiceButton } from '@/components/finance/invoice-buttons'
 import { Receipt, DollarSign, Clock, CheckCircle } from 'lucide-react'
+import { auth } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma'
+import { formatCurrency } from '@/lib/utils'
 
 export default async function InvoicesPage() {
+  const { orgId } = await auth()
+  const org = orgId ? await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId },
+    select: { currency: true }
+  }) : null
+  const currency = org?.currency || 'USD'
+
   const [invoicesResult, customersResult] = await Promise.all([
     getInvoices(),
     getCustomers()
@@ -33,7 +43,7 @@ export default async function InvoicesPage() {
           <h1 className="text-2xl font-bold text-white">Invoices</h1>
           <p className="text-zinc-500">Manage your accounts receivable</p>
         </div>
-        <CreateInvoiceButton customers={customers} />
+        <CreateInvoiceButton customers={customers} currency={currency} />
       </div>
 
       {/* Summary Cards */}
@@ -56,7 +66,7 @@ export default async function InvoicesPage() {
             </div>
             <div>
               <p className="text-sm text-zinc-500 font-medium">Total Amount</p>
-              <p className="text-2xl font-bold text-white">${stats.totalAmount.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-white">{formatCurrency(stats.totalAmount, currency)}</p>
             </div>
           </div>
         </div>
@@ -67,7 +77,7 @@ export default async function InvoicesPage() {
             </div>
             <div>
               <p className="text-sm text-zinc-500 font-medium">Pending</p>
-              <p className="text-2xl font-bold text-white">${stats.pendingAmount.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-white">{formatCurrency(stats.pendingAmount, currency)}</p>
             </div>
           </div>
         </div>
@@ -78,7 +88,7 @@ export default async function InvoicesPage() {
             </div>
             <div>
               <p className="text-sm text-zinc-500 font-medium">Paid</p>
-              <p className="text-2xl font-bold text-white">${stats.paidAmount.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-white">{formatCurrency(stats.paidAmount, currency)}</p>
             </div>
           </div>
         </div>
@@ -93,11 +103,11 @@ export default async function InvoicesPage() {
             Create your first invoice to start tracking revenue.
           </p>
           <div className="mt-6">
-            <CreateInvoiceButton customers={customers} />
+            <CreateInvoiceButton customers={customers} currency={currency} />
           </div>
         </div>
       ) : (
-        <InvoicesTable invoices={invoices} />
+        <InvoicesTable invoices={invoices} currency={currency} />
       )}
     </div>
   )

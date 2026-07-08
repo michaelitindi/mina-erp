@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createInvoice } from '@/app/actions/invoices'
 import { Plus, X, Trash2 } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 interface Customer {
   id: string
@@ -13,6 +14,7 @@ interface Customer {
 
 interface CreateInvoiceButtonProps {
   customers: Customer[]
+  currency?: string
 }
 
 interface LineItem {
@@ -22,7 +24,7 @@ interface LineItem {
   taxRate: number
 }
 
-export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
+export function CreateInvoiceButton({ customers, currency = 'USD' }: CreateInvoiceButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -235,15 +237,15 @@ export function CreateInvoiceButton({ customers }: CreateInvoiceButtonProps) {
                   <div className="w-64 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-zinc-500">Subtotal</span>
-                      <span className="text-white">${subtotal.toFixed(2)}</span>
+                      <span className="text-white">{formatCurrency(subtotal, currency)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-zinc-500">Tax</span>
-                      <span className="text-white">${taxTotal.toFixed(2)}</span>
+                      <span className="text-white">{formatCurrency(taxTotal, currency)}</span>
                     </div>
                     <div className="flex justify-between text-lg font-semibold border-t border-zinc-800 pt-2">
                       <span className="text-white">Total</span>
-                      <span className="text-white">${total.toFixed(2)}</span>
+                      <span className="text-white">{formatCurrency(total, currency)}</span>
                     </div>
                   </div>
                 </div>

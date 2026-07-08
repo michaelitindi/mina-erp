@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { deleteInvoice, updateInvoiceStatus } from '@/app/actions/invoices'
 import { Trash2, Eye, Send, CheckCircle } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 interface Invoice {
   id: string
@@ -20,9 +21,10 @@ interface Invoice {
 
 interface InvoicesTableProps {
   invoices: Invoice[]
+  currency?: string
 }
 
-export function InvoicesTable({ invoices }: InvoicesTableProps) {
+export function InvoicesTable({ invoices, currency = 'USD' }: InvoicesTableProps) {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const router = useRouter()
 
@@ -116,7 +118,7 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right">
                 <span className="text-sm text-white font-mono">
-                  ${getAmount(invoice.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  {formatCurrency(getAmount(invoice.totalAmount), currency)}
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">

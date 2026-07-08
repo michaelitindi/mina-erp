@@ -4,11 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBill } from '@/app/actions/bills'
 import { Plus, X, Trash2 } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 interface Vendor { id: string; vendorNumber: string; companyName: string }
 interface LineItem { description: string; quantity: number; unitPrice: number; taxRate: number }
 
-export function CreateBillButton({ vendors }: { vendors: Vendor[] }) {
+export function CreateBillButton({ vendors, currency = 'USD' }: { vendors: Vendor[], currency?: string }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -110,9 +111,9 @@ export function CreateBillButton({ vendors }: { vendors: Vendor[] }) {
               <div className="border-t border-zinc-800 pt-4">
                 <div className="flex justify-end">
                   <div className="w-64 space-y-2">
-                    <div className="flex justify-between text-sm"><span className="text-zinc-500">Subtotal</span><span className="text-white">${subtotal.toFixed(2)}</span></div>
-                    <div className="flex justify-between text-sm"><span className="text-zinc-500">Tax</span><span className="text-white">${taxTotal.toFixed(2)}</span></div>
-                    <div className="flex justify-between text-lg font-semibold border-t border-zinc-800 pt-2"><span className="text-white">Total</span><span className="text-white">${total.toFixed(2)}</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-zinc-500">Subtotal</span><span className="text-white">{formatCurrency(subtotal, currency)}</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-zinc-500">Tax</span><span className="text-white">{formatCurrency(taxTotal, currency)}</span></div>
+                    <div className="flex justify-between text-lg font-semibold border-t border-zinc-800 pt-2"><span className="text-white">Total</span><span className="text-white">{formatCurrency(total, currency)}</span></div>
                   </div>
                 </div>
               </div>

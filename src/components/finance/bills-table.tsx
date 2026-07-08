@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { deleteBill, updateBillStatus } from '@/app/actions/bills'
 import { Trash2, Eye, CheckCircle, FileCheck } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 interface Bill {
   id: string
@@ -16,7 +17,7 @@ interface Bill {
   vendor: { companyName: string; email: string }
 }
 
-export function BillsTable({ bills }: { bills: Bill[] }) {
+export function BillsTable({ bills, currency = 'USD' }: { bills: Bill[], currency?: string }) {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const router = useRouter()
 
@@ -73,7 +74,7 @@ export function BillsTable({ bills }: { bills: Bill[] }) {
               </td>
               <td className="px-6 py-4"><span className="text-sm text-zinc-400">{new Date(bill.billDate).toLocaleDateString()}</span></td>
               <td className="px-6 py-4"><span className="text-sm text-zinc-400">{new Date(bill.dueDate).toLocaleDateString()}</span></td>
-              <td className="px-6 py-4 text-right"><span className="text-sm text-white font-mono">${getAmount(bill.totalAmount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></td>
+              <td className="px-6 py-4 text-right"><span className="text-sm text-white font-mono">{formatCurrency(getAmount(bill.totalAmount), currency)}</span></td>
               <td className="px-6 py-4"><span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[bill.status]}`}>{bill.status}</span></td>
               <td className="px-6 py-4 text-right">
                 <div className="flex justify-end gap-1">

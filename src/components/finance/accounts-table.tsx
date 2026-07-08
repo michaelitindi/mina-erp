@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { deleteAccount } from '@/app/actions/accounts'
 import { Trash2, Edit, MoreHorizontal } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 interface Account {
   id: string
@@ -18,9 +19,10 @@ interface Account {
 
 interface AccountsTableProps {
   accounts: Account[]
+  currency?: string
 }
 
-export function AccountsTable({ accounts }: AccountsTableProps) {
+export function AccountsTable({ accounts, currency = 'USD' }: AccountsTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const router = useRouter()
 
@@ -100,7 +102,7 @@ export function AccountsTable({ accounts }: AccountsTableProps) {
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right">
                 <span className="text-sm text-white font-mono">
-                  ${getBalance(account.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  {formatCurrency(getBalance(account.balance), currency)}
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">

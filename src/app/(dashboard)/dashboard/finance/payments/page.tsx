@@ -4,8 +4,18 @@ import { getBills } from '@/app/actions/bills'
 import { PaymentsTable } from '@/components/finance/payments-table'
 import { CreatePaymentButton } from '@/components/finance/payment-buttons'
 import { CreditCard, ArrowDownCircle, ArrowUpCircle, DollarSign } from 'lucide-react'
+import { auth } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma'
+import { formatCurrency } from '@/lib/utils'
 
 export default async function PaymentsPage() {
+  const { orgId } = await auth()
+  const org = orgId ? await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId },
+    select: { currency: true }
+  }) : null
+  const currency = org?.currency || 'USD'
+
   const [payments, invoicesResult, bills] = await Promise.all([
     getPayments(),
     getInvoices(),
@@ -33,7 +43,7 @@ export default async function PaymentsPage() {
           <h1 className="text-2xl font-bold text-white">Payments</h1>
           <p className="text-zinc-500">Track payments received and made</p>
         </div>
-        <CreatePaymentButton invoices={unpaidInvoices} bills={unpaidBills} />
+        <CreatePaymentButton invoices={unpaidInvoices} bills={unpaidBills} currency={currency} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -46,19 +56,19 @@ export default async function PaymentsPage() {
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-green-500/10 p-2"><ArrowDownCircle className="h-5 w-5 text-green-400" /></div>
-            <div><p className="text-sm text-zinc-500 font-medium">Received</p><p className="text-2xl font-bold text-white">${stats.totalReceived.toLocaleString()}</p></div>
+            <div><p className="text-sm text-zinc-500 font-medium">Received</p><p className="text-2xl font-bold text-white">{formatCurrency(stats.totalReceived, currency)}</p></div>
           </div>
         </div>
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-red-500/10 p-2"><ArrowUpCircle className="h-5 w-5 text-red-400" /></div>
-            <div><p className="text-sm text-zinc-500 font-medium">Paid Out</p><p className="text-2xl font-bold text-white">${stats.totalPaid.toLocaleString()}</p></div>
+            <div><p className="text-sm text-zinc-500 font-medium">Paid Out</p><p className="text-2xl font-bold text-white">{formatCurrency(stats.totalPaid, currency)}</p></div>
           </div>
         </div>
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-blue-500/10 p-2"><DollarSign className="h-5 w-5 text-blue-400" /></div>
-            <div><p className="text-sm text-zinc-500 font-medium">Net Cash Flow</p><p className="text-2xl font-bold text-white">${(stats.totalReceived - stats.totalPaid).toLocaleString()}</p></div>
+            <div><p className="text-sm text-zinc-500 font-medium">Net Cash Flow</p><p className="text-2xl font-bold text-white">{formatCurrency(stats.totalReceived - stats.totalPaid, currency)}</p></div>
           </div>
         </div>
       </div>
@@ -68,10 +78,10 @@ export default async function PaymentsPage() {
           <CreditCard className="mx-auto h-12 w-12 text-zinc-700" />
           <h3 className="mt-4 text-lg font-semibold text-white">No payments recorded</h3>
           <p className="mt-2 text-zinc-500">Record your first payment to start tracking cash flow.</p>
-          <div className="mt-6"><CreatePaymentButton invoices={unpaidInvoices} bills={unpaidBills} /></div>
+          <div className="mt-6"><CreatePaymentButton invoices={unpaidInvoices} bills={unpaidBills} currency={currency} /></div>
         </div>
       ) : (
-        <PaymentsTable payments={payments} />
+        <PaymentsTable payments={payments} currency={currency} />
       )}
     </div>
   )

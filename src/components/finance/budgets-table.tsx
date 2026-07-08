@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { deleteBudget, updateBudgetStatus } from '@/app/actions/budgets'
 import { Trash2, PlayCircle, StopCircle } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 interface Budget {
   id: string
@@ -18,7 +19,7 @@ interface Budget {
 
 const getAmount = (amt: number | { toNumber: () => number }): number => typeof amt === 'number' ? amt : amt?.toNumber?.() || 0
 
-export function BudgetsTable({ budgets }: { budgets: Budget[] }) {
+export function BudgetsTable({ budgets, currency = 'USD' }: { budgets: Budget[], currency?: string }) {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const router = useRouter()
 
@@ -67,7 +68,7 @@ export function BudgetsTable({ budgets }: { budgets: Budget[] }) {
                   {new Date(budget.startDate).toLocaleDateString()} - {new Date(budget.endDate).toLocaleDateString()}
                 </span>
               </td>
-              <td className="px-6 py-4 text-right"><span className="text-sm text-white font-mono">${getAmount(budget.totalAmount).toLocaleString()}</span></td>
+              <td className="px-6 py-4 text-right"><span className="text-sm text-white font-mono">{formatCurrency(getAmount(budget.totalAmount), currency)}</span></td>
               <td className="px-6 py-4 text-center"><span className="text-sm text-zinc-400">{budget._count?.lineItems || 0}</span></td>
               <td className="px-6 py-4"><span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[budget.status]}`}>{budget.status}</span></td>
               <td className="px-6 py-4 text-right">

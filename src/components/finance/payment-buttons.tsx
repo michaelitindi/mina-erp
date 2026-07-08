@@ -4,13 +4,14 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createPayment } from '@/app/actions/payments'
 import { Plus, X } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 interface Invoice { id: string; invoiceNumber: string; totalAmount: number | { toNumber: () => number }; customer: { companyName: string } }
 interface Bill { id: string; billNumber: string; totalAmount: number | { toNumber: () => number }; vendor: { companyName: string } }
 
 const getAmount = (amt: number | { toNumber: () => number }): number => typeof amt === 'number' ? amt : amt?.toNumber?.() || 0
 
-export function CreatePaymentButton({ invoices, bills }: { invoices: Invoice[]; bills: Bill[] }) {
+export function CreatePaymentButton({ invoices, bills, currency = 'USD' }: { invoices: Invoice[]; bills: Bill[]; currency?: string }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -70,7 +71,7 @@ export function CreatePaymentButton({ invoices, bills }: { invoices: Invoice[]; 
                   <label className="block text-sm font-medium text-zinc-400 mb-1">Invoice</label>
                   <select name="invoiceId" required className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
                     <option value="">Select invoice...</option>
-                    {invoices.map(inv => <option key={inv.id} value={inv.id}>{inv.invoiceNumber} - {inv.customer.companyName} (${getAmount(inv.totalAmount).toFixed(2)})</option>)}
+                    {invoices.map(inv => <option key={inv.id} value={inv.id}>{inv.invoiceNumber} - {inv.customer.companyName} ({formatCurrency(getAmount(inv.totalAmount), currency)})</option>)}
                   </select>
                 </div>
               ) : (
@@ -78,7 +79,7 @@ export function CreatePaymentButton({ invoices, bills }: { invoices: Invoice[]; 
                   <label className="block text-sm font-medium text-zinc-400 mb-1">Bill</label>
                   <select name="billId" required className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
                     <option value="">Select bill...</option>
-                    {bills.map(bill => <option key={bill.id} value={bill.id}>{bill.billNumber} - {bill.vendor.companyName} (${getAmount(bill.totalAmount).toFixed(2)})</option>)}
+                    {bills.map(bill => <option key={bill.id} value={bill.id}>{bill.billNumber} - {bill.vendor.companyName} ({formatCurrency(getAmount(bill.totalAmount), currency)})</option>)}
                   </select>
                 </div>
               )}
