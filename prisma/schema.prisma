@@ -24,6 +24,7 @@ model Organization {
   website     String?
   industry    String?
   pinNumber   String?  // KRA PIN for Kenya compliance
+  country     String   @default("US")
   
   // eTIMS Configuration (Plug and Play)
   etimsDeviceId     String?

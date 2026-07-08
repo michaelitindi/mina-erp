@@ -19,12 +19,26 @@ export async function getOrganizationWithModules() {
   })
 }
 
-export async function completeOnboarding(modules: string[]) {
+export async function completeOnboarding(data: {
+  name: string
+  country: string
+  currency: string
+  modules: string[]
+}) {
   const { userId, orgId } = await auth()
   if (!userId || !orgId) throw new Error('Unauthorized')
 
-  // Ensure at least one module is selected
-  if (modules.length === 0) {
+  // Ensure fields are provided
+  if (!data.name) {
+    throw new Error('Organization name is required')
+  }
+  if (!data.country) {
+    throw new Error('Country is required')
+  }
+  if (!data.currency) {
+    throw new Error('Currency is required')
+  }
+  if (data.modules.length === 0) {
     throw new Error('Please select at least one module')
   }
 
@@ -37,9 +51,11 @@ export async function completeOnboarding(modules: string[]) {
     org = await prisma.organization.create({
       data: {
         clerkOrgId: orgId,
-        name: 'My Organization',
-        slug: orgId.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-        enabledModules: modules,
+        name: data.name,
+        slug: `${data.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${orgId.toLowerCase().slice(-6)}`,
+        country: data.country,
+        currency: data.currency,
+        enabledModules: data.modules,
         onboardingComplete: true,
       }
     })
@@ -47,7 +63,10 @@ export async function completeOnboarding(modules: string[]) {
     org = await prisma.organization.update({
       where: { clerkOrgId: orgId },
       data: {
-        enabledModules: modules,
+        name: data.name,
+        country: data.country,
+        currency: data.currency,
+        enabledModules: data.modules,
         onboardingComplete: true,
       }
     })

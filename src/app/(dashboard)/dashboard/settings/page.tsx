@@ -1,26 +1,39 @@
 import Link from 'next/link'
 import { Shield, CreditCard, Settings, Building2, Users, Bell } from 'lucide-react'
+import { auth } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma'
 
-export default function SettingsPage() {
-  const categories = [
-    {
-      title: 'Compliance & Tax',
-      items: [
-        { 
-          name: 'eTIMS Configuration', 
-          description: 'Manage KRA device credentials and tax settings',
-          href: '/dashboard/settings/etims',
-          icon: Shield,
-          color: 'text-blue-400 bg-blue-400/10'
-        },
-      ]
+export default async function SettingsPage() {
+  const { orgId } = await auth()
+  const org = orgId ? await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId },
+    select: { country: true }
+  }) : null
+  const country = org?.country || 'US'
+
+  const complianceItems = country === 'KE' ? [
+    { 
+      name: 'eTIMS Configuration', 
+      description: 'Manage KRA device credentials and tax settings',
+      href: '/dashboard/settings/etims',
+      icon: Shield,
+      color: 'text-blue-400 bg-blue-400/10'
     },
+  ] : []
+
+  const categories = [
+    ...(complianceItems.length > 0 ? [{
+      title: 'Compliance & Tax',
+      items: complianceItems
+    }] : []),
     {
       title: 'Payments & Integration',
       items: [
         { 
           name: 'Payment Providers', 
-          description: 'Configure M-Pesa, Stripe, and other gateways',
+          description: country === 'KE' 
+            ? 'Configure M-Pesa, Stripe, and other gateways'
+            : 'Configure Stripe, PayPal, and other gateways',
           href: '/dashboard/settings/payments',
           icon: CreditCard,
           color: 'text-purple-400 bg-purple-400/10'

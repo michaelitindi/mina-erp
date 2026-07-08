@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
+import { formatCurrency } from '@/lib/utils'
 import { 
   Search, Plus, Minus, Trash2, CreditCard, Banknote, 
   X, CheckCircle, ShoppingCart, Clock
@@ -40,9 +41,10 @@ interface POSTerminalProps {
   terminals: Terminal[]
   products: Product[]
   isAdmin?: boolean
+  currency?: string
 }
 
-export function POSTerminal({ session, terminals, products, isAdmin = false }: POSTerminalProps) {
+export function POSTerminal({ session, terminals, products, isAdmin = false, currency = 'USD' }: POSTerminalProps) {
   const [cart, setCart] = useState<CartItem[]>([])
   const [search, setSearch] = useState('')
   const [showPayment, setShowPayment] = useState(false)
@@ -187,13 +189,13 @@ export function POSTerminal({ session, terminals, products, isAdmin = false }: P
                 Opening Cash Amount
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-3.5 text-zinc-500">$</span>
+                <span className="absolute left-4 top-3.5 text-zinc-500 text-xs font-bold">{currency}</span>
                 <input
                   type="number"
                   value={openingCash}
                   onChange={(e) => setOpeningCash(e.target.value)}
                   placeholder="0.00"
-                  className="w-full pl-8 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full pl-14 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
             </div>
@@ -264,7 +266,7 @@ export function POSTerminal({ session, terminals, products, isAdmin = false }: P
                 {product.name}
               </h3>
               <p className="text-lg font-bold text-emerald-400 mt-1">
-                ${Number(product.sellingPrice).toFixed(2)}
+                {formatCurrency(Number(product.sellingPrice), currency)}
               </p>
             </button>
           ))}
@@ -324,7 +326,7 @@ export function POSTerminal({ session, terminals, products, isAdmin = false }: P
                     </button>
                   </div>
                   <span className="font-bold text-white">
-                    ${(item.quantity * Number(item.sellingPrice)).toFixed(2)}
+                    {formatCurrency(item.quantity * Number(item.sellingPrice), currency)}
                   </span>
                 </div>
               </div>
@@ -335,15 +337,15 @@ export function POSTerminal({ session, terminals, products, isAdmin = false }: P
         <div className="border-t border-slate-700 p-4 space-y-3">
           <div className="flex justify-between text-slate-300">
             <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>{formatCurrency(subtotal, currency)}</span>
           </div>
           <div className="flex justify-between text-slate-300">
             <span>Tax</span>
-            <span>${tax.toFixed(2)}</span>
+            <span>{formatCurrency(tax, currency)}</span>
           </div>
           <div className="flex justify-between text-xl font-bold text-white pt-2 border-t border-slate-600">
             <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+            <span>{formatCurrency(total, currency)}</span>
           </div>
           
           <button
@@ -352,7 +354,7 @@ export function POSTerminal({ session, terminals, products, isAdmin = false }: P
             className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
           >
             <CreditCard className="h-5 w-5" />
-            Charge ${total.toFixed(2)}
+            Charge {formatCurrency(total, currency)}
           </button>
         </div>
       </div>
@@ -364,6 +366,7 @@ export function POSTerminal({ session, terminals, products, isAdmin = false }: P
           onClose={() => setShowPayment(false)}
           onPay={processSale}
           isPending={isPending}
+          currency={currency}
         />
       )}
 
@@ -382,12 +385,14 @@ function PaymentModal({
   total, 
   onClose, 
   onPay, 
-  isPending 
+  isPending,
+  currency
 }: { 
   total: number
   onClose: () => void
   onPay: (method: string, amount: number) => void
   isPending: boolean
+  currency: string
 }) {
   const [method, setMethod] = useState<'cash' | 'card'>('cash')
   const [cashReceived, setCashReceived] = useState('')
@@ -395,7 +400,8 @@ function PaymentModal({
   const change = parseFloat(cashReceived || '0') - total
   const canPay = method === 'card' || parseFloat(cashReceived) >= total
 
-  const quickCash = [10, 20, 50, 100]
+  // Dynamic quick cash amounts based on currency
+  const quickCash = currency === 'KES' ? [500, 1000, 2000, 5000] : [10, 20, 50, 100]
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 backdrop-blur-sm">
@@ -409,7 +415,7 @@ function PaymentModal({
         
         <div className="text-center mb-8 p-6 bg-zinc-800/50 rounded-xl border border-zinc-800">
           <p className="text-zinc-500 text-sm mb-1 uppercase tracking-widest font-bold">Total Amount</p>
-          <p className="text-5xl font-black text-white">${total.toFixed(2)}</p>
+          <p className="text-5xl font-black text-white">{formatCurrency(total, currency)}</p>
         </div>
         
         <div className="grid grid-cols-2 gap-4 mb-8">
@@ -444,13 +450,13 @@ function PaymentModal({
                 Cash Received
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-3.5 text-zinc-500 font-bold">$</span>
+                <span className="absolute left-4 top-3.5 text-zinc-500 text-xs font-bold">{currency}</span>
                 <input
                   type="number"
                   value={cashReceived}
                   onChange={(e) => setCashReceived(e.target.value)}
                   placeholder="0.00"
-                  className="w-full pl-8 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-2xl font-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
+                  className="w-full pl-14 pr-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white text-2xl font-black focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner"
                   autoFocus
                 />
               </div>
@@ -461,14 +467,14 @@ function PaymentModal({
                 <button
                   key={amount}
                   onClick={() => setCashReceived(String(amount))}
-                  className="py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-bold border border-zinc-700 transition-colors"
+                  className="py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-bold border border-zinc-700 transition-colors text-sm"
                 >
-                  ${amount}
+                  {formatCurrency(amount, currency)}
                 </button>
               ))}
               <button 
-                onClick={() => setCashReceived(total.toFixed(2))}
-                className="py-3 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 rounded-lg font-black border border-emerald-500/20 transition-all"
+                onClick={() => setCashReceived(total.toString())}
+                className="py-3 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 rounded-lg font-black border border-emerald-500/20 transition-all text-sm"
               >
                 Exact
               </button>
@@ -477,7 +483,7 @@ function PaymentModal({
             {parseFloat(cashReceived) >= total && (
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex justify-between items-center animate-in fade-in slide-in-from-top-2">
                 <p className="text-emerald-400 font-bold">Change Due</p>
-                <p className="text-3xl font-black text-emerald-400">${change.toFixed(2)}</p>
+                <p className="text-3xl font-black text-emerald-400">{formatCurrency(change, currency)}</p>
               </div>
             )}
           </div>
