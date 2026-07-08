@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { getMyEmployee } from '@/app/actions/self-service'
+import { LinkAdminButton } from '@/components/hr/link-admin-button'
 import { 
   User, 
   Wallet, 
@@ -29,22 +30,26 @@ export default async function MyPortalLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { userId } = await auth()
+  const { userId, orgRole } = await auth()
   if (!userId) redirect('/sign-in')
   
   const employee = await getMyEmployee()
+  const isAdmin = orgRole === 'org:admin'
   
   // If no employee record linked, show message
   if (!employee) {
     return (
       <div className="p-6">
-        <div className="rounded-xl border border-slate-700 bg-slate-800/30 p-8 text-center">
+        <div className="rounded-xl border border-slate-700 bg-slate-800/30 p-8 text-center max-w-xl mx-auto">
           <User className="h-16 w-16 mx-auto text-slate-500 mb-4" />
           <h2 className="text-xl font-semibold text-white mb-2">No Employee Record Found</h2>
           <p className="text-slate-400">
-            Your account is not linked to an employee record yet. Please contact your HR administrator 
-            to set up your employee profile.
+            {isAdmin 
+              ? 'Your account is not linked to an employee record yet. As an administrator, you can automatically create and link your profile to start using the self-service portal.'
+              : 'Your account is not linked to an employee record yet. Please contact your HR administrator to set up your employee profile.'
+            }
           </p>
+          {isAdmin && <LinkAdminButton />}
         </div>
       </div>
     )

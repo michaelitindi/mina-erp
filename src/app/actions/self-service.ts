@@ -1,10 +1,11 @@
 'use server'
 
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
+import { serializeDecimal } from '@/lib/utils'
 
 // Get organization context
 import { getOrgWithModuleCheck } from '@/lib/module-access'
@@ -336,4 +337,67 @@ export async function withdrawResignation(id: string) {
   
   revalidatePath('/dashboard/my-portal/resignation')
   return { success: true }
+}
+
+export async function createAndLinkAdminEmployee() {
+  const { userId, orgId, orgRole } = await auth()
+  if (!orgId || !userId) {
+    throw new Error('Unauthorized: No active session or organization context.')
+  }
+  
+  if (orgRole !== 'org:admin') {
+    throw new Error('Unauthorized: Only administrators can auto-provision their profile.')
+  }
+
+  // Check if already exists
+  const existing = await prisma.employee.findFirst({
+    where: { 
+      organizationId: orgId, 
+      clerkUserId: userId,
+      deletedAt: null 
+    }
+  })
+  if (existing) {
+    return serializeDecimal(existing)
+  }
+
+  const user = await currentUser()
+  if (!user) {
+    throw new Error('Failed to retrieve user profile from Clerk.')
+  }
+
+  const firstName = user.firstName || 'Admin'
+  const lastName = user.lastName || 'User'
+  const email = user.emailAddresses[0]?.emailAddress || ''
+
+  // Generate employee number
+  const last = await prisma.employee.findFirst({
+    where: { organizationId: orgId },
+    orderBy: { employeeNumber: 'desc' },
+    select: { employeeNumber: true }
+  })
+  let employeeNumber = 'EMP-000001'
+  if (last) {
+    const lastNum = parseInt(last.employeeNumber.replace('EMP-', '')) || 0
+    employeeNumber = `EMP-${String(lastNum + 1).padStart(6, '0')}`
+  }
+
+  const employee = await prisma.employee.create({
+    data: {
+      organizationId: orgId,
+      clerkUserId: userId,
+      employeeNumber,
+      firstName,
+      lastName,
+      email,
+      position: 'Administrator',
+      employmentType: 'FULL_TIME',
+      hireDate: new Date(),
+      status: 'ACTIVE',
+      createdBy: userId
+    }
+  })
+
+  revalidatePath('/dashboard/my-portal')
+  return serializeDecimal(employee)
 }
