@@ -313,6 +313,14 @@ export async function createSale(data: {
     },
   })
   
+  // 1. Fetch default warehouse
+  const warehouse = await prisma.warehouse.findFirst({
+    where: { organizationId: orgId, deletedAt: null }
+  })
+  if (!warehouse) {
+    throw new Error('A warehouse must be registered before POS sales can be processed.')
+  }
+  
   // Deduct stock for each item (inventory integration)
   for (const item of data.items) {
     const movementCount = await prisma.stockMovement.count({ where: { organizationId: orgId } })
@@ -324,6 +332,7 @@ export async function createSale(data: {
         type: 'OUT',
         reason: 'SALE',
         quantity: -item.quantity,
+        fromWarehouseId: warehouse.id,
         referenceType: 'POS_SALE',
         referenceId: sale.id,
         notes: `POS Sale: ${saleNumber}`,
@@ -331,15 +340,25 @@ export async function createSale(data: {
       },
     })
     
-    // Update stock level
-    await prisma.stockLevel.updateMany({
-      where: { 
-        productId: item.productId,
+    // Update stock level specifically for this product and warehouse
+    await prisma.stockLevel.upsert({
+      where: {
+        productId_warehouseId: {
+          productId: item.productId,
+          warehouseId: warehouse.id
+        }
+      },
+      create: {
         organizationId: orgId,
+        productId: item.productId,
+        warehouseId: warehouse.id,
+        quantity: -item.quantity,
+        availableQty: -item.quantity,
       },
-      data: {
+      update: {
         quantity: { decrement: item.quantity },
-      },
+        availableQty: { decrement: item.quantity }
+      }
     })
   }
   
@@ -356,17 +375,35 @@ export async function voidSale(id: string, reason?: string) {
   })
   if (!sale) throw new Error('Sale not found')
   if (sale.status === 'VOIDED') throw new Error('Sale already voided')
+
+  // Fetch default warehouse
+  const warehouse = await prisma.warehouse.findFirst({
+    where: { organizationId: orgId, deletedAt: null }
+  })
+  if (!warehouse) {
+    throw new Error('A warehouse must be registered before POS sales can be voided.')
+  }
   
   // Restore stock
   for (const item of sale.items) {
-    await prisma.stockLevel.updateMany({
-      where: { 
-        productId: item.productId,
+    await prisma.stockLevel.upsert({
+      where: {
+        productId_warehouseId: {
+          productId: item.productId,
+          warehouseId: warehouse.id
+        }
+      },
+      create: {
         organizationId: orgId,
+        productId: item.productId,
+        warehouseId: warehouse.id,
+        quantity: item.quantity,
+        availableQty: item.quantity,
       },
-      data: {
+      update: {
         quantity: { increment: item.quantity },
-      },
+        availableQty: { increment: item.quantity }
+      }
     })
     
     const movementCount = await prisma.stockMovement.count({ where: { organizationId: orgId } })
@@ -378,6 +415,7 @@ export async function voidSale(id: string, reason?: string) {
         type: 'IN',
         reason: 'RETURN',
         quantity: item.quantity,
+        toWarehouseId: warehouse.id,
         referenceType: 'POS_SALE',
         referenceId: sale.id,
         notes: `Voided POS Sale: ${reason || 'No reason'}`,
