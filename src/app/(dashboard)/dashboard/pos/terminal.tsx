@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { 
   Search, Plus, Minus, Trash2, CreditCard, Banknote, 
   X, CheckCircle, ShoppingCart, Clock
@@ -206,9 +207,17 @@ export function POSTerminal({ session, terminals, products }: POSTerminalProps) 
           </div>
           
           {terminals.length === 0 && (
-            <p className="mt-4 text-amber-400 text-sm text-center">
-              No terminals configured. Ask admin to create terminals first.
-            </p>
+            <div className="mt-4 text-center space-y-2">
+              <p className="text-amber-400 text-sm">
+                No terminals configured.
+              </p>
+              <Link 
+                href="/dashboard/pos/settings" 
+                className="inline-flex items-center text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Go to POS Settings to configure one &rarr;
+              </Link>
+            </div>
           )}
         </div>
       </div>
