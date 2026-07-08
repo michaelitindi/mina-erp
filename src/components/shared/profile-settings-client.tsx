@@ -12,6 +12,7 @@ export function ProfileSettingsClient({ initialProfile }: { initialProfile: any 
   const [industry, setIndustry] = useState(initialProfile?.industry || '')
   const [currency, setCurrency] = useState(initialProfile?.currency || 'USD')
   const [timezone, setTimezone] = useState(initialProfile?.timezone || 'UTC')
+  const [country, setCountry] = useState(initialProfile?.country || 'US')
 
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState('')
@@ -30,7 +31,8 @@ export function ProfileSettingsClient({ initialProfile }: { initialProfile: any 
         website,
         industry,
         currency,
-        timezone
+        timezone,
+        country
       })
       setSuccess('Organization profile updated successfully!')
       router.refresh()
@@ -115,7 +117,24 @@ export function ProfileSettingsClient({ initialProfile }: { initialProfile: any 
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-1">
+            <label className="block text-xs font-black text-zinc-400 uppercase tracking-widest mb-1.5 ml-0.5">Country</label>
+            <select
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="w-full bg-zinc-950/80 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer"
+            >
+              <option value="KE">🇰🇪 Kenya</option>
+              <option value="US">🇺🇸 United States</option>
+              <option value="GB">🇬🇧 United Kingdom</option>
+              <option value="CA">🇨🇦 Canada</option>
+              <option value="ZA">🇿🇦 South Africa</option>
+              <option value="DE">🇩🇪 Germany (Eurozone)</option>
+              <option value="AE">🇦🇪 United Arab Emirates</option>
+              <option value="IN">🇮🇳 India</option>
+            </select>
+          </div>
           <div className="space-y-1">
             <label className="block text-xs font-black text-zinc-400 uppercase tracking-widest mb-1.5 ml-0.5">Standard Currency</label>
             <select

@@ -4,9 +4,19 @@ import { StoresTable } from '@/components/ecommerce/stores-table'
 import { CreateStoreButton } from '@/components/ecommerce/store-buttons'
 import { CreateProductButton, ProductsTable } from '@/components/ecommerce/products'
 import { Store, ShoppingBag, Package, DollarSign, Clock } from 'lucide-react'
+import { auth } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma'
+import { formatCurrency } from '@/lib/utils'
 
 export default async function EcommercePage() {
   await checkModuleAccess('ECOMMERCE')
+  const { orgId } = await auth()
+  const org = orgId ? await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId },
+    select: { currency: true }
+  }) : null
+  const currency = org?.currency || 'USD'
+
   const [stores, orders, stats, products] = await Promise.all([
     getStores(), 
     getOnlineOrders(), 
@@ -55,7 +65,7 @@ export default async function EcommercePage() {
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-emerald-500/10 p-2"><DollarSign className="h-5 w-5 text-emerald-400" /></div>
-            <div><p className="text-sm text-zinc-500">Revenue</p><p className="text-2xl font-bold text-white">${stats.revenue.toLocaleString()}</p></div>
+            <div><p className="text-sm text-zinc-500">Revenue</p><p className="text-2xl font-bold text-white">{formatCurrency(stats.revenue, currency)}</p></div>
           </div>
         </div>
       </div>
@@ -108,7 +118,7 @@ export default async function EcommercePage() {
                         <td className="px-6 py-4 font-mono text-sm text-white">{order.orderNumber}</td>
                         <td className="px-6 py-4 text-sm text-zinc-300">{order.store.name}</td>
                         <td className="px-6 py-4 text-sm text-zinc-300">{order.customerName}</td>
-                        <td className="px-6 py-4 text-sm text-white text-right">${Number(order.totalAmount).toLocaleString()}</td>
+                        <td className="px-6 py-4 text-sm text-white text-right">{formatCurrency(Number(order.totalAmount), currency)}</td>
                         <td className="px-6 py-4"><span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                           order.status === 'DELIVERED' ? 'text-green-400 bg-green-400/10' :
                           order.status === 'SHIPPED' ? 'text-blue-400 bg-blue-400/10' :

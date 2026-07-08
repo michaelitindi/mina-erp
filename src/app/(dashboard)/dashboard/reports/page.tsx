@@ -15,12 +15,20 @@ import {
 } from 'lucide-react'
 import { getProfitAndLoss, getBalanceSheet } from '@/app/actions/reports'
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
+import { formatCurrency } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ReportsPage() {
   const { orgId } = await auth()
   if (!orgId) redirect('/')
+
+  const org = orgId ? await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId },
+    select: { currency: true }
+  }) : null
+  const currency = org?.currency || 'USD'
 
   // Fetch real GL data for the current year-to-date
   const now = new Date()
@@ -76,7 +84,7 @@ export default async function ReportsPage() {
             <div className="rounded-lg bg-green-500/10 p-3"><TrendingUp className="h-6 w-6 text-green-400" /></div>
             <div>
               <p className="text-sm text-zinc-500 font-medium">YTD Revenue</p>
-              <p className="text-2xl font-bold text-green-400">${pnl.totalRevenue.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-green-400">{formatCurrency(pnl.totalRevenue, currency)}</p>
             </div>
           </div>
         </div>
@@ -85,7 +93,7 @@ export default async function ReportsPage() {
             <div className="rounded-lg bg-red-500/10 p-3"><TrendingDown className="h-6 w-6 text-red-400" /></div>
             <div>
               <p className="text-sm text-zinc-500 font-medium">YTD Expenses</p>
-              <p className="text-2xl font-bold text-red-400">${pnl.totalExpenses.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-red-400">{formatCurrency(pnl.totalExpenses, currency)}</p>
             </div>
           </div>
         </div>
@@ -94,7 +102,7 @@ export default async function ReportsPage() {
             <div className="rounded-lg bg-blue-500/10 p-3"><DollarSign className="h-6 w-6 text-blue-400" /></div>
             <div>
               <p className="text-sm text-zinc-500 font-medium">Net Income</p>
-              <p className={`text-2xl font-bold ${pnl.netIncome >= 0 ? 'text-blue-400' : 'text-red-400'}`}>${pnl.netIncome.toLocaleString()}</p>
+              <p className={`text-2xl font-bold ${pnl.netIncome >= 0 ? 'text-blue-400' : 'text-red-400'}`}>{formatCurrency(pnl.netIncome, currency)}</p>
             </div>
           </div>
         </div>
@@ -127,12 +135,12 @@ export default async function ReportsPage() {
                 {pnl.revenue.map(line => (
                   <div key={line.accountNumber} className="flex justify-between text-sm py-1 border-b border-zinc-800/50">
                     <span className="text-zinc-300">{line.accountName}</span>
-                    <span className="text-white font-mono">${line.balance.toLocaleString()}</span>
+                    <span className="text-white font-mono">{formatCurrency(line.balance, currency)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between text-sm font-black pt-2 text-green-400">
                   <span>Total Revenue</span>
-                  <span className="font-mono">${pnl.totalRevenue.toLocaleString()}</span>
+                  <span className="font-mono">{formatCurrency(pnl.totalRevenue, currency)}</span>
                 </div>
               </div>
             </div>
@@ -144,20 +152,20 @@ export default async function ReportsPage() {
                 {pnl.expenses.map(line => (
                   <div key={line.accountNumber} className="flex justify-between text-sm py-1 border-b border-zinc-800/50">
                     <span className="text-zinc-400">{line.accountName}</span>
-                    <span className="text-zinc-200 font-mono">${line.balance.toLocaleString()}</span>
+                    <span className="text-zinc-200 font-mono">{formatCurrency(line.balance, currency)}</span>
                   </div>
                 ))}
               </div>
               <div className="flex justify-between text-sm font-black pt-4 text-red-400 border-t border-zinc-800 mt-2">
                 <span>Total Expenses</span>
-                <span className="font-mono">${pnl.totalExpenses.toLocaleString()}</span>
+                <span className="font-mono">{formatCurrency(pnl.totalExpenses, currency)}</span>
               </div>
             </div>
 
             <div className="pt-6 border-t-2 border-zinc-800 flex justify-between items-center">
               <span className="text-lg font-black text-white">Net Income</span>
               <span className={`text-2xl font-black font-mono ${pnl.netIncome >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                ${pnl.netIncome.toLocaleString()}
+                {formatCurrency(pnl.netIncome, currency)}
               </span>
             </div>
           </div>
@@ -180,12 +188,12 @@ export default async function ReportsPage() {
                 {balanceSheet.assets.map(line => (
                   <div key={line.accountNumber} className="flex justify-between text-sm py-1 border-b border-zinc-800/50">
                     <span className="text-zinc-300">{line.accountName}</span>
-                    <span className="text-white font-mono">${line.balance.toLocaleString()}</span>
+                    <span className="text-white font-mono">{formatCurrency(line.balance, currency)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between text-sm font-black pt-2 text-blue-400">
                   <span>Total Assets</span>
-                  <span className="font-mono">${balanceSheet.totalAssets.toLocaleString()}</span>
+                  <span className="font-mono">{formatCurrency(balanceSheet.totalAssets, currency)}</span>
                 </div>
               </div>
             </div>
@@ -197,18 +205,18 @@ export default async function ReportsPage() {
                 {balanceSheet.liabilities.map(line => (
                   <div key={line.accountNumber} className="flex justify-between text-sm py-1 border-b border-zinc-800/50">
                     <span className="text-zinc-400">{line.accountName}</span>
-                    <span className="text-zinc-200 font-mono">${line.balance.toLocaleString()}</span>
+                    <span className="text-zinc-200 font-mono">{formatCurrency(line.balance, currency)}</span>
                   </div>
                 ))}
                 {balanceSheet.equity.map(line => (
                   <div key={line.accountNumber} className="flex justify-between text-sm py-1 border-b border-zinc-800/50">
                     <span className="text-zinc-400">{line.accountName}</span>
-                    <span className="text-zinc-200 font-mono">${line.balance.toLocaleString()}</span>
+                    <span className="text-zinc-200 font-mono">{formatCurrency(line.balance, currency)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between text-sm font-black pt-2 text-purple-400 border-t border-zinc-800 mt-2">
                   <span>Total Liabilities & Equity</span>
-                  <span className="font-mono">${(balanceSheet.totalLiabilities + balanceSheet.totalEquity).toLocaleString()}</span>
+                  <span className="font-mono">{formatCurrency(balanceSheet.totalLiabilities + balanceSheet.totalEquity, currency)}</span>
                 </div>
               </div>
             </div>

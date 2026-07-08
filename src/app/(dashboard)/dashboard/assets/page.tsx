@@ -3,9 +3,19 @@ import { checkModuleAccess } from '@/lib/module-access'
 import { AssetsTable } from '@/components/assets/assets-table'
 import { CreateAssetButton } from '@/components/assets/asset-buttons'
 import { Building2, Package, DollarSign, CheckCircle } from 'lucide-react'
+import { auth } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma'
+import { formatCurrency } from '@/lib/utils'
 
 export default async function AssetsPage() {
   await checkModuleAccess('ASSETS')
+  const { orgId } = await auth()
+  const org = orgId ? await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId },
+    select: { currency: true }
+  }) : null
+  const currency = org?.currency || 'USD'
+
   const [assets, stats] = await Promise.all([getAssets(), getAssetStats()])
 
   return (
@@ -34,7 +44,7 @@ export default async function AssetsPage() {
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 col-span-2">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-purple-500/10 p-2"><DollarSign className="h-5 w-5 text-purple-400" /></div>
-            <div><p className="text-sm text-zinc-500">Total Book Value</p><p className="text-2xl font-bold text-white">${stats.totalValue.toLocaleString()}</p></div>
+            <div><p className="text-sm text-zinc-500">Total Book Value</p><p className="text-2xl font-bold text-white">{formatCurrency(stats.totalValue, currency)}</p></div>
           </div>
         </div>
       </div>

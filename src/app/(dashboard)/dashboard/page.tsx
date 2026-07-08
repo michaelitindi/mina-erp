@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/roles'
+import { formatCurrency } from '@/lib/utils'
 import { 
   Receipt, 
   Users, 
@@ -116,18 +117,24 @@ export default async function DashboardPage() {
     }
   }
 
+  const orgObj = await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId },
+    select: { currency: true }
+  })
+  const currency = orgObj?.currency || 'USD'
+
   const stats = await getStats(orgId)
 
   const cards = [
     {
       title: 'Total Revenue',
-      value: stats ? `$${stats.paidAmount.toLocaleString()}` : '$0',
+      value: stats ? formatCurrency(stats.paidAmount, currency) : formatCurrency(0, currency),
       icon: DollarSign,
       color: 'from-green-500 to-emerald-600',
     },
     {
       title: 'Pending Invoices',
-      value: stats ? `$${stats.pendingAmount.toLocaleString()}` : '$0',
+      value: stats ? formatCurrency(stats.pendingAmount, currency) : formatCurrency(0, currency),
       icon: Receipt,
       color: 'from-blue-500 to-indigo-600',
     },

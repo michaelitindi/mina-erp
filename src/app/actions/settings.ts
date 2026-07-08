@@ -84,6 +84,7 @@ const updateProfileSchema = z.object({
   industry: z.string().nullable().optional(),
   currency: z.string().default('USD'),
   timezone: z.string().default('UTC'),
+  country: z.string().default('US'),
 })
 
 type UpdateProfileInput = z.infer<typeof updateProfileSchema>
@@ -98,6 +99,7 @@ export async function getFullOrganizationSettings() {
       industry: true,
       currency: true,
       timezone: true,
+      country: true,
       logo: true,
     }
   })
@@ -115,6 +117,7 @@ export async function updateOrganizationProfile(input: UpdateProfileInput) {
       industry: validated.industry,
       currency: validated.currency,
       timezone: validated.timezone,
+      country: validated.country,
     }
   })
 
@@ -130,6 +133,7 @@ export async function updateOrganizationProfile(input: UpdateProfileInput) {
       industry: existing.industry,
       currency: existing.currency,
       timezone: existing.timezone,
+      country: existing.country,
     },
     newValues: {
       name: updated.name,
@@ -137,6 +141,7 @@ export async function updateOrganizationProfile(input: UpdateProfileInput) {
       industry: updated.industry,
       currency: updated.currency,
       timezone: updated.timezone,
+      country: updated.country,
     }
   })
 
