@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { getAiSettings, updateAiSettings } from '@/app/actions/ai'
-import { Cpu, Save, AlertCircle, CheckCircle2, Eye, EyeOff, ExternalLink } from 'lucide-react'
+import { Cpu, Save, AlertCircle, CheckCircle2, Eye, EyeOff, ExternalLink, ArrowLeft } from 'lucide-react'
 
 export default function AiSettingsPage() {
   const [loading, setLoading] = useState(true)
@@ -84,9 +85,18 @@ export default function AiSettingsPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-4xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">AI Integrations</h1>
-        <p className="text-zinc-500">Configure Gemini model settings for intelligent Copilots and autocomplete engines</p>
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Link
+          href="/dashboard/settings"
+          className="rounded-xl p-2 border border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-zinc-900 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold text-white">AI Integrations</h1>
+          <p className="text-zinc-500">Configure Gemini model settings for intelligent Copilots and autocomplete engines</p>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-[1fr_300px]">
