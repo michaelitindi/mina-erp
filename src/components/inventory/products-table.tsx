@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { deleteProduct } from '@/app/actions/products'
 import { Trash2 } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 interface Product {
   id: string
@@ -19,7 +20,7 @@ interface Product {
 
 const getAmount = (amt: number | { toNumber: () => number }): number => typeof amt === 'number' ? amt : amt?.toNumber?.() || 0
 
-export function ProductsTable({ products }: { products: Product[] }) {
+export function ProductsTable({ products, currency = 'USD' }: { products: Product[], currency?: string }) {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const router = useRouter()
 
@@ -55,8 +56,8 @@ export function ProductsTable({ products }: { products: Product[] }) {
                   <p className="text-xs text-zinc-500 font-mono">{product.sku}</p>
                 </td>
                 <td className="px-6 py-4"><span className="text-sm text-zinc-400">{product.category || '—'}</span></td>
-                <td className="px-6 py-4 text-right"><span className="text-sm text-zinc-400">${getAmount(product.costPrice).toFixed(2)}</span></td>
-                <td className="px-6 py-4 text-right"><span className="text-sm text-white font-mono">${getAmount(product.sellingPrice).toFixed(2)}</span></td>
+                <td className="px-6 py-4 text-right"><span className="text-sm text-zinc-400">{formatCurrency(getAmount(product.costPrice), currency)}</span></td>
+                <td className="px-6 py-4 text-right"><span className="text-sm text-white font-mono">{formatCurrency(getAmount(product.sellingPrice), currency)}</span></td>
                 <td className="px-6 py-4 text-center">
                   <span className={`text-sm font-medium ${totalStock === 0 ? 'text-red-400' : totalStock < 10 ? 'text-orange-400' : 'text-green-400'}`}>{totalStock}</span>
                 </td>

@@ -18,11 +18,20 @@ import {
   Ban
 } from 'lucide-react'
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
+import { cn, formatCurrency } from '@/lib/utils'
 import { SalesOrderStatusButtons } from '@/components/sales/order-status-buttons'
+import { auth } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma'
 
 export default async function SalesOrderDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params
+  const { orgId } = await auth()
+  const org = orgId ? await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId },
+    select: { currency: true }
+  }) : null
+  const currency = org?.currency || 'USD'
+
   const orderData = await getSalesOrder(id)
   
   if (!orderData) redirect('/dashboard/sales/orders')
@@ -176,10 +185,10 @@ export default async function SalesOrderDetailPage({ params }: { params: { id: s
                         <span className="text-sm font-black text-white">{Number(item.quantity)}</span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <span className="text-sm text-zinc-400">${Number(item.unitPrice).toLocaleString()}</span>
+                        <span className="text-sm text-zinc-400">{formatCurrency(Number(item.unitPrice), currency)}</span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <span className="text-sm font-black text-white">${Number(item.lineTotal).toLocaleString()}</span>
+                        <span className="text-sm font-black text-white">{formatCurrency(Number(item.lineTotal), currency)}</span>
                       </td>
                     </tr>
                   ))}
@@ -192,19 +201,19 @@ export default async function SalesOrderDetailPage({ params }: { params: { id: s
               <div className="flex flex-col md:flex-row md:items-end md:justify-end gap-8">
                 <div className="space-y-1.5 text-right">
                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Subtotal</p>
-                  <p className="text-sm font-bold text-white">${Number(order.subtotal).toLocaleString()}</p>
+                  <p className="text-sm font-bold text-white">{formatCurrency(Number(order.subtotal), currency)}</p>
                 </div>
                 <div className="space-y-1.5 text-right">
                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Tax (VAT)</p>
-                  <p className="text-sm font-bold text-white">${Number(order.taxAmount).toLocaleString()}</p>
+                  <p className="text-sm font-bold text-white">{formatCurrency(Number(order.taxAmount), currency)}</p>
                 </div>
                 <div className="space-y-1.5 text-right">
                   <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Shipping</p>
-                  <p className="text-sm font-bold text-white">${Number(order.shippingAmount).toLocaleString()}</p>
+                  <p className="text-sm font-bold text-white">{formatCurrency(Number(order.shippingAmount), currency)}</p>
                 </div>
                 <div className="space-y-1.5 text-right bg-green-500/10 border border-green-500/20 px-6 py-3 rounded-2xl">
                   <p className="text-[10px] font-black text-green-500 uppercase tracking-widest leading-none mb-1">Grand Total</p>
-                  <p className="text-3xl font-black text-green-400 tracking-tighter">${Number(order.totalAmount).toLocaleString()}</p>
+                  <p className="text-3xl font-black text-green-400 tracking-tighter">{formatCurrency(Number(order.totalAmount), currency)}</p>
                 </div>
               </div>
             </div>

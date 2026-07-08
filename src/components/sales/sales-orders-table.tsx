@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { deleteSalesOrder, updateSalesOrderStatus } from '@/app/actions/sales-orders'
 import { Trash2, CheckCircle, Truck, Package, XCircle } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 interface SalesOrder {
   id: string
@@ -18,7 +19,7 @@ interface SalesOrder {
 
 const getAmount = (amt: number | { toNumber: () => number }): number => typeof amt === 'number' ? amt : amt?.toNumber?.() || 0
 
-export function SalesOrdersTable({ orders }: { orders: SalesOrder[] }) {
+export function SalesOrdersTable({ orders, currency = 'USD' }: { orders: SalesOrder[], currency?: string }) {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const router = useRouter()
 
@@ -75,7 +76,7 @@ export function SalesOrdersTable({ orders }: { orders: SalesOrder[] }) {
               </td>
               <td className="px-6 py-4"><span className="text-sm text-zinc-400">{order.customer.companyName}</span></td>
               <td className="px-6 py-4"><span className="text-sm text-zinc-400">{new Date(order.orderDate).toLocaleDateString()}</span></td>
-              <td className="px-6 py-4 text-right"><span className="text-sm text-white font-mono">${getAmount(order.totalAmount).toLocaleString()}</span></td>
+              <td className="px-6 py-4 text-right"><span className="text-sm text-white font-mono">{formatCurrency(getAmount(order.totalAmount), currency)}</span></td>
               <td className="px-6 py-4 text-center"><span className={`text-xs font-medium ${paymentColors[order.paymentStatus]}`}>{order.paymentStatus}</span></td>
               <td className="px-6 py-4"><span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${statusColors[order.status]}`}>{order.status}</span></td>
               <td className="px-6 py-4 text-right">

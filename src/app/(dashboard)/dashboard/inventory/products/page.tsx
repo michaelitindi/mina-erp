@@ -2,8 +2,19 @@ import { getProducts, getProductStats } from '@/app/actions/products'
 import { ProductsTable } from '@/components/inventory/products-table'
 import { CreateProductButton } from '@/components/inventory/product-buttons'
 import { Package, AlertTriangle, CheckCircle, DollarSign } from 'lucide-react'
+import { auth } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma'
+import { formatCurrency } from '@/lib/utils'
 
 export default async function ProductsPage() {
+  const { orgId } = await auth()
+  const org = orgId ? await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId },
+    select: { currency: true, country: true }
+  }) : null
+  const currency = org?.currency || 'USD'
+  const country = org?.country || 'US'
+
   const [productsResult, stats] = await Promise.all([
     getProducts(),
     getProductStats()
@@ -24,7 +35,7 @@ export default async function ProductsPage() {
           <h1 className="text-2xl font-bold text-white">Products</h1>
           <p className="text-zinc-500">Manage your inventory items</p>
         </div>
-        <CreateProductButton />
+        <CreateProductButton isKenyan={country === 'KE'} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -49,7 +60,7 @@ export default async function ProductsPage() {
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 shadow-sm backdrop-blur-sm transition-all hover:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-purple-500/10 p-2"><DollarSign className="h-5 w-5 text-purple-400" /></div>
-            <div><p className="text-sm text-zinc-500 font-medium">Inv. Value</p><p className="text-2xl font-bold text-white">${totalValue.toLocaleString()}</p></div>
+            <div><p className="text-sm text-zinc-500 font-medium">Inv. Value</p><p className="text-2xl font-bold text-white">{formatCurrency(totalValue, currency)}</p></div>
           </div>
         </div>
       </div>
@@ -59,10 +70,10 @@ export default async function ProductsPage() {
           <Package className="mx-auto h-12 w-12 text-zinc-700" />
           <h3 className="mt-4 text-lg font-semibold text-white">No products yet</h3>
           <p className="mt-2 text-zinc-500">Add your first product to start tracking inventory.</p>
-          <div className="mt-6"><CreateProductButton /></div>
+          <div className="mt-6"><CreateProductButton isKenyan={country === 'KE'} /></div>
         </div>
       ) : (
-        <ProductsTable products={products} />
+        <ProductsTable products={products} currency={currency} />
       )}
     </div>
   )

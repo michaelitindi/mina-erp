@@ -4,12 +4,13 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSalesOrder } from '@/app/actions/sales-orders'
 import { Plus, X, Trash2, Building2 } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 interface Customer { id: string; companyName: string }
 interface Warehouse { id: string; name: string; code: string }
 interface LineItem { description: string; sku: string; quantity: number; unitPrice: number; taxRate: number; discountPercent: number; productId?: string }
 
-export function CreateSalesOrderButton({ customers, warehouses }: { customers: Customer[], warehouses: Warehouse[] }) {
+export function CreateSalesOrderButton({ customers, warehouses, currency = 'USD' }: { customers: Customer[], warehouses: Warehouse[], currency?: string }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -165,11 +166,11 @@ export function CreateSalesOrderButton({ customers, warehouses }: { customers: C
                 <div className="rounded-2xl bg-zinc-900/50 border border-zinc-800 p-6 space-y-4">
                   <div className="flex justify-between text-xs font-bold text-zinc-500 uppercase">
                     <span>Subtotal</span>
-                    <span className="text-white">${subtotal.toFixed(2)}</span>
+                    <span className="text-white">{formatCurrency(subtotal, currency)}</span>
                   </div>
                   <div className="flex justify-between text-xs font-bold text-zinc-500 uppercase">
                     <span>Tax Total</span>
-                    <span className="text-white">${taxTotal.toFixed(2)}</span>
+                    <span className="text-white">{formatCurrency(taxTotal, currency)}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs font-bold text-zinc-500 uppercase border-t border-zinc-800 pt-4">
                     <span>Shipping Cost</span>
@@ -177,7 +178,7 @@ export function CreateSalesOrderButton({ customers, warehouses }: { customers: C
                   </div>
                   <div className="flex justify-between items-center border-t border-zinc-800 pt-4">
                     <span className="text-sm font-black text-white uppercase tracking-tight">Grand Total</span>
-                    <span className="text-2xl font-black text-green-400">${(subtotal + taxTotal).toFixed(2)}</span>
+                    <span className="text-2xl font-black text-green-400">{formatCurrency(subtotal + taxTotal, currency)}</span>
                   </div>
                 </div>
               </div>
