@@ -1,7 +1,9 @@
 'use client'
 
 import { UserButton, OrganizationSwitcher } from '@clerk/nextjs'
-import { Bell, Search, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
+import { GlobalSearch } from './global-search'
+import { NotificationDropdown } from './notification-dropdown'
 
 interface HeaderProps {
   onMenuClick?: () => void
@@ -21,13 +23,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         </button>
 
         {/* Search */}
-        <div className="relative hidden md:block">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="h-10 w-64 xl:w-80 rounded-lg border border-zinc-800 bg-zinc-900/50 pl-10 pr-4 text-sm text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
-          />
+        <div className="hidden md:block">
+          <GlobalSearch />
         </div>
       </div>
 
@@ -53,10 +50,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
 
         {/* Notifications */}
-        <button className="relative rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-zinc-950"></span>
-        </button>
+        <NotificationDropdown />
 
         {/* User Button */}
         <UserButton 

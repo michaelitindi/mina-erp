@@ -80,7 +80,8 @@ model Organization {
   creditNotes    CreditNote[]
   debitNotes     DebitNote[]
   websites       Website[]
-
+  notifications  Notification[]
+  
   @@index([clerkOrgId])
   @@index([status])
 }
@@ -2132,4 +2133,23 @@ model WebBooking {
   website         Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
 
   @@index([websiteId])
+}
+
+model Notification {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String?  // Clerk user ID if user-specific, null for general org notifications
+  type           String
+  title          String
+  message        String
+  link           String?
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([isRead])
 }

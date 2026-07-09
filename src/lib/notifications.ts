@@ -48,18 +48,16 @@ export async function createNotification(
   payload: NotificationPayload
 ): Promise<void> {
   try {
-    // Store in database (requires Notification model)
-    // For now, we'll log. Add Notification model to schema if needed.
-    console.log(`[Notification] ${payload.type}: ${payload.title}`, {
-      organizationId,
-      userId,
-      ...payload
+    await prisma.notification.create({
+      data: {
+        organizationId,
+        userId,
+        type: payload.type,
+        title: payload.title,
+        message: payload.message,
+        link: payload.link || null,
+      }
     })
-
-    // Could also integrate with:
-    // - WebSocket for real-time updates
-    // - Push notifications
-    // - Slack/Discord webhooks
   } catch (error) {
     console.error('Failed to create notification:', error)
   }
