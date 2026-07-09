@@ -73,9 +73,8 @@ export default async function HomePage() {
                 href="https://www.paypal.com/ncp/payment/8SJAPG6E5K9U8"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors"
+                className="rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-colors shadow-md"
               >
-                <Heart className="h-4 w-4 text-red-500 animate-pulse fill-red-500/10" />
                 Sponsor
               </a>
               <Link
