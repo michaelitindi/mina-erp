@@ -12,7 +12,6 @@ import {
   Globe,
   MessageSquare,
   Map,
-  Heart,
 } from 'lucide-react'
 
 export default async function HomePage() {
@@ -174,9 +173,6 @@ export default async function HomePage() {
       {/* Support Section */}
       <section className="py-16 border-t border-zinc-800/50">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20 shadow-lg shadow-red-500/5">
-            <Heart className="h-6 w-6 text-red-500 fill-red-500/10" />
-          </div>
           <h2 className="text-2xl font-bold text-white tracking-tight">Support MinaERP Development</h2>
           <p className="mx-auto max-w-xl text-zinc-400 leading-relaxed text-sm">
             MinaERP is built to empower organizations worldwide with open-source tools. 
