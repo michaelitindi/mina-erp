@@ -12,6 +12,7 @@ import {
   Globe,
   MessageSquare,
   Map,
+  Heart,
 } from 'lucide-react'
 
 export default async function HomePage() {
@@ -68,6 +69,15 @@ export default async function HomePage() {
               <span className="text-xl font-semibold text-white">MinaERP</span>
             </div>
             <div className="flex items-center gap-6">
+              <a
+                href="https://www.paypal.com/ncp/payment/8SJAPG6E5K9U8"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors"
+              >
+                <Heart className="h-4 w-4 text-red-500 animate-pulse fill-red-500/10" />
+                Sponsor
+              </a>
               <Link
                 href="/feedback"
                 className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors"
@@ -162,8 +172,33 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Support Section */}
+      <section className="py-16 border-t border-zinc-800/50">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20 shadow-lg shadow-red-500/5">
+            <Heart className="h-6 w-6 text-red-500 fill-red-500/10" />
+          </div>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Support MinaERP Development</h2>
+          <p className="mx-auto max-w-xl text-zinc-400 leading-relaxed text-sm">
+            MinaERP is built to empower organizations worldwide with open-source tools. 
+            If our platform helps your business grow, consider sponsoring our development to help us maintain it and build new features.
+          </p>
+          <div className="pt-2">
+            <a
+              href="https://www.paypal.com/ncp/payment/8SJAPG6E5K9U8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500 text-white font-bold px-5 py-2.5 text-sm transition-all hover:scale-105 active:scale-95 shadow-lg shadow-red-500/20 cursor-pointer"
+            >
+              Sponsor via PayPal
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="py-24">
+      <section className="py-24 border-t border-zinc-800/50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 p-8 md:p-12 shadow-2xl shadow-blue-600/20">
             <div className="text-center">
@@ -185,11 +220,27 @@ export default async function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-800">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-zinc-500">
+      <footer className="border-t border-zinc-800 bg-zinc-950/20">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-zinc-500">
             © {new Date().getFullYear()} MinaERP. All rights reserved.
           </p>
+          <div className="flex gap-6 text-sm text-zinc-500">
+            <a
+              href="https://www.paypal.com/ncp/payment/8SJAPG6E5K9U8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              Donate
+            </a>
+            <Link href="/feedback" className="hover:text-white transition-colors">
+              Feedback
+            </Link>
+            <Link href="/roadmap" className="hover:text-white transition-colors">
+              Roadmap
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
