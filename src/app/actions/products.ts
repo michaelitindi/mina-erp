@@ -167,3 +167,100 @@ export async function getLowStockAlerts() {
 
   return serializeDecimal(alerts)
 }
+
+export async function getProductDetails(id: string) {
+  const { orgId } = await getOrganization()
+  
+  const product = await prisma.product.findFirst({
+    where: { id, organizationId: orgId, deletedAt: null },
+    include: {
+      stockLevels: {
+        include: { warehouse: true }
+      }
+    }
+  })
+  if (!product) throw new Error('Product not found')
+
+  // Find sales order lines (CRM / Sales history)
+  const salesOrders = await prisma.salesOrderItem.findMany({
+    where: {
+      productId: id,
+      salesOrder: {
+        organizationId: orgId,
+        deletedAt: null
+      }
+    },
+    include: {
+      salesOrder: {
+        include: {
+          customer: { select: { companyName: true } }
+        }
+      }
+    },
+    orderBy: { id: 'desc' },
+    take: 10
+  })
+
+  // Find BOMs (Manufacturing link)
+  // 1. Where this is the finished product
+  const bomsAsFinished = await prisma.billOfMaterials.findMany({
+    where: { productId: id, organizationId: orgId },
+    include: {
+      _count: { select: { components: true, workOrders: true } }
+    }
+  })
+
+  // 2. Where this is used as a component (manually resolving finished product info)
+  const bomsAsComponentRaw = await prisma.bOMComponent.findMany({
+    where: {
+      productId: id,
+      bom: {
+        organizationId: orgId
+      }
+    },
+    include: {
+      bom: true
+    }
+  })
+
+  const bomsAsComponent = await Promise.all(bomsAsComponentRaw.map(async (comp) => {
+    const finishedProduct = comp.bom.productId ? await prisma.product.findUnique({
+      where: { id: comp.bom.productId },
+      select: { name: true, sku: true }
+    }) : null
+    return {
+      ...comp,
+      bom: {
+        ...comp.bom,
+        product: finishedProduct
+      }
+    }
+  }))
+
+  // Find Work Orders producing this product
+  const workOrders = await prisma.workOrder.findMany({
+    where: { productId: id, organizationId: orgId },
+    orderBy: { createdAt: 'desc' },
+    take: 10
+  })
+
+  // Find latest stock movements
+  const stockMovements = await prisma.stockMovement.findMany({
+    where: { productId: id, organizationId: orgId },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      fromWarehouse: { select: { name: true } },
+      toWarehouse: { select: { name: true } }
+    },
+    take: 20
+  })
+
+  return serializeDecimal({
+    product,
+    salesOrders,
+    bomsAsFinished,
+    bomsAsComponent,
+    workOrders,
+    stockMovements
+  })
+}

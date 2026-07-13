@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { deleteProduct } from '@/app/actions/products'
 import { Trash2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
@@ -52,8 +53,10 @@ export function ProductsTable({ products, currency = 'USD' }: { products: Produc
             return (
               <tr key={product.id} className="hover:bg-zinc-800/30 transition-colors">
                 <td className="px-6 py-4">
-                  <p className="text-sm font-medium text-white">{product.name}</p>
-                  <p className="text-xs text-zinc-500 font-mono">{product.sku}</p>
+                  <Link href={`/dashboard/inventory/products/${product.id}`} className="hover:text-blue-400 group transition-colors block">
+                    <p className="text-sm font-medium text-white group-hover:text-blue-400">{product.name}</p>
+                    <p className="text-xs text-zinc-500 font-mono group-hover:text-blue-400/80">{product.sku}</p>
+                  </Link>
                 </td>
                 <td className="px-6 py-4"><span className="text-sm text-zinc-400">{product.category || '—'}</span></td>
                 <td className="px-6 py-4 text-right"><span className="text-sm text-zinc-400">{formatCurrency(getAmount(product.costPrice), currency)}</span></td>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { deleteWarehouse } from '@/app/actions/warehouses'
 import { Trash2, Star } from 'lucide-react'
 
@@ -44,11 +45,13 @@ export function WarehousesTable({ warehouses }: { warehouses: Warehouse[] }) {
           {warehouses.map((wh) => (
             <tr key={wh.id} className="hover:bg-zinc-800/30 transition-colors">
               <td className="px-6 py-4">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-white">{wh.name}</p>
-                  {wh.isDefault && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />}
-                </div>
-                <p className="text-xs text-zinc-500 font-mono">{wh.code}</p>
+                <Link href={`/dashboard/inventory/warehouses/${wh.id}`} className="hover:text-blue-400 group transition-colors block">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-white group-hover:text-blue-400">{wh.name}</p>
+                    {wh.isDefault && <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 shrink-0" />}
+                  </div>
+                  <p className="text-xs text-zinc-500 font-mono group-hover:text-blue-400/80">{wh.code}</p>
+                </Link>
               </td>
               <td className="px-6 py-4"><span className="text-sm text-zinc-400">{[wh.city, wh.country].filter(Boolean).join(', ') || '—'}</span></td>
               <td className="px-6 py-4 text-center"><span className="text-sm text-white">{wh._count?.stockLevels || 0}</span></td>
