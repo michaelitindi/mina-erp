@@ -5,7 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { getGeminiClient, getGeminiApiKey } from '@/lib/gemini'
 import { SchemaType, FunctionDeclaration } from '@google/generative-ai'
-import { getLowStockAlerts } from './products'
+import { createProduct as apiCreateProduct, getLowStockAlerts } from './products'
+import { createCustomer as apiCreateCustomer } from './customers'
 import { globalSearch } from '@/lib/search'
 import { Decimal } from '@prisma/client/runtime/library'
 import { logAudit } from '@/lib/audit'
@@ -176,46 +177,29 @@ async function handleToolCall(name: string, args: any, orgId: string, userId: st
     }
 
     case 'createProduct': {
-      const product = await prisma.product.create({
-        data: {
-          sku: args.sku,
-          name: args.name,
-          costPrice: new Decimal(args.costPrice),
-          sellingPrice: new Decimal(args.sellingPrice),
-          category: args.category || null,
-          description: args.description || null,
-          organizationId: orgId,
-          createdBy: userId
-        }
+      const product = await apiCreateProduct({
+        sku: args.sku,
+        name: args.name,
+        costPrice: Number(args.costPrice || 0),
+        sellingPrice: Number(args.sellingPrice || 0),
+        description: args.description || null,
+        category: args.category || null,
+        type: 'PHYSICAL',
+        unit: 'EACH',
+        taxRate: 0,
+        reorderLevel: 0
       })
-      await logAudit({ organizationId: orgId, userId, action: 'CREATE', entityType: 'Product', entityId: product.id, newValues: product as any })
-      revalidatePath('/dashboard/inventory/products')
-      return serializeDecimal(product)
+      return product
     }
 
     case 'createCustomer': {
-      const lastCustomer = await prisma.customer.findFirst({
-        where: { organizationId: orgId },
-        orderBy: { customerNumber: 'desc' },
-        select: { customerNumber: true }
+      const customer = await apiCreateCustomer({
+        companyName: args.companyName,
+        contactPerson: args.contactPerson || null,
+        email: args.email,
+        phone: args.phone || null
       })
-      const lastNum = lastCustomer ? (parseInt(lastCustomer.customerNumber.replace('CUST-', '')) || 0) : 0
-      const customerNumber = `CUST-${String(lastNum + 1).padStart(6, '0')}`
-
-      const customer = await prisma.customer.create({
-        data: {
-          companyName: args.companyName,
-          contactPerson: args.contactPerson || null,
-          email: args.email,
-          phone: args.phone || null,
-          customerNumber,
-          organizationId: orgId,
-          createdBy: userId
-        }
-      })
-      await logAudit({ organizationId: orgId, userId, action: 'CREATE', entityType: 'Customer', entityId: customer.id, newValues: customer as any })
-      revalidatePath('/dashboard/crm/customers')
-      return serializeDecimal(customer)
+      return customer
     }
 
     case 'createNotification': {
