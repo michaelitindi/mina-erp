@@ -62,6 +62,31 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
     }
   }, [messages, activeView])
 
+  // Load chat history from localStorage on client-side mount
+  useEffect(() => {
+    const cached = localStorage.getItem('mina_assistant_chat_history')
+    if (cached) {
+      try {
+        setMessages(JSON.parse(cached))
+      } catch (e) {
+        console.error('Failed to parse cached chat history:', e)
+      }
+    }
+  }, [])
+
+  // Save chat history to localStorage when changed
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('mina_assistant_chat_history', JSON.stringify(messages))
+    }
+  }, [messages])
+
+  function handleClearHistory() {
+    setMessages([])
+    setErrorPayload(null)
+    localStorage.removeItem('mina_assistant_chat_history')
+  }
+
   async function handleSend(textToSend?: string) {
     const prompt = (textToSend || input).trim()
     if (!prompt) return
@@ -252,7 +277,7 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
               </div>
             </div>
             <button 
-              onClick={() => { setMessages([]); setErrorPayload(null) }}
+              onClick={handleClearHistory}
               className="text-xs text-zinc-400 hover:text-white hover:underline transition-colors cursor-pointer"
             >
               Clear Conversation

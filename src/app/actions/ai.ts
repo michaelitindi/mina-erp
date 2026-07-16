@@ -264,6 +264,7 @@ export async function askAiAssistant(message: string, history: Array<{ role: 'us
     const client = await getGeminiClient(orgId)
     const model = client.getGenerativeModel({
       model: 'gemini-3.5-flash',
+      systemInstruction: `You are Mina Assistant, a helpful ERP business copilot. The active organization's currency is "${org.currency || 'USD'}". All monetary values and price inputs should be represented in this currency.`,
       tools: [{
         functionDeclarations: [
           getSalesOverviewTool,
