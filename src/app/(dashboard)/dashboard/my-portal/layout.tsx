@@ -42,10 +42,12 @@ export default async function MyPortalLayout({
       <div className="p-6">
         <div className="rounded-xl border border-slate-700 bg-slate-800/30 p-8 text-center max-w-xl mx-auto">
           <User className="h-16 w-16 mx-auto text-slate-500 mb-4" />
-          <h2 className="text-xl font-semibold text-white mb-2">No Employee Record Found</h2>
+          <h2 className="text-xl font-semibold text-white mb-2">
+            {isAdmin ? 'No Admin Profile Linked' : 'No Employee Record Found'}
+          </h2>
           <p className="text-slate-400">
             {isAdmin 
-              ? 'Your account is not linked to an employee record yet. As an administrator, you can automatically create and link your profile to start using the self-service portal.'
+              ? 'Your account is not linked to an administrator profile yet. As an administrator, you can automatically create and link your admin profile to start using the self-service portal.'
               : 'Your account is not linked to an employee record yet. Please contact your HR administrator to set up your employee profile.'
             }
           </p>

@@ -349,10 +349,26 @@ export async function createAndLinkAdminEmployee() {
     throw new Error('Unauthorized: Only administrators can auto-provision their profile.')
   }
 
+  // Resolve Database organization CUID
+  let org = await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId }
+  })
+  if (!org) {
+    org = await prisma.organization.create({
+      data: {
+        clerkOrgId: orgId,
+        name: 'My Organization',
+        slug: orgId.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+      }
+    })
+  }
+
+  const dbOrgId = org.id
+
   // Check if already exists
   const existing = await prisma.employee.findFirst({
     where: { 
-      organizationId: orgId, 
+      organizationId: dbOrgId, 
       clerkUserId: userId,
       deletedAt: null 
     }
@@ -372,7 +388,7 @@ export async function createAndLinkAdminEmployee() {
 
   // Generate employee number
   const last = await prisma.employee.findFirst({
-    where: { organizationId: orgId },
+    where: { organizationId: dbOrgId },
     orderBy: { employeeNumber: 'desc' },
     select: { employeeNumber: true }
   })
@@ -384,7 +400,7 @@ export async function createAndLinkAdminEmployee() {
 
   const employee = await prisma.employee.create({
     data: {
-      organizationId: orgId,
+      organizationId: dbOrgId,
       clerkUserId: userId,
       employeeNumber,
       firstName,

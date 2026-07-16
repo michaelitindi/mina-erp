@@ -318,12 +318,12 @@ export async function askAiAssistant(message: string, history: Array<{ role: 'us
       // Send tool responses back to continue model generation
       const followUp = await chat.sendMessage(functionResponses)
       
-      // Serialize history safely
+      // Serialize history safely, filtering out non-text tool calls/responses
       const rawHistory = await chat.getHistory()
       const serializedHistory = rawHistory.map(h => ({
         role: h.role as 'user' | 'model',
-        parts: h.parts.map(p => p.text || '').join(' ')
-      }))
+        parts: h.parts.map(p => p.text || '').join(' ').trim()
+      })).filter(h => h.parts !== '')
 
       return {
         success: true,
@@ -335,8 +335,8 @@ export async function askAiAssistant(message: string, history: Array<{ role: 'us
     const rawHistory = await chat.getHistory()
     const serializedHistory = rawHistory.map(h => ({
       role: h.role as 'user' | 'model',
-      parts: h.parts.map(p => p.text || '').join(' ')
-    }))
+      parts: h.parts.map(p => p.text || '').join(' ').trim()
+    })).filter(h => h.parts !== '')
 
     return {
       success: true,

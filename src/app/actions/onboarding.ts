@@ -72,6 +72,53 @@ export async function completeOnboarding(data: {
     })
   }
 
+  // Auto-provision admin employee profile
+  try {
+    const { currentUser } = await import('@clerk/nextjs/server')
+    const user = await currentUser()
+    if (user) {
+      const firstName = user.firstName || 'Admin'
+      const lastName = user.lastName || 'User'
+      const email = user.emailAddresses[0]?.emailAddress || ''
+      
+      const last = await prisma.employee.findFirst({
+        where: { organizationId: org.id },
+        orderBy: { employeeNumber: 'desc' },
+        select: { employeeNumber: true }
+      })
+      let employeeNumber = 'EMP-000001'
+      if (last) {
+        const lastNum = parseInt(last.employeeNumber.replace('EMP-', '')) || 0
+        employeeNumber = `EMP-${String(lastNum + 1).padStart(6, '0')}`
+      }
+
+      // Check if employee record already exists
+      const existingEmployee = await prisma.employee.findFirst({
+        where: { organizationId: org.id, clerkUserId: userId, deletedAt: null }
+      })
+
+      if (!existingEmployee) {
+        await prisma.employee.create({
+          data: {
+            organizationId: org.id,
+            clerkUserId: userId,
+            employeeNumber,
+            firstName,
+            lastName,
+            email,
+            position: 'Administrator',
+            employmentType: 'FULL_TIME',
+            hireDate: new Date(),
+            status: 'ACTIVE',
+            createdBy: userId
+          }
+        })
+      }
+    }
+  } catch (err) {
+    console.error('Failed to auto-provision admin employee profile during onboarding:', err)
+  }
+
   revalidatePath('/dashboard')
   redirect('/dashboard')
 }

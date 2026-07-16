@@ -8,13 +8,13 @@ export function LinkAdminButton() {
   const [loading, setLoading] = useState(false)
 
   async function handleLink() {
-    if (!confirm('Would you like to automatically create and link your administrator employee profile?')) return
+    if (!confirm('Would you like to automatically create and link your administrator profile?')) return
     setLoading(true)
     try {
       await createAndLinkAdminEmployee()
       window.location.reload()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to create employee profile')
+      alert(err instanceof Error ? err.message : 'Failed to create admin profile')
     } finally {
       setLoading(false)
     }
@@ -29,12 +29,12 @@ export function LinkAdminButton() {
       {loading ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
-          Creating profile...
+          Creating admin profile...
         </>
       ) : (
         <>
           <Sparkles className="h-4 w-4 text-blue-200" />
-          Create & Link my Employee Profile
+          Create & Link my Admin Profile
         </>
       )}
     </button>

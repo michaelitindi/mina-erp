@@ -254,7 +254,7 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
         </>
       ) : (
         /* VIEW 2: Premium Claude/ChatGPT/Gemini Style Assistant View */
-        <div className="flex-1 flex flex-col max-w-4xl w-full mx-auto bg-zinc-900/10 rounded-2xl border border-zinc-800/80 shadow-2xl backdrop-blur-sm overflow-hidden">
+        <div className="flex-1 flex flex-col w-full bg-zinc-900/10 rounded-2xl border border-zinc-800/80 shadow-2xl backdrop-blur-sm overflow-hidden">
           {/* Assistant Header */}
           <div className="flex items-center justify-between p-4 border-b border-zinc-800/80 bg-zinc-900/60">
             <div className="flex items-center gap-3">
@@ -269,9 +269,8 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
                 <Sparkles className="h-4.5 w-4.5 text-blue-400" />
               </div>
               <div>
-                <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                <h3 className="font-bold text-white text-sm">
                   Mina Assistant
-                  <span className="text-[8px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1 py-0.2 rounded font-black tracking-wider uppercase">v3.5 FLASH</span>
                 </h3>
                 <p className="text-[10px] text-zinc-500">Multimodal Agentic ERP Companion</p>
               </div>
