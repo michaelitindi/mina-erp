@@ -3,7 +3,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { getGeminiClient } from '@/lib/gemini'
+import { getGeminiClient, getGeminiApiKey } from '@/lib/gemini'
 import { SchemaType, FunctionDeclaration } from '@google/generative-ai'
 import { getLowStockAlerts } from './products'
 import { globalSearch } from '@/lib/search'
@@ -239,71 +239,98 @@ async function handleToolCall(name: string, args: any, orgId: string, userId: st
 }
 
 export async function askAiAssistant(message: string, history: Array<{ role: 'user' | 'model', parts: string }>) {
-  const { userId, orgId } = await auth()
-  if (!userId || !orgId) throw new Error('Unauthorized')
-
-  const org = await prisma.organization.findUnique({
-    where: { clerkOrgId: orgId }
-  })
-  if (!org) throw new Error('Organization not found')
-
-  const client = await getGeminiClient(orgId)
-  const model = client.getGenerativeModel({
-    model: 'gemini-1.5-flash',
-    tools: [{
-      functionDeclarations: [
-        getSalesOverviewTool,
-        getInventoryAlertsTool,
-        searchERPDataTool,
-        createProductTool,
-        createCustomerTool,
-        createNotificationTool
-      ]
-    }]
-  })
-
-  // Format the history items correctly for Gemini Chat Content objects
-  const contents = history.map(item => ({
-    role: item.role === 'user' ? 'user' : 'model',
-    parts: [{ text: item.parts }]
-  }))
-
-  // Start chat session
-  const chat = model.startChat({
-    history: contents,
-    generationConfig: {
-      temperature: 0.2
+  try {
+    const { userId, orgId } = await auth()
+    if (!userId || !orgId) {
+      return { success: false, error: 'UNAUTHORIZED', message: 'Session expired. Please sign in again.' }
     }
-  })
 
-  let response = await chat.sendMessage(message)
-  let functionCalls = response.response.functionCalls()
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrgId: orgId }
+    })
+    if (!org) {
+      return { success: false, error: 'ORGANIZATION_NOT_FOUND', message: 'Active organization context not found.' }
+    }
 
-  // Loop if the model requested function execution
-  if (functionCalls && functionCalls.length > 0) {
-    const functionResponses = await Promise.all(functionCalls.map(async (call) => {
-      try {
-        const toolResult = await handleToolCall(call.name, call.args, org.id, userId)
-        return {
-          functionResponse: {
-            name: call.name,
-            response: { result: toolResult }
-          }
-        }
-      } catch (err: any) {
-        return {
-          functionResponse: {
-            name: call.name,
-            response: { error: err.message || 'Operation failed' }
-          }
-        }
+    const apiKey = await getGeminiApiKey(orgId)
+    if (!apiKey) {
+      return { 
+        success: false, 
+        error: 'API_KEY_MISSING', 
+        message: 'Your Gemini API Key is not configured. Please set it in Settings -> AI Configuration to enable the ERP Assistant.' 
       }
+    }
+
+    const client = await getGeminiClient(orgId)
+    const model = client.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      tools: [{
+        functionDeclarations: [
+          getSalesOverviewTool,
+          getInventoryAlertsTool,
+          searchERPDataTool,
+          createProductTool,
+          createCustomerTool,
+          createNotificationTool
+        ]
+      }]
+    })
+
+    // Format the history items correctly for Gemini Chat Content objects
+    const contents = history.map(item => ({
+      role: item.role === 'user' ? 'user' : 'model',
+      parts: [{ text: item.parts }]
     }))
 
-    // Send tool responses back to continue model generation
-    const followUp = await chat.sendMessage(functionResponses)
-    
-    // Serialize history safely
+    // Start chat session
+    const chat = model.startChat({
+      history: contents,
+      generationConfig: {
+        temperature: 0.2
+      }
+    })
+
+    let response = await chat.sendMessage(message)
+    let functionCalls = response.response.functionCalls()
+
+    // Loop if the model requested function execution
+    if (functionCalls && functionCalls.length > 0) {
+      const functionResponses = await Promise.all(functionCalls.map(async (call) => {
+        try {
+          const toolResult = await handleToolCall(call.name, call.args, org.id, userId)
+          return {
+            functionResponse: {
+              name: call.name,
+              response: { result: toolResult }
+            }
+          }
+        } catch (err: any) {
+          return {
+            functionResponse: {
+              name: call.name,
+              response: { error: err.message || 'Operation failed' }
+            }
+          }
+        }
+      }))
+
+      // Send tool responses back to continue model generation
+      const followUp = await chat.sendMessage(functionResponses)
+      
+      // Serialize history safely
+      const rawHistory = await chat.getHistory()
+      const serializedHistory = rawHistory.map(h => ({
+        role: h.role as 'user' | 'model',
+        parts: h.parts.map(p => p.text || '').join(' ')
+      }))
+
+      return {
+        success: true,
+        text: followUp.response.text() || '',
+        history: serializedHistory
+      }
+    }
+
     const rawHistory = await chat.getHistory()
     const serializedHistory = rawHistory.map(h => ({
       role: h.role as 'user' | 'model',
@@ -311,19 +338,16 @@ export async function askAiAssistant(message: string, history: Array<{ role: 'us
     }))
 
     return {
-      text: followUp.response.text() || '',
+      success: true,
+      text: response.response.text() || '',
       history: serializedHistory
     }
-  }
-
-  const rawHistory = await chat.getHistory()
-  const serializedHistory = rawHistory.map(h => ({
-    role: h.role as 'user' | 'model',
-    parts: h.parts.map(p => p.text || '').join(' ')
-  }))
-
-  return {
-    text: response.response.text() || '',
-    history: serializedHistory
+  } catch (err: any) {
+    console.error('askAiAssistant Server Error:', err)
+    return {
+      success: false,
+      error: 'SYSTEM_ERROR',
+      message: err.message || 'An unexpected error occurred while communicating with the AI model.'
+    }
   }
 }

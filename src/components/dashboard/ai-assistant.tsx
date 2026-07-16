@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Sparkles, Send, Bot, User, ChevronDown, ChevronUp, Loader2, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+import { Sparkles, Send, Bot, User, ChevronDown, ChevronUp, Loader2, ArrowRight, AlertCircle, Settings } from 'lucide-react'
 import { askAiAssistant } from '@/app/actions/ai'
 
 interface Message {
@@ -14,7 +15,7 @@ export function AiAssistant() {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [errorPayload, setErrorPayload] = useState<{ error: string; message: string } | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -40,29 +41,40 @@ export function AiAssistant() {
     if (!prompt) return
 
     setInput('')
-    setError(null)
+    setErrorPayload(null)
     setIsLoading(true)
 
     const updatedMessages = [...messages, { role: 'user' as const, parts: prompt }]
     setMessages(updatedMessages)
 
     try {
-      // We pass the history excluding the last message because askAiAssistant handles appending the new prompt
       const result = await askAiAssistant(prompt, messages)
-      setMessages(result.history)
+      if (result.success) {
+        setMessages(result.history || [])
+      } else {
+        setErrorPayload({
+          error: result.error || 'ERROR',
+          message: result.message || 'Operation failed.'
+        })
+      }
     } catch (err: any) {
-      setError(err.message || 'Something went wrong. Make sure your Gemini API key is configured.')
+      setErrorPayload({
+        error: 'SYSTEM_ERROR',
+        message: err.message || 'Failed to communicate with Server Action.'
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
+  const isKeyMissing = errorPayload?.error === 'API_KEY_MISSING'
+
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 shadow-xl backdrop-blur-md overflow-hidden transition-all duration-300">
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/30 shadow-xl backdrop-blur-md overflow-hidden transition-all duration-300">
       {/* Header */}
-      <button 
+      <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 bg-zinc-900/60 hover:bg-zinc-900/80 transition-colors text-left"
+        className="w-full flex items-center justify-between p-4 bg-zinc-900/60 hover:bg-zinc-900/80 transition-colors text-left cursor-pointer select-none"
       >
         <div className="flex items-center gap-3">
           <div className="rounded-xl bg-blue-500/10 p-2 border border-blue-500/20 shadow-inner">
@@ -70,26 +82,38 @@ export function AiAssistant() {
           </div>
           <div>
             <h3 className="font-bold text-white text-sm flex items-center gap-2">
-              Mina Assistant <span className="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded font-black tracking-widest uppercase">CO-PILOT</span>
+              Mina Assistant <span className="text-[9px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded font-black tracking-wider uppercase">CO-PILOT</span>
             </h3>
-            <p className="text-xs text-zinc-400">Ask me to search ERP records, analyze reports, or manage catalog assets</p>
+            <p className="text-xs text-zinc-400">Your executive business intelligence companion</p>
           </div>
         </div>
         <div className="text-zinc-400 hover:text-white transition-colors">
           {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </div>
-      </button>
+      </div>
 
-      {/* Chat Area */}
+      {/* Collapsed State Quick Preview Bar */}
+      {!isOpen && (
+        <div className="px-4 py-3 bg-zinc-950/20 border-t border-zinc-800/50 flex items-center justify-between text-xs text-zinc-500">
+          <span>Click to open chatbot conversation history</span>
+          <span className="text-blue-400 hover:underline cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsOpen(true) }}>
+            Quick prompt AI →
+          </span>
+        </div>
+      )}
+
+      {/* Expanded Content Area */}
       {isOpen && (
-        <div className="border-t border-zinc-800/80 bg-zinc-950/20">
+        <div className="border-t border-zinc-800/80 bg-zinc-950/10">
           {/* Scrollable messages */}
-          <div className="p-4 space-y-4 max-h-[300px] overflow-y-auto">
+          <div className="p-4 space-y-4 max-h-[320px] overflow-y-auto">
             {messages.length === 0 ? (
-              <div className="text-center py-8 px-4 text-zinc-500 space-y-2">
-                <Bot className="h-10 w-10 mx-auto text-zinc-700" />
-                <p className="text-sm font-medium text-zinc-400">Hello! I am your AI Business Copilot. How can I help you today?</p>
-                <p className="text-xs text-zinc-600">Try one of the suggestions below to explore what I can do.</p>
+              <div className="text-center py-6 px-4 text-zinc-500 space-y-3">
+                <Bot className="h-9 w-9 mx-auto text-zinc-700" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-zinc-300">How can I assist your business today?</p>
+                  <p className="text-xs text-zinc-500">I can read sales reports, analyze inventory, add products, or register customers.</p>
+                </div>
               </div>
             ) : (
               messages.map((msg, idx) => (
@@ -119,14 +143,34 @@ export function AiAssistant() {
                 </div>
                 <div className="rounded-2xl p-3 text-sm bg-zinc-900/60 border border-zinc-800/80 text-zinc-400 rounded-tl-none flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
-                  <span>Thinking & working...</span>
+                  <span>Processing request...</span>
                 </div>
               </div>
             )}
 
-            {error && (
-              <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400">
-                {error}
+            {/* Structured API Key Error Banner */}
+            {errorPayload && (
+              <div className={`rounded-xl border p-4 flex flex-col gap-3 ${
+                isKeyMissing 
+                  ? 'border-yellow-500/20 bg-yellow-500/10 text-yellow-300' 
+                  : 'border-red-500/20 bg-red-500/10 text-red-300'
+              }`}>
+                <div className="flex items-start gap-2.5 text-sm font-medium">
+                  {isKeyMissing ? <AlertCircle className="h-5 w-5 text-yellow-400 shrink-0 mt-0.5" /> : <AlertCircle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />}
+                  <div>
+                    <p className="font-bold">{isKeyMissing ? 'API Key Required' : 'Request Failed'}</p>
+                    <p className="text-xs opacity-85 mt-0.5 leading-relaxed">{errorPayload.message}</p>
+                  </div>
+                </div>
+                {isKeyMissing && (
+                  <Link 
+                    href="/dashboard/settings/ai"
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-500 text-zinc-950 font-bold px-4 py-2 text-xs transition-colors hover:bg-yellow-400 w-fit"
+                  >
+                    <Settings className="h-3.5 w-3.5" />
+                    Configure API Key
+                  </Link>
+                )}
               </div>
             )}
             
@@ -140,10 +184,10 @@ export function AiAssistant() {
                 key={idx}
                 onClick={() => handleSend(p.text)}
                 disabled={isLoading}
-                className="inline-flex items-center gap-1 text-[11px] font-medium text-zinc-400 bg-zinc-850 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-lg px-2.5 py-1.5 transition-all disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 text-xs text-zinc-400 bg-zinc-850 hover:bg-zinc-800 hover:text-white border border-zinc-800 hover:border-zinc-700 rounded-full px-3 py-1.5 transition-all disabled:opacity-50"
               >
-                {p.label}
-                <ArrowRight className="h-3 w-3 opacity-60" />
+                <span>{p.label}</span>
+                <ArrowRight className="h-3.5 w-3.5 opacity-60" />
               </button>
             ))}
           </div>
