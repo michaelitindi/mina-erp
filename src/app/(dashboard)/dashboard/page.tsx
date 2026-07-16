@@ -2,19 +2,9 @@ import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/roles'
-import { formatCurrency } from '@/lib/utils'
-import { 
-  Receipt, 
-  Users, 
-  DollarSign, 
-  TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
-  Clock,
-  User2,
-} from 'lucide-react'
+import { Clock, User2 } from 'lucide-react'
 import Link from 'next/link'
-import { AiAssistant } from '@/components/dashboard/ai-assistant'
+import { DashboardContent } from '@/components/dashboard/dashboard-content'
 
 async function getStats(orgId: string) {
   const org = await prisma.organization.findUnique({
@@ -126,106 +116,11 @@ export default async function DashboardPage() {
 
   const stats = await getStats(orgId)
 
-  const cards = [
-    {
-      title: 'Total Revenue',
-      value: stats ? formatCurrency(stats.paidAmount, currency) : formatCurrency(0, currency),
-      icon: DollarSign,
-      color: 'from-green-500 to-emerald-600',
-    },
-    {
-      title: 'Pending Invoices',
-      value: stats ? formatCurrency(stats.pendingAmount, currency) : formatCurrency(0, currency),
-      icon: Receipt,
-      color: 'from-blue-500 to-indigo-600',
-    },
-    {
-      title: 'Total Customers',
-      value: stats?.customerCount.toString() || '0',
-      icon: Users,
-      color: 'from-purple-500 to-pink-600',
-    },
-    {
-      title: 'Invoice Count',
-      value: stats?.invoiceCount.toString() || '0',
-      icon: TrendingUp,
-      color: 'from-orange-500 to-red-600',
-    },
-  ]
-
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-        <p className="text-zinc-500">Welcome to MinaERP</p>
-      </div>
-
-      {/* AI ERP Assistant */}
-      <AiAssistant />
-
-      {/* Stats Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {cards.map((card) => (
-          <div
-            key={card.title}
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-sm transition-all hover:border-zinc-700"
-          >
-            <div className="flex items-center justify-between">
-              <div className={`rounded-lg bg-gradient-to-br ${card.color} p-3 shadow-lg`}>
-                <card.icon className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <p className="text-sm font-medium text-zinc-500">{card.title}</p>
-              <p className="text-2xl font-bold text-white mt-1">{card.value}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-sm">
-        <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-zinc-500">Quick Actions</h2>
-        <div className="grid gap-4 md:grid-cols-4">
-          <Link
-            href="/dashboard/finance/invoices"
-            className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 transition-all hover:bg-zinc-800 hover:border-zinc-700 group"
-          >
-            <div className="p-2 rounded-md bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 transition-colors">
-              <Receipt className="h-5 w-5" />
-            </div>
-            <span className="text-zinc-300 font-medium group-hover:text-white transition-colors">Create Invoice</span>
-          </Link>
-          <Link
-            href="/dashboard/crm/customers"
-            className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 transition-all hover:bg-zinc-800 hover:border-zinc-700 group"
-          >
-            <div className="p-2 rounded-md bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20 transition-colors">
-              <Users className="h-5 w-5" />
-            </div>
-            <span className="text-zinc-300 font-medium group-hover:text-white transition-colors">Add Customer</span>
-          </Link>
-          <Link
-            href="/dashboard/finance/bills"
-            className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 transition-all hover:bg-zinc-800 hover:border-zinc-700 group"
-          >
-            <div className="p-2 rounded-md bg-orange-500/10 text-orange-400 group-hover:bg-orange-500/20 transition-colors">
-              <Receipt className="h-5 w-5" />
-            </div>
-            <span className="text-zinc-300 font-medium group-hover:text-white transition-colors">Enter Bill</span>
-          </Link>
-          <Link
-            href="/dashboard/reports"
-            className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 transition-all hover:bg-zinc-800 hover:border-zinc-700 group"
-          >
-            <div className="p-2 rounded-md bg-green-500/10 text-green-400 group-hover:bg-green-500/20 transition-colors">
-              <TrendingUp className="h-5 w-5" />
-            </div>
-            <span className="text-zinc-300 font-medium group-hover:text-white transition-colors">View Reports</span>
-          </Link>
-        </div>
-      </div>
-    </div>
+    <DashboardContent 
+      stats={stats} 
+      currency={currency} 
+      userIsAdmin={userIsAdmin} 
+    />
   )
 }
