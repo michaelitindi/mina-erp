@@ -263,7 +263,7 @@ export async function askAiAssistant(message: string, history: Array<{ role: 'us
 
     const client = await getGeminiClient(orgId)
     const model = client.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.5-flash',
       tools: [{
         functionDeclarations: [
           getSalesOverviewTool,
