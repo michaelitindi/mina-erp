@@ -14,6 +14,7 @@ import {
   User2,
 } from 'lucide-react'
 import Link from 'next/link'
+import { AiAssistant } from '@/components/dashboard/ai-assistant'
 
 async function getStats(orgId: string) {
   const org = await prisma.organization.findUnique({
@@ -159,6 +160,9 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
         <p className="text-zinc-500">Welcome to MinaERP</p>
       </div>
+
+      {/* AI ERP Assistant */}
+      <AiAssistant />
 
       {/* Stats Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
