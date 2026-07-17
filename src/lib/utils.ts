@@ -41,8 +41,15 @@ export function generateNumber(prefix: string, sequence: number): string {
 export function serializeDecimal<T>(obj: T): T {
   if (obj === null || obj === undefined) return obj
 
-  // Handle Decimal objects
-  if (typeof obj === 'object' && (obj as any).constructor?.name === 'Decimal') {
+  // Handle Decimal objects (minification-safe check using decimal.js properties)
+  if (
+    obj &&
+    typeof obj === 'object' &&
+    'd' in obj &&
+    's' in obj &&
+    'e' in obj &&
+    typeof (obj as any).toFixed === 'function'
+  ) {
     return Number(obj.toString()) as any
   }
 
