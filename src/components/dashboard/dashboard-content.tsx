@@ -47,6 +47,121 @@ interface ChatSession {
   createdAt: string
 }
 
+function renderTextWithFormatting(text: string) {
+  // Render bold (**text**) and inline code (`code`)
+  const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g)
+  return parts.map((part, idx) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={idx} className="font-bold text-white">{part.slice(2, -2)}</strong>
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return <code key={idx} className="bg-zinc-900 border border-zinc-800 text-blue-400 px-1.5 py-0.5 rounded font-mono text-xs">{part.slice(1, -1)}</code>
+    }
+    return part
+  })
+}
+
+function MarkdownMessage({ content }: { content: string }) {
+  const blocks = content.split('\n\n')
+
+  return (
+    <div className="space-y-3.5">
+      {blocks.map((block, bIdx) => {
+        const trimmed = block.trim()
+        if (!trimmed) return null
+
+        // 1. Code Block Check
+        if (trimmed.startsWith('```')) {
+          const lines = trimmed.split('\n')
+          const code = lines.slice(1, -1).join('\n')
+          const lang = lines[0].replace('```', '').trim()
+          return (
+            <pre key={bIdx} className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/80 text-xs font-mono text-zinc-300 overflow-x-auto my-2">
+              {lang && <div className="text-[10px] text-zinc-600 uppercase font-bold tracking-wider mb-2">{lang}</div>}
+              <code>{code}</code>
+            </pre>
+          )
+        }
+
+        // 2. Table Check
+        const lines = trimmed.split('\n')
+        if (lines.length >= 2 && lines[0].includes('|') && lines[1].includes('|') && lines[1].includes('-')) {
+          const parseRow = (line: string) => {
+            return line
+              .split('|')
+              .map(cell => cell.trim())
+              .filter((cell, idx, arr) => idx > 0 && idx < arr.length - 1)
+          }
+
+          const headers = parseRow(lines[0])
+          const rows = lines.slice(2).map(parseRow).filter(row => row.length > 0)
+
+          return (
+            <div key={bIdx} className="overflow-x-auto border border-zinc-800 rounded-xl my-3 shadow-md">
+              <table className="min-w-full divide-y divide-zinc-800 text-xs">
+                <thead className="bg-zinc-900/80">
+                  <tr>
+                    {headers.map((h, idx) => (
+                      <th key={idx} className="px-4 py-3 text-left font-bold text-zinc-300 uppercase tracking-wider">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-900 bg-zinc-950/40">
+                  {rows.map((row, rIdx) => (
+                    <tr key={rIdx} className={rIdx % 2 === 0 ? 'bg-zinc-900/10' : ''}>
+                      {row.map((cell, cIdx) => {
+                        const isNumeric = /^\$?\d+([.,]\d+)*%?$/.test(cell.replace(/[\s,]/g, ''))
+                        return (
+                          <td key={cIdx} className={`px-4 py-3 text-zinc-300 ${isNumeric ? 'font-mono text-right' : ''}`}>
+                            {cell}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        }
+
+        // 3. Unordered List Check
+        if (lines.every(line => line.trim().startsWith('- ') || line.trim().startsWith('* '))) {
+          return (
+            <ul key={bIdx} className="list-disc pl-5 space-y-1.5 text-zinc-300 my-2">
+              {lines.map((line, lIdx) => {
+                const itemText = line.replace(/^[\s-*]+\s*/, '')
+                return <li key={lIdx}>{renderTextWithFormatting(itemText)}</li>
+              })}
+            </ul>
+          )
+        }
+
+        // 4. Ordered List Check
+        if (lines.every(line => /^\d+\.\s+/.test(line.trim()))) {
+          return (
+            <ol key={bIdx} className="list-decimal pl-5 space-y-1.5 text-zinc-300 my-2">
+              {lines.map((line, lIdx) => {
+                const itemText = line.replace(/^\s*\d+\.\s+/, '')
+                return <li key={lIdx}>{renderTextWithFormatting(itemText)}</li>
+              })}
+            </ol>
+          )
+        }
+
+        // 5. Standard Paragraph
+        return (
+          <p key={bIdx} className="leading-relaxed">
+            {renderTextWithFormatting(trimmed)}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
+
 export function DashboardContent({ stats, currency, userIsAdmin }: DashboardContentProps) {
   const [activeView, setActiveView] = useState<'dashboard' | 'assistant'>('dashboard')
   const [input, setInput] = useState('')
@@ -381,9 +496,13 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
                     <div className={`rounded-2xl p-4 text-sm leading-relaxed border break-words ${
                       msg.role === 'user'
                         ? 'bg-blue-600/15 border-blue-600/30 text-white rounded-tr-none'
-                        : 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300 rounded-tl-none whitespace-pre-wrap font-sans'
+                        : 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300 rounded-tl-none font-sans'
                     }`}>
-                      {msg.parts}
+                      {msg.role === 'user' ? (
+                        <div className="whitespace-pre-wrap">{msg.parts}</div>
+                      ) : (
+                        <MarkdownMessage content={msg.parts} />
+                      )}
                     </div>
                   </div>
                 ))}
