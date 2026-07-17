@@ -262,11 +262,13 @@ export async function askAiAssistant(message: string, history: Array<{ role: 'us
       }]
     })
 
-    // Format the history items correctly for Gemini Chat Content objects
-    const contents = history.map(item => ({
-      role: item.role === 'user' ? 'user' : 'model',
-      parts: [{ text: item.parts }]
-    }))
+    // Format the history items correctly for Gemini Chat Content objects, filtering out empty inputs
+    const contents = history
+      .filter(item => item.parts && item.parts.trim() !== '')
+      .map(item => ({
+        role: item.role === 'user' ? 'user' : 'model',
+        parts: [{ text: item.parts }]
+      }))
 
     // Start chat session
     const chat = model.startChat({

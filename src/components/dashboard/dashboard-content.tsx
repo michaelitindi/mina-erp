@@ -39,7 +39,19 @@ interface Message {
 export function DashboardContent({ stats, currency, userIsAdmin }: DashboardContentProps) {
   const [activeView, setActiveView] = useState<'dashboard' | 'assistant'>('dashboard')
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('mina_assistant_chat_history')
+      if (cached) {
+        try {
+          return JSON.parse(cached)
+        } catch (e) {
+          console.error('Failed to load chat history:', e)
+        }
+      }
+    }
+    return []
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [errorPayload, setErrorPayload] = useState<{ error: string; message: string } | null>(null)
   
@@ -62,23 +74,9 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
     }
   }, [messages, activeView])
 
-  // Load chat history from localStorage on client-side mount
-  useEffect(() => {
-    const cached = localStorage.getItem('mina_assistant_chat_history')
-    if (cached) {
-      try {
-        setMessages(JSON.parse(cached))
-      } catch (e) {
-        console.error('Failed to parse cached chat history:', e)
-      }
-    }
-  }, [])
-
   // Save chat history to localStorage when changed
   useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem('mina_assistant_chat_history', JSON.stringify(messages))
-    }
+    localStorage.setItem('mina_assistant_chat_history', JSON.stringify(messages))
   }, [messages])
 
   function handleClearHistory() {
@@ -155,7 +153,7 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
     return (
       <div className="flex-1 flex flex-col min-h-[80vh] w-full bg-zinc-950 text-white border border-zinc-800 rounded-2xl overflow-hidden">
         {/* Assistant Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-800/80 bg-zinc-900/60">
+        <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-zinc-800/80 bg-zinc-900/90 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setActiveView('dashboard')}
