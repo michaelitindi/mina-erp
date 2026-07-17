@@ -197,7 +197,8 @@ async function handleToolCall(name: string, args: any, orgId: string, userId: st
         companyName: args.companyName,
         contactPerson: args.contactPerson || null,
         email: args.email,
-        phone: args.phone || null
+        phone: args.phone || null,
+        customerType: 'BUSINESS'
       })
       return customer
     }
