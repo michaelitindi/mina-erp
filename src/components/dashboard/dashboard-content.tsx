@@ -39,19 +39,8 @@ interface Message {
 export function DashboardContent({ stats, currency, userIsAdmin }: DashboardContentProps) {
   const [activeView, setActiveView] = useState<'dashboard' | 'assistant'>('dashboard')
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState<Message[]>(() => {
-    if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem('mina_assistant_chat_history')
-      if (cached) {
-        try {
-          return JSON.parse(cached)
-        } catch (e) {
-          console.error('Failed to load chat history:', e)
-        }
-      }
-    }
-    return []
-  })
+  const [messages, setMessages] = useState<Message[]>([])
+  const [hasLoadedHistory, setHasLoadedHistory] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errorPayload, setErrorPayload] = useState<{ error: string; message: string } | null>(null)
   
@@ -74,10 +63,27 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
     }
   }, [messages, activeView])
 
-  // Save chat history to localStorage when changed
+  // Load history exactly once on mount, preventing hydration mismatches
   useEffect(() => {
-    localStorage.setItem('mina_assistant_chat_history', JSON.stringify(messages))
-  }, [messages])
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('mina_assistant_chat_history')
+      if (cached) {
+        try {
+          setMessages(JSON.parse(cached))
+        } catch (e) {
+          console.error('Failed to load chat history:', e)
+        }
+      }
+    }
+    setHasLoadedHistory(true)
+  }, [])
+
+  // Save chat history to localStorage when changed, only after hydration loading has completed
+  useEffect(() => {
+    if (hasLoadedHistory) {
+      localStorage.setItem('mina_assistant_chat_history', JSON.stringify(messages))
+    }
+  }, [messages, hasLoadedHistory])
 
   function handleClearHistory() {
     setMessages([])
@@ -151,7 +157,7 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
 
   if (activeView === 'assistant') {
     return (
-      <div className="flex-1 flex flex-col min-h-[80vh] w-full bg-zinc-950 text-white border border-zinc-800 rounded-2xl overflow-hidden">
+      <div className="flex-1 flex flex-col h-[calc(100vh-9rem)] w-full bg-zinc-950 text-white border border-zinc-800 rounded-2xl overflow-hidden">
         {/* Assistant Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-zinc-800/80 bg-zinc-900/90 backdrop-blur-md">
           <div className="flex items-center gap-3">
