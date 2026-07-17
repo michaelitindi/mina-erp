@@ -351,7 +351,7 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
           </div>
 
           {/* Conversation history list */}
-          <div className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto min-h-[450px]">
+          <div className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center max-w-lg mx-auto py-12 space-y-4">
                 <div className="rounded-2xl bg-blue-500/5 p-4 border border-blue-500/10">
@@ -378,7 +378,7 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
                     }`}>
                       {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                     </div>
-                    <div className={`rounded-2xl p-4 text-sm leading-relaxed border ${
+                    <div className={`rounded-2xl p-4 text-sm leading-relaxed border break-words ${
                       msg.role === 'user'
                         ? 'bg-blue-600/15 border-blue-600/30 text-white rounded-tr-none'
                         : 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300 rounded-tl-none whitespace-pre-wrap font-sans'
