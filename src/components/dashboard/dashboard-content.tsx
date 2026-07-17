@@ -15,7 +15,11 @@ import {
   Receipt,
   Users,
   DollarSign,
-  TrendingUp
+  TrendingUp,
+  Plus,
+  MessageSquare,
+  Trash2,
+  Menu
 } from 'lucide-react'
 import { askAiAssistant } from '@/app/actions/ai'
 import { formatCurrency } from '@/lib/utils'
@@ -36,15 +40,27 @@ interface Message {
   parts: string
 }
 
+interface ChatSession {
+  id: string
+  title: string
+  messages: Message[]
+  createdAt: string
+}
+
 export function DashboardContent({ stats, currency, userIsAdmin }: DashboardContentProps) {
   const [activeView, setActiveView] = useState<'dashboard' | 'assistant'>('dashboard')
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState<Message[]>([])
-  const [hasLoadedHistory, setHasLoadedHistory] = useState(false)
+  const [sessions, setSessions] = useState<ChatSession[]>([])
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
+  const [hasLoadedSessions, setHasLoadedSessions] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [errorPayload, setErrorPayload] = useState<{ error: string; message: string } | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const activeSession = sessions.find(s => s.id === activeSessionId)
+  const messages = activeSession ? activeSession.messages : []
 
   const quickPrompts = [
     { label: 'Check Stock Alerts', text: 'Check for low stock alerts in inventory.' },
@@ -61,34 +77,78 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
     if (activeView === 'assistant') {
       scrollToBottom()
     }
-  }, [messages, activeView])
+  }, [sessions, activeSessionId, activeView])
 
-  // Load history exactly once on mount, preventing hydration mismatches
+  // Load sessions from localStorage on client-side mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem('mina_assistant_chat_history')
+      const cached = localStorage.getItem('mina_assistant_sessions')
+      let loadedSessions: ChatSession[] = []
       if (cached) {
         try {
-          setMessages(JSON.parse(cached))
+          loadedSessions = JSON.parse(cached)
+          setSessions(loadedSessions)
         } catch (e) {
-          console.error('Failed to load chat history:', e)
+          console.error('Failed to load chat sessions:', e)
         }
       }
+      
+      const cachedActiveId = localStorage.getItem('mina_assistant_active_session_id')
+      if (cachedActiveId && loadedSessions.some(s => s.id === cachedActiveId)) {
+        setActiveSessionId(cachedActiveId)
+      } else if (loadedSessions.length > 0) {
+        setActiveSessionId(loadedSessions[0].id)
+      }
     }
-    setHasLoadedHistory(true)
+    setHasLoadedSessions(true)
   }, [])
 
-  // Save chat history to localStorage when changed, only after hydration loading has completed
+  // Save sessions to localStorage when changed
   useEffect(() => {
-    if (hasLoadedHistory) {
-      localStorage.setItem('mina_assistant_chat_history', JSON.stringify(messages))
+    if (hasLoadedSessions) {
+      localStorage.setItem('mina_assistant_sessions', JSON.stringify(sessions))
+      if (activeSessionId) {
+        localStorage.setItem('mina_assistant_active_session_id', activeSessionId)
+      } else {
+        localStorage.removeItem('mina_assistant_active_session_id')
+      }
     }
-  }, [messages, hasLoadedHistory])
+  }, [sessions, activeSessionId, hasLoadedSessions])
+
+  function handleNewChat() {
+    const newSession: ChatSession = {
+      id: crypto.randomUUID(),
+      title: 'New Chat',
+      messages: [],
+      createdAt: new Date().toISOString()
+    }
+    setSessions(prev => [newSession, ...prev])
+    setActiveSessionId(newSession.id)
+    setErrorPayload(null)
+  }
+
+  function handleDeleteSession(id: string) {
+    const updated = sessions.filter(s => s.id !== id)
+    setSessions(updated)
+    if (activeSessionId === id) {
+      if (updated.length > 0) {
+        setActiveSessionId(updated[0].id)
+      } else {
+        setActiveSessionId(null)
+      }
+    }
+  }
 
   function handleClearHistory() {
-    setMessages([])
+    if (activeSessionId) {
+      setSessions(prev => prev.map(s => {
+        if (s.id === activeSessionId) {
+          return { ...s, messages: [] }
+        }
+        return s
+      }))
+    }
     setErrorPayload(null)
-    localStorage.removeItem('mina_assistant_chat_history')
   }
 
   async function handleSend(textToSend?: string) {
@@ -103,13 +163,53 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
       setActiveView('assistant')
     }
 
-    const updatedMessages = [...messages, { role: 'user' as const, parts: prompt }]
-    setMessages(updatedMessages)
+    let currentSessionId = activeSessionId
+    let updatedSessions = [...sessions]
+    
+    // Create new session if none exists
+    if (!currentSessionId || !sessions.some(s => s.id === currentSessionId)) {
+      currentSessionId = crypto.randomUUID()
+      const newSession: ChatSession = {
+        id: currentSessionId,
+        title: prompt.substring(0, 32) || 'New Chat',
+        messages: [{ role: 'user' as const, parts: prompt }],
+        createdAt: new Date().toISOString()
+      }
+      updatedSessions = [newSession, ...updatedSessions]
+      setSessions(updatedSessions)
+      setActiveSessionId(currentSessionId)
+    } else {
+      // Append message to active session
+      updatedSessions = sessions.map(s => {
+        if (s.id === currentSessionId) {
+          const isFirstMessage = s.messages.length === 0
+          return {
+            ...s,
+            title: isFirstMessage ? (prompt.substring(0, 32) || s.title) : s.title,
+            messages: [...s.messages, { role: 'user' as const, parts: prompt }]
+          }
+        }
+        return s
+      })
+      setSessions(updatedSessions)
+    }
+
+    const sessionMessages = updatedSessions.find(s => s.id === currentSessionId)?.messages || []
+    // Get history before this prompt
+    const historyForCall = sessionMessages.slice(0, -1)
 
     try {
-      const result = await askAiAssistant(prompt, messages)
+      const result = await askAiAssistant(prompt, historyForCall)
       if (result.success) {
-        setMessages(result.history || [])
+        setSessions(prev => prev.map(s => {
+          if (s.id === currentSessionId) {
+            return {
+              ...s,
+              messages: result.history || []
+            }
+          }
+          return s
+        }))
       } else {
         setErrorPayload({
           error: result.error || 'ERROR',
@@ -157,158 +257,223 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
 
   if (activeView === 'assistant') {
     return (
-      <div className="flex-1 flex flex-col h-[calc(100vh-9rem)] w-full bg-zinc-950 text-white border border-zinc-800 rounded-2xl overflow-hidden">
-        {/* Assistant Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-zinc-800/80 bg-zinc-900/90 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setActiveView('dashboard')}
-              className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer mr-1"
-              title="Back to Dashboard"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <div className="rounded-xl bg-blue-500/10 p-2 border border-blue-500/20">
-              <Sparkles className="h-4.5 w-4.5 text-blue-400" />
-            </div>
-            <div>
-              <h3 className="font-bold text-white text-sm">
-                Mina Assistant
-              </h3>
-              <p className="text-[10px] text-zinc-500">Multimodal Agentic ERP Companion</p>
-            </div>
-          </div>
-          <button 
-            onClick={handleClearHistory}
-            className="text-xs text-zinc-400 hover:text-white hover:underline transition-colors cursor-pointer"
-          >
-            Clear Conversation
-          </button>
-        </div>
-
-        {/* Conversation history */}
-        <div className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto min-h-[450px]">
-          {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center max-w-lg mx-auto py-12 space-y-4">
-              <div className="rounded-2xl bg-blue-500/5 p-4 border border-blue-500/10">
-                <Bot className="h-10 w-10 text-blue-400" />
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-lg font-bold text-white">Welcome to the ERP Workspace Assistant</h2>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Ask me anything about your active ERP tenant. I can search through Products, Customers, and Invoices, retrieve stock alerts, generate sales overviews, or directly insert records.
-                </p>
-                <p className="text-[10px] text-zinc-600 italic">
-                  Note: Multi-step function execution calls may experience brief network latency as transactions are resolved.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {messages.map((msg, idx) => (
-                <div key={idx} className={`flex gap-4 max-w-[85%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
-                  <div className={`rounded-xl p-2 h-fit border shrink-0 ${
-                    msg.role === 'user' 
-                      ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' 
-                      : 'bg-zinc-800/40 border-zinc-700/30 text-zinc-400'
-                  }`}>
-                    {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
-                  </div>
-                  <div className={`rounded-2xl p-4 text-sm leading-relaxed border ${
-                    msg.role === 'user'
-                      ? 'bg-blue-600/15 border-blue-600/30 text-white rounded-tr-none'
-                      : 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300 rounded-tl-none whitespace-pre-wrap font-sans'
-                  }`}>
-                    {msg.parts}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {isLoading && (
-            <div className="flex gap-4 max-w-[85%]">
-              <div className="rounded-xl p-2 bg-zinc-800/40 border border-zinc-700/30 text-zinc-400 h-fit shrink-0">
-                <Bot className="h-4 w-4" />
-              </div>
-              <div className="rounded-2xl p-4 text-sm bg-zinc-900/60 border border-zinc-800/80 text-zinc-400 rounded-tl-none flex items-center gap-3">
-                <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
-                <span className="text-xs font-medium">Assistant executing tools and analyzing data...</span>
-              </div>
-            </div>
-          )}
-
-          {errorPayload && (
-            <div className={`rounded-xl border p-4 flex flex-col gap-3 ${
-              isKeyMissing 
-                ? 'border-yellow-500/20 bg-yellow-500/10 text-yellow-300' 
-                : 'border-red-500/20 bg-red-500/10 text-red-300'
-            }`}>
-              <div className="flex items-start gap-3 text-sm font-medium">
-                <AlertCircle className={`h-5 w-5 shrink-0 mt-0.5 ${isKeyMissing ? 'text-yellow-400' : 'text-red-400'}`} />
-                <div>
-                  <p className="font-bold">{isKeyMissing ? 'Gemini API Key Required' : 'Assistant Encountered An Error'}</p>
-                  <p className="text-xs opacity-85 mt-0.5 leading-relaxed">{errorPayload.message}</p>
-                </div>
-              </div>
-              {isKeyMissing && (
-                <Link 
-                  href="/dashboard/settings/ai"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-bold px-4 py-2 text-xs transition-colors cursor-pointer w-fit"
-                >
-                  <Settings className="h-3.5 w-3.5" />
-                  Configure API Key
-                </Link>
-              )}
-            </div>
-          )}
-          
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Suggested Prompts Grid */}
-        {messages.length === 0 && (
-          <div className="px-6 pb-6 pt-2">
-            <p className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider mb-2.5">Suggested Prompts</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {quickPrompts.map((p, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSend(p.text)}
-                  disabled={isLoading}
-                  className="text-left text-xs text-zinc-400 hover:text-white bg-zinc-950/40 hover:bg-zinc-800 border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-3.5 transition-all cursor-pointer group flex justify-between items-center gap-2"
-                >
-                  <span>{p.label}</span>
-                  <ArrowRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-blue-400" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Form input */}
-        <form 
-          onSubmit={(e) => { e.preventDefault(); handleSend() }}
-          className="p-4 border-t border-zinc-800/80 bg-zinc-900/40"
-        >
-          <div className="relative flex items-center bg-zinc-950/60 rounded-xl border border-zinc-800 hover:border-zinc-700 focus-within:border-blue-500/80 transition-colors">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask Mina Copilot to run actions or summarize reports..."
-              disabled={isLoading}
-              className="w-full bg-transparent text-sm text-white placeholder-zinc-500 pl-4 pr-14 py-3 outline-none disabled:opacity-50"
-            />
+      <div className="flex w-full h-[calc(100vh-9rem)] bg-zinc-950 text-white border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+        {/* Left Side: Multi-Chat History Sidebar */}
+        <div className={`${isSidebarOpen ? 'flex' : 'hidden'} md:flex flex-col w-[260px] border-r border-zinc-800 bg-zinc-900/30 shrink-0 h-full`}>
+          <div className="p-3 border-b border-zinc-800">
             <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className="absolute right-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-800 text-white disabled:text-zinc-600 p-2 transition-colors cursor-pointer shadow-md shadow-blue-600/15"
+              onClick={handleNewChat}
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-zinc-800 bg-zinc-950/60 hover:bg-zinc-900/80 hover:border-zinc-700 text-white font-bold p-3 text-xs transition-colors cursor-pointer group shadow-sm hover:shadow-inner"
             >
-              <Send className="h-4 w-4" />
+              <Plus className="h-4 w-4 text-blue-400 group-hover:scale-110 transition-transform" />
+              New Chat
             </button>
           </div>
-        </form>
+          
+          {/* Scrollable List of Sessions */}
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            <p className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider px-2 py-1.5 mb-1 select-none">Recent Conversations</p>
+            {sessions.length === 0 ? (
+              <div className="text-center py-8 px-4">
+                <p className="text-[10px] text-zinc-600 leading-normal">No past conversations found. Click "New Chat" to begin.</p>
+              </div>
+            ) : (
+              sessions.map(s => (
+                <div 
+                  key={s.id}
+                  onClick={() => {
+                    setActiveSessionId(s.id)
+                    setErrorPayload(null)
+                  }}
+                  className={`group flex items-center justify-between gap-2 p-2.5 rounded-xl border text-xs cursor-pointer transition-all select-none ${
+                    s.id === activeSessionId
+                      ? 'bg-blue-500/10 border-blue-500/20 text-white font-medium shadow-inner'
+                      : 'bg-transparent border-transparent hover:bg-zinc-900/40 text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <MessageSquare className={`h-4 w-4 shrink-0 ${s.id === activeSessionId ? 'text-blue-400' : 'text-zinc-500'}`} />
+                    <span className="truncate flex-1 text-left">{s.title || 'New Chat'}</span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDeleteSession(s.id)
+                    }}
+                    className="opacity-0 group-hover:opacity-100 hover:text-red-400 p-1 rounded transition-opacity cursor-pointer shrink-0"
+                    title="Delete Conversation"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Right Side: Active Chat Stream */}
+        <div className="flex-1 flex flex-col h-full bg-zinc-950 overflow-hidden">
+          {/* Assistant Header */}
+          <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b border-zinc-800/80 bg-zinc-900/90 backdrop-blur-md">
+            <div className="flex items-center gap-2.5">
+              <button 
+                onClick={() => setActiveView('dashboard')}
+                className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                title="Back to Dashboard"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer mr-1"
+                title={isSidebarOpen ? "Hide Chat History" : "Show Chat History"}
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+              <div className="rounded-xl bg-blue-500/10 p-2 border border-blue-500/20 shrink-0">
+                <Sparkles className="h-4.5 w-4.5 text-blue-400" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-white text-sm truncate max-w-[200px] md:max-w-xs">
+                  {activeSession ? activeSession.title : 'Mina Assistant'}
+                </h3>
+                <p className="text-[10px] text-zinc-500">Multimodal Agentic ERP Companion</p>
+              </div>
+            </div>
+            {activeSessionId && activeSession && activeSession.messages.length > 0 && (
+              <button 
+                onClick={handleClearHistory}
+                className="text-xs text-zinc-400 hover:text-white hover:underline transition-colors cursor-pointer"
+              >
+                Clear Messages
+              </button>
+            )}
+          </div>
+
+          {/* Conversation history list */}
+          <div className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto min-h-[450px]">
+            {messages.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center max-w-lg mx-auto py-12 space-y-4">
+                <div className="rounded-2xl bg-blue-500/5 p-4 border border-blue-500/10">
+                  <Bot className="h-10 w-10 text-blue-400" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-lg font-bold text-white">Welcome to the ERP Workspace Assistant</h2>
+                  <p className="text-xs text-zinc-400 leading-relaxed">
+                    Ask me anything about your active ERP tenant. I can search through Products, Customers, and Invoices, retrieve stock alerts, generate sales overviews, or directly insert records.
+                  </p>
+                  <p className="text-[10px] text-zinc-600 italic">
+                    Note: Multi-step function execution calls may experience brief network latency as transactions are resolved.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {messages.map((msg, idx) => (
+                  <div key={idx} className={`flex gap-4 max-w-[85%] ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
+                    <div className={`rounded-xl p-2 h-fit border shrink-0 ${
+                      msg.role === 'user' 
+                        ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' 
+                        : 'bg-zinc-800/40 border-zinc-700/30 text-zinc-400'
+                    }`}>
+                      {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                    </div>
+                    <div className={`rounded-2xl p-4 text-sm leading-relaxed border ${
+                      msg.role === 'user'
+                        ? 'bg-blue-600/15 border-blue-600/30 text-white rounded-tr-none'
+                        : 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300 rounded-tl-none whitespace-pre-wrap font-sans'
+                    }`}>
+                      {msg.parts}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {isLoading && (
+              <div className="flex gap-4 max-w-[85%]">
+                <div className="rounded-xl p-2 bg-zinc-800/40 border border-zinc-700/30 text-zinc-400 h-fit shrink-0">
+                  <Bot className="h-4 w-4" />
+                </div>
+                <div className="rounded-2xl p-4 text-sm bg-zinc-900/60 border border-zinc-800/80 text-zinc-400 rounded-tl-none flex items-center gap-3">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                  <span className="text-xs font-medium">Assistant executing tools and analyzing data...</span>
+                </div>
+              </div>
+            )}
+
+            {errorPayload && (
+              <div className={`rounded-xl border p-4 flex flex-col gap-3 ${
+                isKeyMissing 
+                  ? 'border-yellow-500/20 bg-yellow-500/10 text-yellow-300' 
+                  : 'border-red-500/20 bg-red-500/10 text-red-300'
+              }`}>
+                <div className="flex items-start gap-3 text-sm font-medium">
+                  <AlertCircle className={`h-5 w-5 shrink-0 mt-0.5 ${isKeyMissing ? 'text-yellow-400' : 'text-red-400'}`} />
+                  <div>
+                    <p className="font-bold">{isKeyMissing ? 'Gemini API Key Required' : 'Assistant Encountered An Error'}</p>
+                    <p className="text-xs opacity-85 mt-0.5 leading-relaxed">{errorPayload.message}</p>
+                  </div>
+                </div>
+                {isKeyMissing && (
+                  <Link 
+                    href="/dashboard/settings/ai"
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-bold px-4 py-2 text-xs transition-colors cursor-pointer w-fit"
+                  >
+                    <Settings className="h-3.5 w-3.5" />
+                    Configure API Key
+                  </Link>
+                )}
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Suggested Prompts Grid */}
+          {messages.length === 0 && (
+            <div className="px-6 pb-6 pt-2">
+              <p className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider mb-2.5">Suggested Prompts</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {quickPrompts.map((p, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSend(p.text)}
+                    disabled={isLoading}
+                    className="text-left text-xs text-zinc-400 hover:text-white bg-zinc-950/40 hover:bg-zinc-800 border border-zinc-800/80 hover:border-zinc-700 rounded-xl p-3.5 transition-all cursor-pointer group flex justify-between items-center gap-2"
+                  >
+                    <span>{p.label}</span>
+                    <ArrowRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-blue-400" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Form input */}
+          <form 
+            onSubmit={(e) => { e.preventDefault(); handleSend() }}
+            className="p-4 border-t border-zinc-800/80 bg-zinc-900/40"
+          >
+            <div className="relative flex items-center bg-zinc-950/60 rounded-xl border border-zinc-800 hover:border-zinc-700 focus-within:border-blue-500/80 transition-colors">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask Mina Copilot to run actions or summarize reports..."
+                disabled={isLoading}
+                className="w-full bg-transparent text-sm text-white placeholder-zinc-500 pl-4 pr-14 py-3 outline-none disabled:opacity-50"
+              />
+              <button
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className="absolute right-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-800 text-white disabled:text-zinc-600 p-2 transition-colors cursor-pointer shadow-md shadow-blue-600/15"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     )
   }

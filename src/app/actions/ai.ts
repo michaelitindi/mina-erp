@@ -281,11 +281,13 @@ export async function askAiAssistant(message: string, history: Array<{ role: 'us
     let response = await chat.sendMessage(message)
     let functionCalls = response.response.functionCalls()
 
-    // Loop if the model requested function execution
-    if (functionCalls && functionCalls.length > 0) {
+    // Process tool executions in a loop to handle multi-turn logic (robust against nested queries)
+    while (functionCalls && functionCalls.length > 0) {
       const functionResponses = await Promise.all(functionCalls.map(async (call) => {
         try {
-          const toolResult = await handleToolCall(call.name, call.args, org.id, userId)
+          const rawResult = await handleToolCall(call.name, call.args, org.id, userId)
+          // Essential: Serialize all database Decimals to plain numbers so the Gemini SDK can serialize them to JSON safely
+          const toolResult = serializeDecimal(rawResult)
           return {
             functionResponse: {
               name: call.name,
@@ -304,19 +306,8 @@ export async function askAiAssistant(message: string, history: Array<{ role: 'us
 
       // Send tool responses back to continue model generation
       const followUp = await chat.sendMessage(functionResponses)
-      
-      // Serialize history safely, filtering out non-text tool calls/responses
-      const rawHistory = await chat.getHistory()
-      const serializedHistory = rawHistory.map(h => ({
-        role: h.role as 'user' | 'model',
-        parts: h.parts.map(p => p.text || '').join(' ').trim()
-      })).filter(h => h.parts !== '')
-
-      return {
-        success: true,
-        text: followUp.response.text() || '',
-        history: serializedHistory
-      }
+      response = followUp
+      functionCalls = response.response.functionCalls()
     }
 
     const rawHistory = await chat.getHistory()
