@@ -47,116 +47,196 @@ interface ChatSession {
   createdAt: string
 }
 
-function renderTextWithFormatting(text: string) {
-  // Render bold (**text**) and inline code (`code`)
-  const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g)
+function renderFormattedInline(text: string) {
+  // Handles **bold**, `inline code`, and *italics*
+  const parts = text.split(/(\*\*.*?\*\*|`.*?`|\*.*?\*)/g)
   return parts.map((part, idx) => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={idx} className="font-bold text-white">{part.slice(2, -2)}</strong>
+      return <strong key={idx} className="font-semibold text-white">{part.slice(2, -2)}</strong>
     }
     if (part.startsWith('`') && part.endsWith('`')) {
-      return <code key={idx} className="bg-zinc-900 border border-zinc-800 text-blue-400 px-1.5 py-0.5 rounded font-mono text-xs">{part.slice(1, -1)}</code>
+      return <code key={idx} className="bg-zinc-900 border border-zinc-700/60 text-blue-400 px-1.5 py-0.5 rounded font-mono text-[11px]">{part.slice(1, -1)}</code>
+    }
+    if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**')) {
+      return <em key={idx} className="italic text-zinc-400">{part.slice(1, -1)}</em>
     }
     return part
   })
 }
 
 function MarkdownMessage({ content }: { content: string }) {
-  const blocks = content.split('\n\n')
+  if (!content) return null
+
+  // Pre-process triple backtick code blocks
+  const codeBlockRegex = /```([\s\S]*?)```/g
+  const rawParts = []
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = codeBlockRegex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      rawParts.push({ type: 'text', content: content.slice(lastIndex, match.index) })
+    }
+    rawParts.push({ type: 'code', content: match[1] })
+    lastIndex = match.index + match[0].length
+  }
+  if (lastIndex < content.length) {
+    rawParts.push({ type: 'text', content: content.slice(lastIndex) })
+  }
 
   return (
-    <div className="space-y-3.5">
-      {blocks.map((block, bIdx) => {
-        const trimmed = block.trim()
-        if (!trimmed) return null
-
-        // 1. Code Block Check
-        if (trimmed.startsWith('```')) {
-          const lines = trimmed.split('\n')
-          const code = lines.slice(1, -1).join('\n')
-          const lang = lines[0].replace('```', '').trim()
+    <div className="space-y-2.5 text-sm leading-relaxed text-zinc-300">
+      {rawParts.map((part, pIdx) => {
+        if (part.type === 'code') {
+          const lines = part.content.trim().split('\n')
+          const lang = lines[0].match(/^[a-zA-Z0-9_-]+$/) ? lines[0] : ''
+          const codeText = lang ? lines.slice(1).join('\n') : part.content.trim()
           return (
-            <pre key={bIdx} className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/80 text-xs font-mono text-zinc-300 overflow-x-auto my-2">
-              {lang && <div className="text-[10px] text-zinc-600 uppercase font-bold tracking-wider mb-2">{lang}</div>}
-              <code>{code}</code>
-            </pre>
-          )
-        }
-
-        // 2. Table Check
-        const lines = trimmed.split('\n')
-        if (lines.length >= 2 && lines[0].includes('|') && lines[1].includes('|') && lines[1].includes('-')) {
-          const parseRow = (line: string) => {
-            return line
-              .split('|')
-              .map(cell => cell.trim())
-              .filter((cell, idx, arr) => idx > 0 && idx < arr.length - 1)
-          }
-
-          const headers = parseRow(lines[0])
-          const rows = lines.slice(2).map(parseRow).filter(row => row.length > 0)
-
-          return (
-            <div key={bIdx} className="overflow-x-auto border border-zinc-800 rounded-xl my-3 shadow-md">
-              <table className="min-w-full divide-y divide-zinc-800 text-xs">
-                <thead className="bg-zinc-900/80">
-                  <tr>
-                    {headers.map((h, idx) => (
-                      <th key={idx} className="px-4 py-3 text-left font-bold text-zinc-300 uppercase tracking-wider">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-900 bg-zinc-950/40">
-                  {rows.map((row, rIdx) => (
-                    <tr key={rIdx} className={rIdx % 2 === 0 ? 'bg-zinc-900/10' : ''}>
-                      {row.map((cell, cIdx) => {
-                        const isNumeric = /^\$?\d+([.,]\d+)*%?$/.test(cell.replace(/[\s,]/g, ''))
-                        return (
-                          <td key={cIdx} className={`px-4 py-3 text-zinc-300 ${isNumeric ? 'font-mono text-right' : ''}`}>
-                            {cell}
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div key={pIdx} className="my-3 rounded-xl border border-zinc-800 bg-zinc-950 p-4 font-mono text-xs shadow-inner">
+              {lang && <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-blue-400/80">{lang}</div>}
+              <pre className="overflow-x-auto text-zinc-200">
+                <code>{codeText}</code>
+              </pre>
             </div>
           )
         }
 
-        // 3. Unordered List Check
-        if (lines.every(line => line.trim().startsWith('- ') || line.trim().startsWith('* '))) {
-          return (
-            <ul key={bIdx} className="list-disc pl-5 space-y-1.5 text-zinc-300 my-2">
-              {lines.map((line, lIdx) => {
-                const itemText = line.replace(/^[\s-*]+\s*/, '')
-                return <li key={lIdx}>{renderTextWithFormatting(itemText)}</li>
-              })}
-            </ul>
+        // Parse text lines line-by-line / group-by-group
+        const lines = part.content.split('\n')
+        const elements: React.ReactNode[] = []
+        let i = 0
+
+        while (i < lines.length) {
+          const line = lines[i]
+          const trimmed = line.trim()
+
+          if (!trimmed) {
+            i++
+            continue
+          }
+
+          // 1. Headings
+          if (trimmed.startsWith('# ')) {
+            elements.push(<h1 key={i} className="mt-4 mb-2 text-lg font-bold text-white border-b border-zinc-800 pb-1">{renderFormattedInline(trimmed.slice(2))}</h1>)
+            i++
+            continue
+          }
+          if (trimmed.startsWith('## ')) {
+            elements.push(<h2 key={i} className="mt-3 mb-1.5 text-base font-bold text-white">{renderFormattedInline(trimmed.slice(3))}</h2>)
+            i++
+            continue
+          }
+          if (trimmed.startsWith('### ')) {
+            elements.push(<h3 key={i} className="mt-2.5 mb-1 text-sm font-semibold text-blue-400">{renderFormattedInline(trimmed.slice(4))}</h3>)
+            i++
+            continue
+          }
+
+          // 2. Blockquotes
+          if (trimmed.startsWith('> ')) {
+            elements.push(
+              <blockquote key={i} className="my-2 border-l-2 border-blue-500 bg-blue-500/5 px-3 py-2 text-xs italic text-blue-200/90 rounded-r-lg">
+                {renderFormattedInline(trimmed.slice(2))}
+              </blockquote>
+            )
+            i++
+            continue
+          }
+
+          // 3. Table detection
+          if (trimmed.includes('|') && i + 1 < lines.length && lines[i + 1].includes('|') && lines[i + 1].includes('-')) {
+            const tableLines = []
+            while (i < lines.length && lines[i].trim().includes('|')) {
+              tableLines.push(lines[i].trim())
+              i++
+            }
+
+            const parseRow = (rowStr: string) => {
+              return rowStr
+                .split('|')
+                .map(c => c.trim())
+                .filter((_, idx, arr) => idx > 0 && idx < arr.length - 1)
+            }
+
+            const headers = parseRow(tableLines[0])
+            const rows = tableLines.slice(2).map(parseRow).filter(r => r.length > 0)
+
+            elements.push(
+              <div key={`table-${i}`} className="my-3 overflow-x-auto rounded-xl border border-zinc-800 shadow-lg">
+                <table className="min-w-full divide-y divide-zinc-800 text-xs">
+                  <thead className="bg-zinc-900/90">
+                    <tr>
+                      {headers.map((h, hIdx) => (
+                        <th key={hIdx} className="px-3.5 py-2.5 text-left font-bold text-zinc-200 uppercase tracking-wider text-[11px]">
+                          {renderFormattedInline(h)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-900 bg-zinc-950/50">
+                    {rows.map((row, rIdx) => (
+                      <tr key={rIdx} className="hover:bg-zinc-900/40 transition-colors">
+                        {row.map((cell, cIdx) => {
+                          const isNum = /^\$?\d+([.,]\d+)*%?$/.test(cell.replace(/[\s,]/g, ''))
+                          return (
+                            <td key={cIdx} className={`px-3.5 py-2.5 text-zinc-300 ${isNum ? 'font-mono text-right font-medium text-emerald-400' : ''}`}>
+                              {renderFormattedInline(cell)}
+                            </td>
+                          )
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+            continue
+          }
+
+          // 4. Unordered List detection
+          if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+            const listItems = []
+            while (i < lines.length && (lines[i].trim().startsWith('- ') || lines[i].trim().startsWith('* '))) {
+              listItems.push(lines[i].trim().replace(/^[\s-*]+\s*/, ''))
+              i++
+            }
+            elements.push(
+              <ul key={`ul-${i}`} className="my-2 space-y-1.5 pl-4 list-disc marker:text-blue-400 text-zinc-300">
+                {listItems.map((item, lIdx) => (
+                  <li key={lIdx}>{renderFormattedInline(item)}</li>
+                ))}
+              </ul>
+            )
+            continue
+          }
+
+          // 5. Ordered List detection
+          if (/^\d+\.\s+/.test(trimmed)) {
+            const listItems = []
+            while (i < lines.length && /^\d+\.\s+/.test(lines[i].trim())) {
+              listItems.push(lines[i].trim().replace(/^\s*\d+\.\s+/, ''))
+              i++
+            }
+            elements.push(
+              <ol key={`ol-${i}`} className="my-2 space-y-1.5 pl-4 list-decimal marker:text-blue-400 font-medium text-zinc-300">
+                {listItems.map((item, lIdx) => (
+                  <li key={lIdx}>{renderFormattedInline(item)}</li>
+                ))}
+              </ol>
+            )
+            continue
+          }
+
+          // 6. Regular Paragraph Line
+          elements.push(
+            <p key={i} className="my-1 leading-relaxed">
+              {renderFormattedInline(trimmed)}
+            </p>
           )
+          i++
         }
 
-        // 4. Ordered List Check
-        if (lines.every(line => /^\d+\.\s+/.test(line.trim()))) {
-          return (
-            <ol key={bIdx} className="list-decimal pl-5 space-y-1.5 text-zinc-300 my-2">
-              {lines.map((line, lIdx) => {
-                const itemText = line.replace(/^\s*\d+\.\s+/, '')
-                return <li key={lIdx}>{renderTextWithFormatting(itemText)}</li>
-              })}
-            </ol>
-          )
-        }
-
-        // 5. Standard Paragraph
-        return (
-          <p key={bIdx} className="leading-relaxed">
-            {renderTextWithFormatting(trimmed)}
-          </p>
-        )
+        return <React.Fragment key={pIdx}>{elements}</React.Fragment>
       })}
     </div>
   )
