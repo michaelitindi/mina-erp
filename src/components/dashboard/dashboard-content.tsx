@@ -18,10 +18,17 @@ import {
   TrendingUp,
   Plus,
   MessageSquare,
-  Trash2
+  Trash2,
+  Paperclip,
+  Image as ImageIcon,
+  FileText,
+  Download,
+  X,
+  Printer
 } from 'lucide-react'
 import { askAiAssistant } from '@/app/actions/ai'
 import { formatCurrency } from '@/lib/utils'
+import { exportToCSV, printElementToPDF } from '@/lib/export'
 
 interface DashboardContentProps {
   stats: {
@@ -320,6 +327,8 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
   const [isLoading, setIsLoading] = useState(false)
   const [errorPayload, setErrorPayload] = useState<{ error: string; message: string } | null>(null)
   
+  const [attachments, setAttachments] = useState<Array<{ name: string; mimeType: string; data: string; previewUrl: string }>>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const activeSession = sessions.find(s => s.id === activeSessionId)
@@ -378,6 +387,47 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
     }
   }, [sessions, activeSessionId, hasLoadedSessions])
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const result = event.target?.result as string
+        if (result) {
+          const mimeType = file.type || 'application/octet-stream'
+          const base64Data = result.split(',')[1]
+          setAttachments(prev => [
+            ...prev,
+            {
+              name: file.name,
+              mimeType,
+              data: base64Data,
+              previewUrl: mimeType.startsWith('image/') ? result : ''
+            }
+          ])
+        }
+      }
+      reader.readAsDataURL(file)
+    })
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  function handleExportCSV() {
+    if (!activeSession || activeSession.messages.length === 0) return
+    const exportData = activeSession.messages.map((m, idx) => ({
+      Index: idx + 1,
+      Role: m.role.toUpperCase(),
+      Content: m.parts
+    }))
+    exportToCSV(`Mina_AI_Chat_${activeSession.title}`, exportData)
+  }
+
+  function handleExportPDF() {
+    printElementToPDF(`Mina ERP AI Chat Export - ${activeSession?.title || 'Report'}`)
+  }
+
   function handleNewChat() {
     const newSession: ChatSession = {
       id: crypto.randomUUID(),
@@ -388,6 +438,7 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
     setSessions(prev => [newSession, ...prev])
     setActiveSessionId(newSession.id)
     setErrorPayload(null)
+    setAttachments([])
   }
 
   function handleDeleteSession(id: string) {
@@ -416,9 +467,15 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
 
   async function handleSend(textToSend?: string) {
     const prompt = (textToSend || input).trim()
-    if (!prompt) return
+    if (!prompt && attachments.length === 0) return
+
+    const attachmentsToSend = attachments.map(a => ({ mimeType: a.mimeType, data: a.data }))
+    const displayPrompt = attachments.length > 0
+      ? `${prompt ? prompt + ' ' : ''}[Attached ${attachments.length} file(s): ${attachments.map(a => a.name).join(', ')}]`
+      : prompt
 
     setInput('')
+    setAttachments([])
     setErrorPayload(null)
     setIsLoading(true)
     
@@ -434,8 +491,8 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
       currentSessionId = crypto.randomUUID()
       const newSession: ChatSession = {
         id: currentSessionId,
-        title: prompt.substring(0, 32) || 'New Chat',
-        messages: [{ role: 'user' as const, parts: prompt }],
+        title: displayPrompt.substring(0, 32) || 'New Chat',
+        messages: [{ role: 'user' as const, parts: displayPrompt }],
         createdAt: new Date().toISOString()
       }
       updatedSessions = [newSession, ...updatedSessions]
@@ -448,8 +505,8 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
           const isFirstMessage = s.messages.length === 0
           return {
             ...s,
-            title: isFirstMessage ? (prompt.substring(0, 32) || s.title) : s.title,
-            messages: [...s.messages, { role: 'user' as const, parts: prompt }]
+            title: isFirstMessage ? (displayPrompt.substring(0, 32) || s.title) : s.title,
+            messages: [...s.messages, { role: 'user' as const, parts: displayPrompt }]
           }
         }
         return s
@@ -462,7 +519,7 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
     const historyForCall = sessionMessages.slice(0, -1)
 
     try {
-      const result = await askAiAssistant(prompt, historyForCall)
+      const result = await askAiAssistant(displayPrompt, historyForCall, attachmentsToSend)
       if (result.success) {
         setSessions(prev => prev.map(s => {
           if (s.id === currentSessionId) {
@@ -597,12 +654,30 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
               </div>
             </div>
             {activeSessionId && activeSession && activeSession.messages.length > 0 && (
-              <button 
-                onClick={handleClearHistory}
-                className="text-xs text-zinc-400 hover:text-white hover:underline transition-colors cursor-pointer"
-              >
-                Clear Messages
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportCSV}
+                  className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-1.5 text-xs text-zinc-300 hover:bg-zinc-900 hover:text-white transition-colors cursor-pointer"
+                  title="Export Chat Data to CSV"
+                >
+                  <Download className="h-3.5 w-3.5 text-emerald-400" />
+                  <span className="hidden sm:inline">CSV</span>
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-1.5 text-xs text-zinc-300 hover:bg-zinc-900 hover:text-white transition-colors cursor-pointer"
+                  title="Print or Export Chat to PDF"
+                >
+                  <Printer className="h-3.5 w-3.5 text-blue-400" />
+                  <span className="hidden sm:inline">PDF</span>
+                </button>
+                <button 
+                  onClick={handleClearHistory}
+                  className="text-xs text-zinc-400 hover:text-white hover:underline transition-colors cursor-pointer ml-1"
+                >
+                  Clear
+                </button>
+              </div>
             )}
           </div>
 
@@ -616,7 +691,7 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
                 <div className="space-y-2">
                   <h2 className="text-lg font-bold text-white">Welcome to the ERP Workspace Assistant</h2>
                   <p className="text-xs text-zinc-400 leading-relaxed">
-                    Ask me anything about your active ERP tenant. I can search through Products, Customers, and Invoices, retrieve stock alerts, generate sales overviews, or directly insert records.
+                    Ask me anything about your active ERP tenant. You can attach receipts, PDFs, or photos, search through Products, Customers, and Invoices, retrieve stock alerts, generate sales overviews, or directly insert records.
                   </p>
                   <p className="text-[10px] text-zinc-600 italic">
                     Note: Multi-step function execution calls may experience brief network latency as transactions are resolved.
@@ -715,18 +790,58 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
             onSubmit={(e) => { e.preventDefault(); handleSend() }}
             className="p-4 border-t border-zinc-800/80 bg-zinc-900/40"
           >
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileChange} 
+              multiple 
+              accept="image/*,application/pdf" 
+              className="hidden" 
+            />
+
+            {attachments.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2.5">
+                {attachments.map((att, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1 text-xs text-zinc-300">
+                    {att.previewUrl ? (
+                      <img src={att.previewUrl} alt={att.name} className="h-4 w-4 rounded object-cover" />
+                    ) : (
+                      <FileText className="h-3.5 w-3.5 text-blue-400" />
+                    )}
+                    <span className="truncate max-w-[120px] font-medium">{att.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
+                      className="text-zinc-500 hover:text-red-400 p-0.5 transition-colors cursor-pointer"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="relative flex items-center bg-zinc-950/60 rounded-xl border border-zinc-800 hover:border-zinc-700 focus-within:border-blue-500/80 transition-colors">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading}
+                className="pl-3 pr-1 text-zinc-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                title="Attach File or Image (Receipts, Invoices, Photos)"
+              >
+                <Paperclip className="h-4 w-4" />
+              </button>
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask Mina Copilot to run actions or summarize reports..."
+                placeholder={attachments.length > 0 ? "Add instructions for attached files..." : "Ask Mina Copilot or attach receipts/documents..."}
                 disabled={isLoading}
-                className="w-full bg-transparent text-sm text-white placeholder-zinc-500 pl-4 pr-14 py-3 outline-none disabled:opacity-50"
+                className="w-full bg-transparent text-sm text-white placeholder-zinc-500 pl-2 pr-14 py-3 outline-none disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={isLoading || !input.trim()}
+                disabled={isLoading || (!input.trim() && attachments.length === 0)}
                 className="absolute right-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-800 text-white disabled:text-zinc-600 p-2 transition-colors cursor-pointer shadow-md shadow-blue-600/15"
               >
                 <Send className="h-4 w-4" />

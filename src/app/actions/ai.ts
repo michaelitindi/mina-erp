@@ -292,7 +292,11 @@ async function handleToolCall(name: string, args: any, orgId: string, userId: st
   }
 }
 
-export async function askAiAssistant(message: string, history: Array<{ role: 'user' | 'model', parts: string }>) {
+export async function askAiAssistant(
+  message: string, 
+  history: Array<{ role: 'user' | 'model', parts: string }>,
+  attachments?: Array<{ mimeType: string; data: string }>
+) {
   try {
     const { userId, orgId } = await auth()
     if (!userId || !orgId) {
@@ -329,7 +333,9 @@ When summarizing financial data, sales overviews, or inventory distributions, pr
 \`\`\`chart
 Paid Invoices: 80000
 Pending Invoices: 20000
-\`\`\``,
+\`\`\`
+
+If the user provides an attached image or document (e.g. receipt photo, invoice PDF), inspect it carefully and extract relevant business fields automatically.`,
       tools: [{
         functionDeclarations: [
           getSalesOverviewTool,
@@ -359,7 +365,20 @@ Pending Invoices: 20000
       }
     })
 
-    let response = await chat.sendMessage(message)
+    // Construct multimodal prompt payload
+    const promptParts: any[] = [{ text: message }]
+    if (attachments && attachments.length > 0) {
+      attachments.forEach(att => {
+        promptParts.push({
+          inlineData: {
+            mimeType: att.mimeType,
+            data: att.data
+          }
+        })
+      })
+    }
+
+    let response = await chat.sendMessage(promptParts)
     let functionCalls = response.response.functionCalls()
 
     // Process tool executions in a loop to handle multi-turn logic (robust against nested queries)
