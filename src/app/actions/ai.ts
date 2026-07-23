@@ -7,8 +7,52 @@ import { getGeminiClient, getGeminiApiKey } from '@/lib/gemini'
 import { SchemaType, FunctionDeclaration } from '@google/generative-ai'
 import { createProduct as apiCreateProduct, getLowStockAlerts } from './products'
 import { createCustomer as apiCreateCustomer } from './customers'
-import { createBOM as apiCreateBOM } from './manufacturing'
+import { createBOM as apiCreateBOM, createWorkOrder as apiCreateWorkOrder } from './manufacturing'
+import { createPurchaseOrder as apiCreatePO } from './purchase-orders'
 import { globalSearch } from '@/lib/search'
+import { checkToolSafety } from '@/lib/ai-guardrails'
+
+// ... (in declarations)
+const createWorkOrderTool: FunctionDeclaration = {
+  name: 'createWorkOrder',
+  description: 'Schedule a new manufacturing Work Order for production execution.',
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      bomId: { type: SchemaType.STRING, description: 'Optional Bill of Materials (BOM) recipe ID.' },
+      productId: { type: SchemaType.STRING, description: 'Optional finished product ID to manufacture.' },
+      quantity: { type: SchemaType.NUMBER, description: 'Quantity of items to produce.' },
+      priority: { type: SchemaType.STRING, description: 'Priority level: LOW, MEDIUM, HIGH, or CRITICAL.' },
+      notes: { type: SchemaType.STRING, description: 'Optional production notes.' }
+    },
+    required: ['quantity']
+  }
+}
+
+const createPurchaseOrderTool: FunctionDeclaration = {
+  name: 'createPurchaseOrder',
+  description: 'Draft a vendor Purchase Order for materials or stock replenishment.',
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      vendorId: { type: SchemaType.STRING, description: 'ID of the vendor supplier.' },
+      itemDescription: { type: SchemaType.STRING, description: 'Description of the goods being purchased.' },
+      quantity: { type: SchemaType.NUMBER, description: 'Unit quantity to purchase.' },
+      unitPrice: { type: SchemaType.NUMBER, description: 'Cost price per unit.' },
+      notes: { type: SchemaType.STRING, description: 'Optional purchasing notes.' }
+    },
+    required: ['vendorId', 'itemDescription', 'quantity', 'unitPrice']
+  }
+}
+
+const getFinancialStatementsTool: FunctionDeclaration = {
+  name: 'getFinancialStatements',
+  description: 'Retrieve financial Profit and Loss (P&L) performance summary metrics.',
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {},
+  }
+}
 import { Decimal } from '@prisma/client/runtime/library'
 import { logAudit } from '@/lib/audit'
 import { serializeDecimal } from '@/lib/utils'
@@ -287,6 +331,50 @@ async function handleToolCall(name: string, args: any, orgId: string, userId: st
       return bom
     }
 
+    case 'createWorkOrder': {
+      const wo = await apiCreateWorkOrder({
+        bomId: args.bomId || null,
+        productId: args.productId || null,
+        quantity: Number(args.quantity || 1),
+        priority: args.priority || 'MEDIUM',
+        notes: args.notes || null
+      })
+      return wo
+    }
+
+    case 'createPurchaseOrder': {
+      const po = await apiCreatePO({
+        vendorId: args.vendorId,
+        orderDate: new Date(),
+        lineItems: [
+          {
+            description: args.itemDescription,
+            quantity: Number(args.quantity || 1),
+            unitPrice: Number(args.unitPrice || 0),
+            taxRate: 0
+          }
+        ],
+        notes: args.notes || null
+      })
+      return po
+    }
+
+    case 'getFinancialStatements': {
+      const [accounts, revenue, expenses] = await Promise.all([
+        prisma.account.findMany({ where: { organizationId: orgId, deletedAt: null } }),
+        prisma.invoice.aggregate({ where: { organizationId: orgId, status: 'PAID', deletedAt: null }, _sum: { totalAmount: true } }),
+        prisma.bill.aggregate({ where: { organizationId: orgId, status: 'PAID', deletedAt: null }, _sum: { totalAmount: true } }),
+      ])
+      const totalRevenue = Number(revenue._sum.totalAmount || 0)
+      const totalExpenses = Number(expenses._sum.totalAmount || 0)
+      return {
+        accountCount: accounts.length,
+        netSalesRevenue: totalRevenue,
+        totalExpenses: totalExpenses,
+        netOperatingIncome: totalRevenue - totalExpenses
+      }
+    }
+
     default:
       throw new Error(`Unknown tool: ${name}`)
   }
@@ -344,7 +432,10 @@ If the user provides an attached image or document (e.g. receipt photo, invoice 
           createProductTool,
           createCustomerTool,
           createNotificationTool,
-          createBOMTool
+          createBOMTool,
+          createWorkOrderTool,
+          createPurchaseOrderTool,
+          getFinancialStatementsTool
         ]
       }]
     })
