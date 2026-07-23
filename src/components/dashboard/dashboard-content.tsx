@@ -89,8 +89,52 @@ function MarkdownMessage({ content }: { content: string }) {
       {rawParts.map((part, pIdx) => {
         if (part.type === 'code') {
           const lines = part.content.trim().split('\n')
-          const lang = lines[0].match(/^[a-zA-Z0-9_-]+$/) ? lines[0] : ''
+          const lang = lines[0].match(/^[a-zA-Z0-9_-]+$/) ? lines[0].toLowerCase() : ''
           const codeText = lang ? lines.slice(1).join('\n') : part.content.trim()
+
+          if (lang === 'chart' || lang === 'graph' || lang === 'bar') {
+            const chartData: { label: string; value: number }[] = []
+            let maxValue = 0
+            codeText.split('\n').forEach(cLine => {
+              const parts = cLine.split(':')
+              if (parts.length >= 2) {
+                const lbl = parts[0].trim()
+                const val = parseFloat(parts[1].replace(/[^0-9.]/g, '')) || 0
+                chartData.push({ label: lbl, value: val })
+                if (val > maxValue) maxValue = val
+              }
+            })
+
+            if (chartData.length > 0) {
+              const colors = ['bg-blue-500', 'bg-emerald-500', 'bg-purple-500', 'bg-amber-500', 'bg-rose-500']
+              return (
+                <div key={pIdx} className="my-3 p-4 rounded-xl border border-zinc-800 bg-zinc-950/80 shadow-md space-y-3">
+                  <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                    <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider">Analytics Breakdown</span>
+                    <span className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full font-mono">Chart</span>
+                  </div>
+                  <div className="space-y-2.5">
+                    {chartData.map((item, idx) => {
+                      const percentage = maxValue > 0 ? Math.round((item.value / maxValue) * 100) : 0
+                      const barColor = colors[idx % colors.length]
+                      return (
+                        <div key={idx} className="space-y-1">
+                          <div className="flex justify-between text-xs font-medium">
+                            <span className="text-zinc-300">{item.label}</span>
+                            <span className="font-mono text-emerald-400 font-bold">{item.value.toLocaleString()}</span>
+                          </div>
+                          <div className="h-2 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-800/60">
+                            <div className={`h-full ${barColor} transition-all duration-500 rounded-full`} style={{ width: `${percentage}%` }} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            }
+          }
+
           return (
             <div key={pIdx} className="my-3 rounded-xl border border-zinc-800 bg-zinc-950 p-4 font-mono text-xs shadow-inner">
               {lang && <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-blue-400/80">{lang}</div>}
@@ -115,7 +159,32 @@ function MarkdownMessage({ content }: { content: string }) {
             continue
           }
 
-          // 1. Headings
+          // 1. Progress Bar Card detection
+          const barMatch = trimmed.match(/^([-*]\s*)?(.*?)\s*\[([█▓▒░■#=.\s]+)\]\s*(.*)$/)
+          if (barMatch) {
+            const label = barMatch[2].trim()
+            const blockStr = barMatch[3]
+            const remainder = barMatch[4].trim()
+            const filledCount = (blockStr.match(/[█▓■#=]/g) || []).length
+            const totalCount = blockStr.length
+            const percent = totalCount > 0 ? Math.round((filledCount / totalCount) * 100) : 0
+
+            elements.push(
+              <div key={`bar-${i}`} className="my-2 p-3 rounded-xl border border-zinc-800/80 bg-zinc-950/40 space-y-1.5 shadow-sm">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-zinc-200">{renderFormattedInline(label)}</span>
+                  <span className="font-mono text-xs font-bold text-emerald-400">{remainder || `${percent}%`}</span>
+                </div>
+                <div className="h-2 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-800/60">
+                  <div className="h-full bg-gradient-to-r from-blue-500 to-emerald-400 rounded-full transition-all duration-500" style={{ width: `${percent}%` }} />
+                </div>
+              </div>
+            )
+            i++
+            continue
+          }
+
+          // 2. Headings
           if (trimmed.startsWith('# ')) {
             elements.push(<h1 key={i} className="mt-4 mb-2 text-lg font-bold text-white border-b border-zinc-800 pb-1">{renderFormattedInline(trimmed.slice(2))}</h1>)
             i++
@@ -132,7 +201,7 @@ function MarkdownMessage({ content }: { content: string }) {
             continue
           }
 
-          // 2. Blockquotes
+          // 3. Blockquotes
           if (trimmed.startsWith('> ')) {
             elements.push(
               <blockquote key={i} className="my-2 border-l-2 border-blue-500 bg-blue-500/5 px-3 py-2 text-xs italic text-blue-200/90 rounded-r-lg">

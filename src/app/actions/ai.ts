@@ -318,7 +318,18 @@ export async function askAiAssistant(message: string, history: Array<{ role: 'us
     const client = await getGeminiClient(orgId)
     const model = client.getGenerativeModel({
       model: 'gemini-3.5-flash',
-      systemInstruction: `You are Mina Assistant, a helpful ERP business copilot. The active organization's currency is "${org.currency || 'USD'}". All monetary values and price inputs should be represented in this currency.`,
+      systemInstruction: `You are Mina Assistant, a helpful ERP business copilot. The active organization's currency is "${org.currency || 'USD'}". All monetary values and price inputs should be represented in this currency.
+
+When summarizing financial data, sales overviews, or inventory distributions, present figures cleanly using:
+1. Markdown Tables for structured row-and-column data.
+2. Visual Progress Bars for percentage distributions, e.g.:
+   - **Paid Revenue**: [████████░░] 80% ($80,000)
+   - **Pending Outstanding**: [██░░░░░░░░] 20% ($20,000)
+3. Chart code blocks for metric comparisons, e.g.:
+\`\`\`chart
+Paid Invoices: 80000
+Pending Invoices: 20000
+\`\`\``,
       tools: [{
         functionDeclarations: [
           getSalesOverviewTool,
