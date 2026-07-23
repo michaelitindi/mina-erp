@@ -7,6 +7,7 @@ import { getGeminiClient, getGeminiApiKey } from '@/lib/gemini'
 import { SchemaType, FunctionDeclaration } from '@google/generative-ai'
 import { createProduct as apiCreateProduct, getLowStockAlerts } from './products'
 import { createCustomer as apiCreateCustomer } from './customers'
+import { createBOM as apiCreateBOM } from './manufacturing'
 import { globalSearch } from '@/lib/search'
 import { Decimal } from '@prisma/client/runtime/library'
 import { logAudit } from '@/lib/audit'
@@ -44,30 +45,66 @@ export async function getAiSettings() {
 }
 
 export async function updateAiSettings(apiKey: string) {
-  const { orgId } = await auth()
-  if (!orgId) {
-    throw new Error('Unauthorized: No active organization context found.')
+  const { orgId, userId } = await auth()
+  if (!orgId || !userId) {
+    throw new Error('Unauthorized: Session expired.')
   }
 
   const trimmedKey = apiKey.trim()
+  if (!trimmedKey) {
+    throw new Error('API key cannot be empty.')
+  }
 
-  await prisma.organization.update({
+  const org = await prisma.organization.update({
     where: { clerkOrgId: orgId },
-    data: {
-      geminiApiKey: trimmedKey || null
-    }
+    data: { geminiApiKey: trimmedKey }
   })
 
-  revalidatePath('/dashboard/settings')
+  await logAudit({
+    organizationId: org.id,
+    userId,
+    action: 'UPDATE',
+    entityType: 'OrganizationSettings',
+    entityId: org.id,
+    newValues: { geminiApiKeyConfigured: true },
+  })
+
   revalidatePath('/dashboard/settings/ai')
+  revalidatePath('/dashboard')
 
   return { success: true }
 }
 
-// Gemini Tool Definitions
+export async function removeAiSettings() {
+  const { orgId, userId } = await auth()
+  if (!orgId || !userId) {
+    throw new Error('Unauthorized: Session expired.')
+  }
+
+  const org = await prisma.organization.update({
+    where: { clerkOrgId: orgId },
+    data: { geminiApiKey: null }
+  })
+
+  await logAudit({
+    organizationId: org.id,
+    userId,
+    action: 'DELETE',
+    entityType: 'OrganizationSettings',
+    entityId: org.id,
+    newValues: { geminiApiKeyConfigured: false },
+  })
+
+  revalidatePath('/dashboard/settings/ai')
+  revalidatePath('/dashboard')
+
+  return { success: true }
+}
+
+// Function declarations for Gemini Copilot Tools
 const getSalesOverviewTool: FunctionDeclaration = {
   name: 'getSalesOverview',
-  description: 'Retrieve financial sales overview (total revenue, paid revenue, pending invoices, customer count).',
+  description: 'Retrieve financial sales overview, total revenue, invoice metrics, and pending balances for the tenant.',
   parameters: {
     type: SchemaType.OBJECT,
     properties: {},
@@ -76,7 +113,7 @@ const getSalesOverviewTool: FunctionDeclaration = {
 
 const getInventoryAlertsTool: FunctionDeclaration = {
   name: 'getInventoryAlerts',
-  description: 'Retrieve products that are currently below their reorder level and require attention.',
+  description: 'Retrieve low stock inventory items requiring reordering across all warehouses.',
   parameters: {
     type: SchemaType.OBJECT,
     properties: {},
@@ -140,6 +177,21 @@ const createNotificationTool: FunctionDeclaration = {
       message: { type: SchemaType.STRING, description: 'Detailed alert message.' }
     },
     required: ['title', 'message']
+  }
+}
+
+const createBOMTool: FunctionDeclaration = {
+  name: 'createBOM',
+  description: 'Create a Bill of Materials (BOM) recipe for manufacturing a finished product.',
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      productId: { type: SchemaType.STRING, description: 'ID of the finished product to manufacture.' },
+      name: { type: SchemaType.STRING, description: 'Friendly name for the BOM recipe, e.g. Wooden Desk Spec.' },
+      quantity: { type: SchemaType.NUMBER, description: 'Quantity of finished goods produced by 1 batch.' },
+      notes: { type: SchemaType.STRING, description: 'Optional manufacturing instructions or notes.' }
+    },
+    required: ['productId', 'name', 'quantity']
   }
 }
 
@@ -218,6 +270,17 @@ async function handleToolCall(name: string, args: any, orgId: string, userId: st
       return notification
     }
 
+    case 'createBOM': {
+      const bom = await apiCreateBOM({
+        productId: args.productId,
+        name: args.name,
+        quantity: Number(args.quantity || 1),
+        notes: args.notes || null,
+        items: []
+      })
+      return bom
+    }
+
     default:
       throw new Error(`Unknown tool: ${name}`)
   }
@@ -257,7 +320,8 @@ export async function askAiAssistant(message: string, history: Array<{ role: 'us
           searchERPDataTool,
           createProductTool,
           createCustomerTool,
-          createNotificationTool
+          createNotificationTool,
+          createBOMTool
         ]
       }]
     })

@@ -236,6 +236,8 @@ async function generateSaleNumber(orgId: string): Promise<string> {
   return `POS-${String(count + 1).padStart(6, '0')}`
 }
 
+import { postToLedger } from '@/lib/finance'
+
 export async function createSale(data: {
   sessionId: string
   items: Array<{
@@ -272,95 +274,116 @@ export async function createSale(data: {
   const totalAmount = subtotal - discountAmount + taxAmount
   
   const saleNumber = await generateSaleNumber(orgId)
-  
-  const sale = await prisma.pOSSale.create({
-    data: {
-      organizationId: orgId,
-      sessionId: data.sessionId,
-      saleNumber,
-      customerId: data.customerId,
-      customerName: data.customerName,
-      subtotal,
-      discountAmount,
-      discountType: data.discountType,
-      taxAmount,
-      totalAmount,
-      createdBy: clerkUserId,
-      items: {
-        create: data.items.map(item => ({
-          productId: item.productId,
-          productName: item.productName,
-          productSku: item.productSku,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          discount: item.discount || 0,
-          total: item.quantity * item.unitPrice - (item.discount || 0),
-        })),
-      },
-      payments: {
-        create: data.payments.map(payment => ({
-          providerType: payment.providerType,
-          method: payment.method,
-          amount: payment.amount,
-          reference: payment.reference,
-          changeGiven: payment.changeGiven,
-        })),
-      },
-    },
-    include: {
-      items: true,
-      payments: true,
-    },
-  })
-  
-  // 1. Fetch default warehouse
-  const warehouse = await prisma.warehouse.findFirst({
-    where: { organizationId: orgId, deletedAt: null }
-  })
-  if (!warehouse) {
-    throw new Error('A warehouse must be registered before POS sales can be processed.')
-  }
-  
-  // Deduct stock for each item (inventory integration)
-  for (const item of data.items) {
-    const movementCount = await prisma.stockMovement.count({ where: { organizationId: orgId } })
-    await prisma.stockMovement.create({
+
+  // Execute POS checkout atomically inside a database transaction
+  const sale = await prisma.$transaction(async (tx) => {
+    const warehouse = await tx.warehouse.findFirst({
+      where: { organizationId: orgId, deletedAt: null }
+    })
+    if (!warehouse) {
+      throw new Error('A warehouse must be registered before POS sales can be processed.')
+    }
+
+    const newSale = await tx.pOSSale.create({
       data: {
         organizationId: orgId,
-        movementNumber: `SM-${String(movementCount + 1).padStart(6, '0')}`,
-        productId: item.productId,
-        type: 'OUT',
-        reason: 'SALE',
-        quantity: -item.quantity,
-        fromWarehouseId: warehouse.id,
-        referenceType: 'POS_SALE',
-        referenceId: sale.id,
-        notes: `POS Sale: ${saleNumber}`,
+        sessionId: data.sessionId,
+        saleNumber,
+        customerId: data.customerId,
+        customerName: data.customerName,
+        subtotal,
+        discountAmount,
+        discountType: data.discountType,
+        taxAmount,
+        totalAmount,
         createdBy: clerkUserId,
+        items: {
+          create: data.items.map(item => ({
+            productId: item.productId,
+            productName: item.productName,
+            productSku: item.productSku,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            discount: item.discount || 0,
+            total: item.quantity * item.unitPrice - (item.discount || 0),
+          })),
+        },
+        payments: {
+          create: data.payments.map(payment => ({
+            providerType: payment.providerType,
+            method: payment.method,
+            amount: payment.amount,
+            reference: payment.reference,
+            changeGiven: payment.changeGiven,
+          })),
+        },
+      },
+      include: {
+        items: true,
+        payments: true,
       },
     })
-    
-    // Update stock level specifically for this product and warehouse
-    await prisma.stockLevel.upsert({
-      where: {
-        productId_warehouseId: {
+
+    // Deduct stock for each item atomically
+    for (const item of data.items) {
+      const movementCount = await tx.stockMovement.count({ where: { organizationId: orgId } })
+      await tx.stockMovement.create({
+        data: {
+          organizationId: orgId,
+          movementNumber: `SM-${String(movementCount + 1).padStart(6, '0')}`,
           productId: item.productId,
-          warehouseId: warehouse.id
+          type: 'OUT',
+          reason: 'SALE',
+          quantity: -item.quantity,
+          fromWarehouseId: warehouse.id,
+          referenceType: 'POS_SALE',
+          referenceId: newSale.id,
+          notes: `POS Sale: ${saleNumber}`,
+          createdBy: clerkUserId,
+        },
+      })
+      
+      await tx.stockLevel.upsert({
+        where: {
+          productId_warehouseId: {
+            productId: item.productId,
+            warehouseId: warehouse.id
+          }
+        },
+        create: {
+          organizationId: orgId,
+          productId: item.productId,
+          warehouseId: warehouse.id,
+          quantity: -item.quantity,
+          availableQty: -item.quantity,
+        },
+        update: {
+          quantity: { decrement: item.quantity },
+          availableQty: { decrement: item.quantity }
         }
-      },
-      create: {
+      })
+    }
+
+    // Auto-post double-entry GL entries for POS Checkout (1000 Cash vs 4000 Revenue & 2100 Tax)
+    try {
+      await postToLedger(tx, {
         organizationId: orgId,
-        productId: item.productId,
-        warehouseId: warehouse.id,
-        quantity: -item.quantity,
-        availableQty: -item.quantity,
-      },
-      update: {
-        quantity: { decrement: item.quantity },
-        availableQty: { decrement: item.quantity }
-      }
-    })
-  }
+        transactionDate: new Date(),
+        description: `POS Sale ${saleNumber}`,
+        referenceNumber: saleNumber,
+        userId: clerkUserId,
+        entries: [
+          { accountNumber: '1000', debit: totalAmount, description: 'POS Cash/Payment Receipt' },
+          { accountNumber: '4000', credit: subtotal - discountAmount, description: 'POS Net Sales Revenue' },
+          ...(taxAmount > 0 ? [{ accountNumber: '2100', credit: taxAmount, description: 'Tax Payable (eTIMS)' }] : [])
+        ]
+      })
+    } catch (err) {
+      console.error('POS GL posting skipped or failed:', err)
+    }
+
+    return newSale
+  })
   
   revalidatePath('/dashboard/pos')
   return serializeDecimal(sale)

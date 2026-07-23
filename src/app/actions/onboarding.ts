@@ -72,6 +72,14 @@ export async function completeOnboarding(data: {
     })
   }
 
+  // Seed default Chart of Accounts for the tenant
+  try {
+    const { seedDefaultAccounts } = await import('@/lib/finance-seed')
+    await seedDefaultAccounts(prisma, org.id, userId)
+  } catch (err) {
+    console.error('Failed to seed default Chart of Accounts during onboarding:', err)
+  }
+
   // Auto-provision admin employee profile
   try {
     const { currentUser } = await import('@clerk/nextjs/server')

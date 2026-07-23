@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { Decimal } from '@prisma/client/runtime/library'
+import { seedDefaultAccounts } from './finance-seed'
 
 /**
  * Double-entry accounting utility for MinaERP
@@ -40,9 +41,9 @@ export async function postToLedger(tx: any, input: PostToLedgerInput) {
     throw new Error(`Transaction is not balanced. Debits: ${totalDebit}, Credits: ${totalCredit}`)
   }
 
-  // 2. Find account IDs for the provided account numbers
+  // 2. Find account IDs for the provided account numbers (auto-seed if missing)
   const accountNumbers = entries.map(e => e.accountNumber)
-  const accounts = await tx.account.findMany({
+  let accounts = await tx.account.findMany({
     where: {
       organizationId,
       accountNumber: { in: accountNumbers },
@@ -52,9 +53,22 @@ export async function postToLedger(tx: any, input: PostToLedgerInput) {
   })
 
   if (accounts.length !== new Set(accountNumbers).size) {
-    const foundNumbers = accounts.map((a: any) => a.accountNumber)
-    const missing = accountNumbers.filter(n => !foundNumbers.includes(n))
-    throw new Error(`Missing accounts in Chart of Accounts: ${missing.join(', ')}. Please seed or create them first.`)
+    // Attempt auto-seeding missing standard accounts
+    await seedDefaultAccounts(tx, organizationId, userId)
+    accounts = await tx.account.findMany({
+      where: {
+        organizationId,
+        accountNumber: { in: accountNumbers },
+        deletedAt: null,
+      },
+      select: { id: true, accountNumber: true }
+    })
+    
+    if (accounts.length !== new Set(accountNumbers).size) {
+      const foundNumbers = accounts.map((a: any) => a.accountNumber)
+      const missing = accountNumbers.filter(n => !foundNumbers.includes(n))
+      throw new Error(`Missing custom accounts in Chart of Accounts: ${missing.join(', ')}. Please create them first.`)
+    }
   }
 
   const accountMap = accounts.reduce((acc: any, curr: any) => {
