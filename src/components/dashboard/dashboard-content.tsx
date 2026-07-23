@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Fragment } from 'react'
 import Link from 'next/link'
 import { 
   Sparkles, 
@@ -236,7 +236,7 @@ function MarkdownMessage({ content }: { content: string }) {
           i++
         }
 
-        return <React.Fragment key={pIdx}>{elements}</React.Fragment>
+        return <Fragment key={pIdx}>{elements}</Fragment>
       })}
     </div>
   )
