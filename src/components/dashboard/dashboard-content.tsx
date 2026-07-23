@@ -18,8 +18,7 @@ import {
   TrendingUp,
   Plus,
   MessageSquare,
-  Trash2,
-  Menu
+  Trash2
 } from 'lucide-react'
 import { askAiAssistant } from '@/app/actions/ai'
 import { formatCurrency } from '@/lib/utils'
@@ -582,17 +581,10 @@ export function DashboardContent({ stats, currency, userIsAdmin }: DashboardCont
             <div className="flex items-center gap-2.5">
               <button 
                 onClick={() => setActiveView('dashboard')}
-                className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer mr-1"
                 title="Back to Dashboard"
               >
                 <ArrowLeft className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer mr-1"
-                title={isSidebarOpen ? "Hide Chat History" : "Show Chat History"}
-              >
-                <Menu className="h-5 w-5" />
               </button>
               <div className="rounded-xl bg-blue-500/10 p-2 border border-blue-500/20 shrink-0">
                 <Sparkles className="h-4.5 w-4.5 text-blue-400" />
