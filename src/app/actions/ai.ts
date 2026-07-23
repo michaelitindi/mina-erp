@@ -274,9 +274,15 @@ async function handleToolCall(name: string, args: any, orgId: string, userId: st
       const bom = await apiCreateBOM({
         productId: args.productId,
         name: args.name,
-        quantity: Number(args.quantity || 1),
         notes: args.notes || null,
-        items: []
+        components: [
+          {
+            description: 'Assembly Raw Component',
+            quantity: Number(args.quantity || 1),
+            unit: 'EACH',
+            wastagePercent: 0
+          }
+        ]
       })
       return bom
     }
