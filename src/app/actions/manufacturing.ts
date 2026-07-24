@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 import { Decimal } from '@prisma/client/runtime/library'
+import { serializeDecimal } from '@/lib/utils'
 
 const createBOMSchema = z.object({
   name: z.string().min(1),
