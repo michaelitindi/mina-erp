@@ -162,9 +162,11 @@ export async function updateEnabledModules(modules: string[]) {
     throw new Error('Please select at least one module')
   }
 
+  const finalModules = resolveModuleDependencies(modules)
+
   await prisma.organization.update({
     where: { clerkOrgId: orgId },
-    data: { enabledModules: modules }
+    data: { enabledModules: finalModules }
   })
 
   revalidatePath('/dashboard')

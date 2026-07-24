@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateEnabledModules } from '@/app/actions/onboarding'
+import { updateEnabledModules, resolveModuleDependencies } from '@/app/actions/onboarding'
 import { ALL_MODULES, ModuleType } from '@/lib/modules'
 import { Check, ArrowLeft, Loader2, Sparkles } from 'lucide-react'
 import Link from 'next/link'
@@ -15,11 +15,15 @@ export function ModulesClient({ initialModules }: { initialModules: string[] }) 
   const router = useRouter()
 
   const toggleModule = (moduleId: ModuleType) => {
-    setSelectedModules(prev =>
-      prev.includes(moduleId)
-        ? prev.filter(m => m !== moduleId)
-        : [...prev, moduleId]
-    )
+    setSelectedModules(prev => {
+      const isCurrentlySelected = prev.includes(moduleId)
+      if (isCurrentlySelected) {
+        return prev.filter(m => m !== moduleId)
+      } else {
+        const resolved = resolveModuleDependencies([...prev, moduleId]) as ModuleType[]
+        return resolved
+      }
+    })
   }
 
   const handleSubmit = async () => {
