@@ -334,9 +334,10 @@ export async function updateWorkOrderStatus(id: string, status: string) {
     })
   }
 
+  const updatedWO = await prisma.workOrder.findUnique({ where: { id } })
   await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'WorkOrder', entityId: id, newValues: { status } })
   revalidatePath('/dashboard/manufacturing')
-  return { success: true }
+  return serializeDecimal({ ...updatedWO, success: true })
 }
 
 export async function triggerManufacturingOrdersForSalesOrder(
