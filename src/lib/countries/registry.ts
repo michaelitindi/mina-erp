@@ -8,6 +8,11 @@ import { usConfig } from './configs/us'
 import { ukConfig } from './configs/uk'
 import { southAfricaConfig } from './configs/south_africa'
 import { uaeConfig } from './configs/uae'
+import { canadaConfig } from './configs/canada'
+import { nigeriaConfig } from './configs/nigeria'
+import { australiaConfig } from './configs/australia'
+import { indiaConfig } from './configs/india'
+import { germanyConfig } from './configs/germany'
 
 export const COUNTRY_REGISTRY: Record<string, CountryConfig> = {
   KE: kenyaConfig,
@@ -15,6 +20,11 @@ export const COUNTRY_REGISTRY: Record<string, CountryConfig> = {
   GB: ukConfig,
   ZA: southAfricaConfig,
   AE: uaeConfig,
+  CA: canadaConfig,
+  NG: nigeriaConfig,
+  AU: australiaConfig,
+  IN: indiaConfig,
+  DE: germanyConfig,
 }
 
 /**
