@@ -6,7 +6,7 @@ export interface TaxConfig {
   name: string                  // e.g. 'VAT / eTIMS', 'State Sales Tax', 'HMRC VAT'
   defaultRate: number           // e.g. 16, 8.25, 20
   taxIdLabel: string            // e.g. 'KRA PIN Number', 'EIN / SSN', 'VAT Registration Number'
-  complianceProvider: 'KRA_ETIMS' | 'AVALARA' | 'HMRC_MTD' | 'SARS_VAT' | 'FTA_ZATCA' | 'FIRS_VAT' | 'GSTIN_INDIA' | 'ATO_PEPPOL' | 'SEPA_EU' | 'NFE_BRAZIL' | 'CFDI_MEXICO' | 'INVOICENOW_SG' | 'TICKETBAI_SPAIN' | 'JAPAN_INVOICE' | 'STANDARD'
+  complianceProvider: 'KRA_ETIMS' | 'AVALARA' | 'HMRC_MTD' | 'SARS_VAT' | 'FTA_ZATCA' | 'FIRS_VAT' | 'GSTIN_INDIA' | 'ATO_PEPPOL' | 'SEPA_EU' | 'NFE_BRAZIL' | 'CFDI_MEXICO' | 'INVOICENOW_SG' | 'TICKETBAI_SPAIN' | 'JAPAN_INVOICE' | 'CHORUS_FRANCE' | 'SDI_ITALY' | 'ETA_EGYPT' | 'EFAKTUR_INDONESIA' | 'ZATCA_SAUDI' | 'STANDARD'
   requiresFiscalSignature: boolean
 }
 
