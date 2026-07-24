@@ -166,15 +166,23 @@ export async function updateWorkOrderStatus(id: string, status: string) {
   if (!existing) throw new Error('Work order not found')
   if (existing.status === 'COMPLETED') throw new Error('Work order is already completed')
 
+  let targetWarehouseId = existing.warehouseId
+  if (!targetWarehouseId && (status === 'IN_PROGRESS' || status === 'COMPLETED')) {
+    const defaultWarehouse = await prisma.warehouse.findFirst({
+      where: { organizationId: orgId, deletedAt: null }
+    })
+    if (defaultWarehouse) {
+      targetWarehouseId = defaultWarehouse.id
+    } else {
+      throw new Error('A warehouse must be registered before production can be started or completed')
+    }
+  }
+
   // If starting or completing, perform shortage check if warehouse is assigned
   if ((status === 'IN_PROGRESS' || status === 'COMPLETED') && existing.bom) {
-    if (!existing.warehouseId) {
-      throw new Error('A warehouse must be assigned to the work order before starting or completing production')
-    }
-
     // Check availability for each component
     for (const c of existing.bom.components) {
-      if (c.productId) {
+      if (c.productId && targetWarehouseId) {
         // Calculate requirement: WO qty * component qty * (1 + wastage / 100)
         const wastageCoeff = new Decimal(1).add(new Decimal(c.wastagePercent).div(100))
         const requiredQty = new Decimal(existing.quantity).mul(c.quantity).mul(wastageCoeff)
@@ -183,7 +191,7 @@ export async function updateWorkOrderStatus(id: string, status: string) {
           where: {
             productId_warehouseId: {
               productId: c.productId,
-              warehouseId: existing.warehouseId
+              warehouseId: targetWarehouseId
             }
           }
         })
@@ -214,7 +222,7 @@ export async function updateWorkOrderStatus(id: string, status: string) {
       // 1. Consume components
       if (existing.bom) {
         for (const c of existing.bom.components) {
-          if (c.productId && existing.warehouseId) {
+          if (c.productId && targetWarehouseId) {
             const wastageCoeff = new Decimal(1).add(new Decimal(c.wastagePercent).div(100))
             const requiredQty = new Decimal(existing.quantity).mul(c.quantity).mul(wastageCoeff)
 
@@ -230,7 +238,7 @@ export async function updateWorkOrderStatus(id: string, status: string) {
                 type: 'OUT',
                 reason: 'MANUFACTURING',
                 quantity: requiredQty.negated(),
-                fromWarehouseId: existing.warehouseId,
+                fromWarehouseId: targetWarehouseId,
                 referenceType: 'WORK_ORDER',
                 referenceId: existing.id,
                 notes: `Consumed for Work Order ${existing.workOrderNumber}`,
@@ -243,13 +251,13 @@ export async function updateWorkOrderStatus(id: string, status: string) {
               where: {
                 productId_warehouseId: {
                   productId: c.productId,
-                  warehouseId: existing.warehouseId
+                  warehouseId: targetWarehouseId
                 }
               },
               create: {
                 organizationId: orgId,
                 productId: c.productId,
-                warehouseId: existing.warehouseId,
+                warehouseId: targetWarehouseId,
                 quantity: requiredQty.negated(),
                 availableQty: requiredQty.negated(),
               },
@@ -263,7 +271,7 @@ export async function updateWorkOrderStatus(id: string, status: string) {
       }
 
       // 2. Receive finished product
-      if (existing.productId && existing.warehouseId) {
+      if (existing.productId && targetWarehouseId) {
         lastNum++
         const movementNumber = `SM-${String(lastNum).padStart(6, '0')}`
 
@@ -276,7 +284,7 @@ export async function updateWorkOrderStatus(id: string, status: string) {
             type: 'IN',
             reason: 'MANUFACTURING',
             quantity: new Decimal(existing.quantity),
-            toWarehouseId: existing.warehouseId,
+            toWarehouseId: targetWarehouseId,
             referenceType: 'WORK_ORDER',
             referenceId: existing.id,
             notes: `Produced by Work Order ${existing.workOrderNumber}`,
@@ -289,13 +297,13 @@ export async function updateWorkOrderStatus(id: string, status: string) {
           where: {
             productId_warehouseId: {
               productId: existing.productId,
-              warehouseId: existing.warehouseId
+              warehouseId: targetWarehouseId
             }
           },
           create: {
             organizationId: orgId,
             productId: existing.productId,
-            warehouseId: existing.warehouseId,
+            warehouseId: targetWarehouseId,
             quantity: new Decimal(existing.quantity),
             availableQty: new Decimal(existing.quantity),
           },
@@ -311,20 +319,62 @@ export async function updateWorkOrderStatus(id: string, status: string) {
         where: { id },
         data: {
           ...updateData,
+          warehouseId: targetWarehouseId,
           completedQty: new Decimal(existing.quantity)
         }
       })
     })
   } else {
-    // Just update status (e.g. IN_PROGRESS or CANCELLED)
-    await prisma.workOrder.update({ where: { id }, data: updateData })
+    await prisma.workOrder.update({
+      where: { id },
+      data: {
+        ...updateData,
+        ...(targetWarehouseId ? { warehouseId: targetWarehouseId } : {})
+      }
+    })
   }
 
-  // Get the updated WorkOrder to return
-  const updatedWO = await prisma.workOrder.findUnique({ where: { id } })
-  await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'WorkOrder', entityId: id, oldValues: { status: existing.status }, newValues: { status } })
+  await logAudit({ organizationId: orgId, userId, action: 'UPDATE', entityType: 'WorkOrder', entityId: id, newValues: { status } })
   revalidatePath('/dashboard/manufacturing')
-  return updatedWO
+  return { success: true }
+}
+
+export async function triggerManufacturingOrdersForSalesOrder(
+  orgId: string,
+  userId: string,
+  salesOrderId: string,
+  lineItems: Array<{ productId?: string | null; quantity: number | Decimal }>
+) {
+  for (const item of lineItems) {
+    if (!item.productId) continue
+
+    // Find active BOM for product
+    const bom = await prisma.billOfMaterials.findFirst({
+      where: { organizationId: orgId, productId: item.productId, status: 'ACTIVE' }
+    })
+
+    if (bom) {
+      const workOrderNumber = await generateWONumber(orgId)
+      const defaultWarehouse = await prisma.warehouse.findFirst({
+        where: { organizationId: orgId, deletedAt: null }
+      })
+
+      await prisma.workOrder.create({
+        data: {
+          organizationId: orgId,
+          workOrderNumber,
+          bomId: bom.id,
+          productId: item.productId,
+          quantity: new Decimal(item.quantity),
+          status: 'PLANNED',
+          priority: 'HIGH',
+          warehouseId: defaultWarehouse?.id || null,
+          notes: `Auto-triggered from Sales Order (${salesOrderId})`,
+          createdBy: userId
+        }
+      })
+    }
+  }
 }
 
 export async function getManufacturingStats() {

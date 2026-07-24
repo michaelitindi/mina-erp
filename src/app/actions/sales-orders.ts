@@ -9,6 +9,7 @@ import { Decimal } from '@prisma/client/runtime/library'
 import { serializeDecimal } from '@/lib/utils'
 import { reserveStock, releaseStock } from '@/lib/inventory'
 import { processInvoiceCreation } from './invoices'
+import { triggerManufacturingOrdersForSalesOrder } from './manufacturing'
 
 const lineItemSchema = z.object({
   description: z.string().min(1),
@@ -164,8 +165,21 @@ export async function createSalesOrder(input: CreateSalesOrderInput) {
     include: { lineItems: true }
   })
 
+  // Auto-trigger manufacturing orders for any line items with an active BOM
+  try {
+    await triggerManufacturingOrdersForSalesOrder(
+      orgId,
+      userId,
+      order.orderNumber,
+      order.lineItems.map((li: any) => ({ productId: li.productId, quantity: li.quantity }))
+    )
+  } catch (err) {
+    console.error('Auto-trigger manufacturing orders error:', err)
+  }
+
   await logAudit({ organizationId: orgId, userId, action: 'CREATE', entityType: 'SalesOrder', entityId: order.id, newValues: order as unknown as Record<string, unknown> })
   revalidatePath('/dashboard/sales/orders')
+  revalidatePath('/dashboard/manufacturing')
   return serializeDecimal(order)
 }
 
