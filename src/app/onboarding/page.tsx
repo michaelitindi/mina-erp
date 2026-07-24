@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { completeOnboarding } from '@/app/actions/onboarding'
+import { completeOnboarding, resolveModuleDependencies, MODULE_DEPENDENCIES } from '@/app/actions/onboarding'
 import { ALL_MODULES, DEFAULT_MODULES, ModuleType } from '@/lib/modules'
-import { Check, ArrowRight, Sparkles, Building2, Globe, Settings, ArrowLeft } from 'lucide-react'
+import { Check, ArrowRight, Sparkles, Building2, Globe, Settings, ArrowLeft, Factory, ShoppingCart, Briefcase, Globe2 } from 'lucide-react'
 
 const COUNTRIES = [
   { code: 'KE', name: 'Kenya', currency: 'KES', flag: '🇰🇪', timezone: 'Africa/Nairobi' },
@@ -37,11 +37,20 @@ export default function OnboardingPage() {
   const currentCountry = COUNTRIES.find(c => c.code === selectedCountryCode) || COUNTRIES[1]
 
   const toggleModule = (moduleId: ModuleType) => {
-    setSelectedModules(prev => 
-      prev.includes(moduleId) 
-        ? prev.filter(m => m !== moduleId)
-        : [...prev, moduleId]
-    )
+    setSelectedModules(prev => {
+      const isCurrentlySelected = prev.includes(moduleId)
+      if (isCurrentlySelected) {
+        return prev.filter(m => m !== moduleId)
+      } else {
+        const resolved = resolveModuleDependencies([...prev, moduleId]) as ModuleType[]
+        return resolved
+      }
+    })
+  }
+
+  const applyPreset = (presetModules: ModuleType[]) => {
+    const resolved = resolveModuleDependencies(presetModules) as ModuleType[]
+    setSelectedModules(resolved)
   }
 
   const handleNextStep = () => {
@@ -214,7 +223,58 @@ export default function OnboardingPage() {
                 <Settings className="h-6 w-6" />
               </div>
               <h1 className="text-2xl font-bold text-white mb-2">Enable ERP Modules</h1>
-              <p className="text-sm text-zinc-400">Select the modular micro-consoles to configure for your dashboard. Unselected tools can be activated later in settings.</p>
+              <p className="text-sm text-zinc-400">Select an Industry Solution Preset or customize your micro-consoles. Required prerequisites are automatically included.</p>
+            </div>
+
+            {/* Industry Solution Presets */}
+            <div className="space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">1-Click Solution Presets</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => applyPreset(['MANUFACTURING', 'INVENTORY', 'PROCUREMENT', 'SALES', 'FINANCE'])}
+                  className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60 hover:bg-zinc-800 hover:border-zinc-700 text-left transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Factory className="h-4 w-4 text-purple-400" />
+                    <span className="text-xs font-bold text-white group-hover:text-purple-300">Manufacturing</span>
+                  </div>
+                  <p className="text-[10px] text-zinc-500">MTO Factory, BOMs & Stock</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPreset(['POS', 'SALES', 'INVENTORY', 'ECOMMERCE', 'FINANCE'])}
+                  className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60 hover:bg-zinc-800 hover:border-zinc-700 text-left transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <ShoppingCart className="h-4 w-4 text-emerald-400" />
+                    <span className="text-xs font-bold text-white group-hover:text-emerald-300">Retail & POS</span>
+                  </div>
+                  <p className="text-[10px] text-zinc-500">Stores, Commerce & Checkout</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPreset(['PROJECTS', 'CRM', 'FINANCE', 'HR'])}
+                  className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60 hover:bg-zinc-800 hover:border-zinc-700 text-left transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Briefcase className="h-4 w-4 text-blue-400" />
+                    <span className="text-xs font-bold text-white group-hover:text-blue-300">Services</span>
+                  </div>
+                  <p className="text-[10px] text-zinc-500">Projects, CRM & Payroll</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPreset(ALL_MODULES.map(m => m.id))}
+                  className="p-3 rounded-xl border border-zinc-800 bg-zinc-950/60 hover:bg-zinc-800 hover:border-zinc-700 text-left transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Globe2 className="h-4 w-4 text-yellow-400" />
+                    <span className="text-xs font-bold text-white group-hover:text-yellow-300">All-in-One</span>
+                  </div>
+                  <p className="text-[10px] text-zinc-500">All 12 ERP Micro-Consoles</p>
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-[350px] overflow-y-auto pr-1">

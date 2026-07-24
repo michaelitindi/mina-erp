@@ -19,6 +19,26 @@ export async function getOrganizationWithModules() {
   })
 }
 
+export const MODULE_DEPENDENCIES: Record<string, string[]> = {
+  MANUFACTURING: ['INVENTORY', 'PROCUREMENT', 'SALES', 'FINANCE'],
+  SALES: ['INVENTORY', 'FINANCE', 'CRM'],
+  PROCUREMENT: ['INVENTORY', 'FINANCE'],
+  POS: ['SALES', 'INVENTORY', 'FINANCE'],
+  ECOMMERCE: ['SALES', 'INVENTORY', 'FINANCE'],
+  PROJECTS: ['FINANCE', 'CRM'],
+  ASSETS: ['FINANCE'],
+  HR: ['FINANCE'],
+}
+
+export function resolveModuleDependencies(selectedModules: string[]): string[] {
+  const resolved = new Set<string>(selectedModules)
+  selectedModules.forEach(mod => {
+    const deps = MODULE_DEPENDENCIES[mod] || []
+    deps.forEach(dep => resolved.add(dep))
+  })
+  return Array.from(resolved)
+}
+
 export async function completeOnboarding(data: {
   name: string
   country: string
@@ -42,6 +62,9 @@ export async function completeOnboarding(data: {
     throw new Error('Please select at least one module')
   }
 
+  // Automatically resolve dependent module prerequisites
+  const finalModules = resolveModuleDependencies(data.modules)
+
   // Get or create organization
   let org = await prisma.organization.findUnique({
     where: { clerkOrgId: orgId }
@@ -55,7 +78,7 @@ export async function completeOnboarding(data: {
         slug: `${data.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${orgId.toLowerCase().slice(-6)}`,
         country: data.country,
         currency: data.currency,
-        enabledModules: data.modules,
+        enabledModules: finalModules,
         onboardingComplete: true,
       }
     })
@@ -66,7 +89,7 @@ export async function completeOnboarding(data: {
         name: data.name,
         country: data.country,
         currency: data.currency,
-        enabledModules: data.modules,
+        enabledModules: finalModules,
         onboardingComplete: true,
       }
     })
