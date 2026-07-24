@@ -7,10 +7,40 @@ import { getGeminiClient, getGeminiApiKey } from '@/lib/gemini'
 import { SchemaType, FunctionDeclaration } from '@google/generative-ai'
 import { createProduct as apiCreateProduct, getLowStockAlerts } from './products'
 import { createCustomer as apiCreateCustomer } from './customers'
-import { createBOM as apiCreateBOM, createWorkOrder as apiCreateWorkOrder } from './manufacturing'
+import { createBOM as apiCreateBOM, createWorkOrder as apiCreateWorkOrder, updateWorkOrderStatus as apiUpdateWOStatus } from './manufacturing'
 import { createPurchaseOrder as apiCreatePO } from './purchase-orders'
+import { createSalesOrder as apiCreateSalesOrder } from './sales-orders'
 import { globalSearch } from '@/lib/search'
 import { checkToolSafety } from '@/lib/ai-guardrails'
+
+const createSalesOrderTool: FunctionDeclaration = {
+  name: 'createSalesOrder',
+  description: 'Create a customer Sales Order. If the ordered item has a BOM, this automatically triggers a pending Manufacturing Order.',
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      customerId: { type: SchemaType.STRING, description: 'ID of the customer placing the order.' },
+      itemDescription: { type: SchemaType.STRING, description: 'Description of the item ordered.' },
+      quantity: { type: SchemaType.NUMBER, description: 'Quantity ordered.' },
+      unitPrice: { type: SchemaType.NUMBER, description: 'Selling price per unit.' },
+      productId: { type: SchemaType.STRING, description: 'Optional product ID for stock reservation and BOM triggering.' }
+    },
+    required: ['customerId', 'itemDescription', 'quantity', 'unitPrice']
+  }
+}
+
+const updateWorkOrderStatusTool: FunctionDeclaration = {
+  name: 'updateWorkOrderStatus',
+  description: 'Update the status of a manufacturing Work Order (e.g. IN_PROGRESS to start production, or COMPLETED to deduct raw materials and credit finished goods inventory).',
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      workOrderId: { type: SchemaType.STRING, description: 'ID of the Work Order to update.' },
+      status: { type: SchemaType.STRING, description: 'New status: IN_PROGRESS, COMPLETED, or CANCELLED.' }
+    },
+    required: ['workOrderId', 'status']
+  }
+}
 
 // ... (in declarations)
 const createWorkOrderTool: FunctionDeclaration = {
@@ -359,6 +389,27 @@ async function handleToolCall(name: string, args: any, orgId: string, userId: st
       return po
     }
 
+    case 'createSalesOrder': {
+      const so = await apiCreateSalesOrder({
+        customerId: args.customerId,
+        orderDate: new Date(),
+        lineItems: [
+          {
+            description: args.itemDescription,
+            quantity: Number(args.quantity || 1),
+            unitPrice: Number(args.unitPrice || 0),
+            productId: args.productId || null
+          }
+        ]
+      })
+      return so
+    }
+
+    case 'updateWorkOrderStatus': {
+      const res = await apiUpdateWOStatus(args.workOrderId, args.status)
+      return res
+    }
+
     case 'getFinancialStatements': {
       const [accounts, revenue, expenses] = await Promise.all([
         prisma.account.findMany({ where: { organizationId: orgId, deletedAt: null } }),
@@ -435,6 +486,8 @@ If the user provides an attached image or document (e.g. receipt photo, invoice 
           createBOMTool,
           createWorkOrderTool,
           createPurchaseOrderTool,
+          createSalesOrderTool,
+          updateWorkOrderStatusTool,
           getFinancialStatementsTool
         ]
       }]
