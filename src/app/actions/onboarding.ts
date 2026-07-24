@@ -5,6 +5,8 @@ import { auth } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { getCountryConfig } from '@/lib/countries/registry'
+
 export async function getOrganizationWithModules() {
   const { orgId } = await auth()
   if (!orgId) return null
@@ -13,10 +15,24 @@ export async function getOrganizationWithModules() {
     where: { clerkOrgId: orgId },
     select: {
       id: true,
+      country: true,
+      currency: true,
       enabledModules: true,
       onboardingComplete: true,
     }
   })
+}
+
+export async function getTenantLocalizationConfig() {
+  const { orgId } = await auth()
+  if (!orgId) return getCountryConfig('US')
+
+  const org = await prisma.organization.findUnique({
+    where: { clerkOrgId: orgId },
+    select: { country: true }
+  })
+
+  return getCountryConfig(org?.country)
 }
 
 export const MODULE_DEPENDENCIES: Record<string, string[]> = {
