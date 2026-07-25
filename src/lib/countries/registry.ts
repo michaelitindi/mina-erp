@@ -23,6 +23,11 @@ import { italyConfig } from './configs/italy'
 import { egyptConfig } from './configs/egypt'
 import { indonesiaConfig } from './configs/indonesia'
 import { saudiArabiaConfig } from './configs/saudi_arabia'
+import { turkeyConfig } from './configs/turkey'
+import { argentinaConfig } from './configs/argentina'
+import { southKoreaConfig } from './configs/south_korea'
+import { chileConfig } from './configs/chile'
+import { philippinesConfig } from './configs/philippines'
 
 export const COUNTRY_REGISTRY: Record<string, CountryConfig> = {
   KE: kenyaConfig,
@@ -45,6 +50,11 @@ export const COUNTRY_REGISTRY: Record<string, CountryConfig> = {
   EG: egyptConfig,
   ID: indonesiaConfig,
   SA: saudiArabiaConfig,
+  TR: turkeyConfig,
+  AR: argentinaConfig,
+  KR: southKoreaConfig,
+  CL: chileConfig,
+  PH: philippinesConfig,
 }
 
 /**
