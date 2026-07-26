@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { saudiArabiaConfig } from '@/lib/countries/configs/saudi_arabia'
+import { turkeyConfig } from '@/lib/countries/configs/turkey'
 import { getCountryConfig, COUNTRY_REGISTRY } from '@/lib/countries/registry'
 
 describe('Saudi Arabia Localization Driver Config', () => {
@@ -35,3 +36,38 @@ describe('Saudi Arabia Localization Driver Config', () => {
     expect(getCountryConfig('sa')).toBe(saudiArabiaConfig)
   })
 })
+
+describe('Turkey Localization Driver Config', () => {
+  it('exports correct turkeyConfig properties', () => {
+    expect(turkeyConfig).toEqual({
+      code: 'TR',
+      name: 'Turkey',
+      currency: 'TRY',
+      currencySymbol: '₺',
+      flag: '🇹🇷',
+      timezone: 'Europe/Istanbul',
+      tax: {
+        name: 'KDV (Katma Değer Vergisi)',
+        defaultRate: 20,
+        taxIdLabel: 'VKN / TCKN (Vergi Kimlik No)',
+        complianceProvider: 'GIB_TURKEY',
+        requiresFiscalSignature: true,
+      },
+      payments: {
+        mobileMoney: {
+          enabled: true,
+          providers: ['BKM Express', 'Paycell', 'Papara'],
+        },
+        cardGateways: ['Iyzico', 'Troy', 'PayU Turkey', 'Stripe'],
+        bankRails: ['FAST Anlık Havale', 'EFT / Havale Direct Transfer'],
+      },
+    })
+  })
+
+  it('retrieves Turkey config from country registry by code', () => {
+    expect(COUNTRY_REGISTRY['TR']).toBe(turkeyConfig)
+    expect(getCountryConfig('TR')).toBe(turkeyConfig)
+    expect(getCountryConfig('tr')).toBe(turkeyConfig)
+  })
+})
+
