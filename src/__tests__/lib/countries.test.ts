@@ -71,3 +71,12 @@ describe('Turkey Localization Driver Config', () => {
   })
 })
 
+describe('Morocco Localization Driver Config', () => {
+  it('retrieves Morocco config from country registry by code', () => {
+    expect(COUNTRY_REGISTRY['MA']).toBeDefined()
+    expect(getCountryConfig('MA').code).toBe('MA')
+    expect(getCountryConfig('ma').name).toBe('Morocco')
+  })
+})
+
+
