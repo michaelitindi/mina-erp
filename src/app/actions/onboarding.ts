@@ -35,8 +35,7 @@ export async function getTenantLocalizationConfig() {
   return getCountryConfig(org?.country)
 }
 
-import { MODULE_DEPENDENCIES, resolveModuleDependencies } from '@/lib/module-dependencies'
-export { MODULE_DEPENDENCIES, resolveModuleDependencies }
+import { resolveModuleDependencies } from '@/lib/module-dependencies'
 
 export async function completeOnboarding(data: {
   name: string
