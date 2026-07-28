@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { completeOnboarding, resolveModuleDependencies, MODULE_DEPENDENCIES } from '@/app/actions/onboarding'
+import { completeOnboarding } from '@/app/actions/onboarding'
+import { resolveModuleDependencies, MODULE_DEPENDENCIES } from '@/lib/module-dependencies'
 import { ALL_MODULES, DEFAULT_MODULES, ModuleType } from '@/lib/modules'
 import { Check, ArrowRight, Sparkles, Building2, Globe, Settings, ArrowLeft, Factory, ShoppingCart, Briefcase, Globe2 } from 'lucide-react'
 

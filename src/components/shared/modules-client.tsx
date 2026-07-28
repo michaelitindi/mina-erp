@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateEnabledModules, resolveModuleDependencies } from '@/app/actions/onboarding'
+import { updateEnabledModules } from '@/app/actions/onboarding'
+import { resolveModuleDependencies } from '@/lib/module-dependencies'
 import { ALL_MODULES, ModuleType } from '@/lib/modules'
 import { Check, ArrowLeft, Loader2, Sparkles } from 'lucide-react'
 import Link from 'next/link'
