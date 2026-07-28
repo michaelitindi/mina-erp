@@ -53,6 +53,11 @@ import { panamaConfig } from './configs/panama'
 import { dominicanRepublicConfig } from './configs/dominican_republic'
 import { guatemalaConfig } from './configs/guatemala'
 import { elSalvadorConfig } from './configs/el_salvador'
+import { ugandaConfig } from './configs/uganda'
+import { tanzaniaConfig } from './configs/tanzania'
+import { rwandaConfig } from './configs/rwanda'
+import { ethiopiaConfig } from './configs/ethiopia'
+import { drCongoConfig } from './configs/dr_congo'
 
 export const COUNTRY_REGISTRY: Record<string, CountryConfig> = {
   KE: kenyaConfig,
@@ -105,6 +110,11 @@ export const COUNTRY_REGISTRY: Record<string, CountryConfig> = {
   DO: dominicanRepublicConfig,
   GT: guatemalaConfig,
   SV: elSalvadorConfig,
+  UG: ugandaConfig,
+  TZ: tanzaniaConfig,
+  RW: rwandaConfig,
+  ET: ethiopiaConfig,
+  CD: drCongoConfig,
 }
 
 /**
