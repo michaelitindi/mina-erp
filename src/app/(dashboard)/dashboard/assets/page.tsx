@@ -1,8 +1,10 @@
+export const dynamic = 'force-dynamic'
+
 import { getAssets, getAssetStats } from '@/app/actions/assets'
 import { checkModuleAccess } from '@/lib/module-access'
 import { AssetsTable } from '@/components/assets/assets-table'
 import { CreateAssetButton } from '@/components/assets/asset-buttons'
-import { Building2, Package, DollarSign, CheckCircle } from 'lucide-react'
+import { Building2, Package, DollarSign, CircleCheck as CheckCircle } from 'lucide-react'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { formatCurrency } from '@/lib/utils'

@@ -1,8 +1,10 @@
+export const dynamic = 'force-dynamic'
+
 import { getBudgets, getBudgetStats } from '@/app/actions/budgets'
 import { getAccounts } from '@/app/actions/accounts'
 import { BudgetsTable } from '@/components/finance/budgets-table'
 import { CreateBudgetButton } from '@/components/finance/budget-buttons'
-import { PiggyBank, CheckCircle, Calendar, DollarSign } from 'lucide-react'
+import { PiggyBank, CircleCheck as CheckCircle, Calendar, DollarSign } from 'lucide-react'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { formatCurrency } from '@/lib/utils'

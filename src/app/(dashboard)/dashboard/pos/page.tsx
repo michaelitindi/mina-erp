@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { auth } from '@clerk/nextjs/server'
 import { getActiveSession, getTerminals, getProductsForPOS } from '@/app/actions/pos'
 import { POSTerminal } from './terminal'

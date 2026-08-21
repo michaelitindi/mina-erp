@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getStores, getOnlineOrders, getEcommerceStats, getOnlineProducts } from '@/app/actions/ecommerce'
 import { checkModuleAccess } from '@/lib/module-access'
 import { StoresTable } from '@/components/ecommerce/stores-table'

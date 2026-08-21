@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getAccounts, seedDefaultAccounts } from '@/app/actions/accounts'
 import { AccountsTable } from '@/components/finance/accounts-table'
 import { CreateAccountButton, SeedAccountsButton } from '@/components/finance/account-buttons'

@@ -1,7 +1,9 @@
+export const dynamic = 'force-dynamic'
+
 import { getProducts, getProductStats } from '@/app/actions/products'
 import { ProductsTable } from '@/components/inventory/products-table'
 import { CreateProductButton } from '@/components/inventory/product-buttons'
-import { Package, AlertTriangle, CheckCircle, DollarSign } from 'lucide-react'
+import { Package, TriangleAlert as AlertTriangle, CircleCheck as CheckCircle, DollarSign } from 'lucide-react'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { formatCurrency } from '@/lib/utils'

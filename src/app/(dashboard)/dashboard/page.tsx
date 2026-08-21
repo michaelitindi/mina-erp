@@ -1,8 +1,10 @@
+export const dynamic = 'force-dynamic'
+
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { isAdmin } from '@/lib/roles'
-import { Clock, User2 } from 'lucide-react'
+import { Clock, User as User2 } from 'lucide-react'
 import Link from 'next/link'
 import { DashboardContent } from '@/components/dashboard/dashboard-content'
 

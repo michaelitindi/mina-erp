@@ -1,22 +1,8 @@
+export const dynamic = 'force-dynamic'
+
 import { getSalesOrder, updateSalesOrderStatus } from '@/app/actions/sales-orders'
 import { redirect } from 'next/navigation'
-import { 
-  ShoppingCart, 
-  User, 
-  Building2, 
-  Calendar, 
-  Clock, 
-  ChevronRight,
-  ArrowLeft,
-  Package,
-  Truck,
-  DollarSign,
-  AlertCircle,
-  CheckCircle2,
-  FileText,
-  ShieldCheck,
-  Ban
-} from 'lucide-react'
+import { ShoppingCart, User, Building2, Calendar, Clock, ChevronRight, ArrowLeft, Package, Truck, DollarSign, CircleAlert as AlertCircle, CircleCheck as CheckCircle2, FileText, ShieldCheck, Ban } from 'lucide-react'
 import Link from 'next/link'
 import { cn, formatCurrency } from '@/lib/utils'
 import { SalesOrderStatusButtons } from '@/components/sales/order-status-buttons'

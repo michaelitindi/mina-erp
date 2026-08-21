@@ -1,9 +1,11 @@
+export const dynamic = 'force-dynamic'
+
 import { getPayments } from '@/app/actions/payments'
 import { getInvoices } from '@/app/actions/invoices'
 import { getBills } from '@/app/actions/bills'
 import { PaymentsTable } from '@/components/finance/payments-table'
 import { CreatePaymentButton } from '@/components/finance/payment-buttons'
-import { CreditCard, ArrowDownCircle, ArrowUpCircle, DollarSign } from 'lucide-react'
+import { CreditCard, CircleArrowDown as ArrowDownCircle, CircleArrowUp as ArrowUpCircle, DollarSign } from 'lucide-react'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { formatCurrency } from '@/lib/utils'

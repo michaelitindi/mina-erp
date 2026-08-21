@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import { Shield, CreditCard, Settings, Building2, Users, Bell, Cpu } from 'lucide-react'
 import { auth } from '@clerk/nextjs/server'

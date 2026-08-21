@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getWarehouseDetails } from '@/app/actions/warehouses'
 import { Warehouse, MapPin, Package, ArrowLeft, ArrowUpRight, ArrowDownRight, Clock } from 'lucide-react'
 import Link from 'next/link'

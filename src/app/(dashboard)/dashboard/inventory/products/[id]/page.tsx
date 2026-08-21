@@ -1,18 +1,7 @@
+export const dynamic = 'force-dynamic'
+
 import { getProductDetails } from '@/app/actions/products'
-import { 
-  Package, 
-  ArrowLeft, 
-  DollarSign, 
-  Receipt, 
-  Settings, 
-  AlertTriangle,
-  History,
-  ShoppingCart,
-  Wrench,
-  Layers,
-  ArrowUpRight,
-  ArrowDownRight
-} from 'lucide-react'
+import { Package, ArrowLeft, DollarSign, Receipt, Settings, TriangleAlert as AlertTriangle, History, ShoppingCart, Wrench, Layers, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils'
 import { auth } from '@clerk/nextjs/server'

@@ -1,9 +1,11 @@
+export const dynamic = 'force-dynamic'
+
 import { getSalesOrders, getSalesOrderStats } from '@/app/actions/sales-orders'
 import { getCustomers } from '@/app/actions/customers'
 import { getWarehouses } from '@/app/actions/warehouses'
 import { SalesOrdersTable } from '@/components/sales/sales-orders-table'
 import { CreateSalesOrderButton } from '@/components/sales/sales-order-buttons'
-import { ShoppingCart, Package, Truck, CheckCircle } from 'lucide-react'
+import { ShoppingCart, Package, Truck, CircleCheck as CheckCircle } from 'lucide-react'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { formatCurrency } from '@/lib/utils'
