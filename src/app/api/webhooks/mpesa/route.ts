@@ -1,11 +1,25 @@
 import { NextResponse } from 'next/server'
 import { reconcilePaymentWebhook } from '@/app/actions/payments'
 
+function getMpesaWebhookSecret(): string | null {
+  return process.env.MPESA_WEBHOOK_SECRET || null
+}
+
 export async function POST(req: Request) {
   try {
     const url = new URL(req.url)
     const body = await req.json()
-    console.log('M-Pesa webhook received:', JSON.stringify(body))
+
+    // Security: verify shared secret if configured
+    // The callback URL includes ?secret=<value> which we verify server-side
+    const webhookSecret = getMpesaWebhookSecret()
+    if (webhookSecret) {
+      const providedSecret = url.searchParams.get('secret')
+      if (providedSecret !== webhookSecret) {
+        console.error('M-Pesa webhook secret verification failed')
+        return NextResponse.json({ ResultCode: 1, ResultDesc: 'Invalid secret' }, { status: 401 })
+      }
+    }
 
     // 1. Check if it is an STK Push Callback
     if (body.Body?.stkCallback) {
@@ -22,7 +36,7 @@ export async function POST(req: Request) {
       const items = stkCallback.CallbackMetadata?.Item || []
       const amountItem = items.find((i: any) => i.Name === 'Amount')
       const receiptItem = items.find((i: any) => i.Name === 'MpesaReceiptNumber')
-      
+
       const amount = amountItem ? Number(amountItem.Value) : 0
       const reference = receiptItem ? String(receiptItem.Value) : checkoutRequestId
 
@@ -50,7 +64,7 @@ export async function POST(req: Request) {
     // 2. Check if it is a C2B Confirmation or Validation request
     if (body.TransID && body.BillRefNumber) {
       const isValidation = url.searchParams.get('validation') === 'true' || req.headers.get('x-safaricom-action') === 'validation'
-      
+
       if (isValidation) {
         return NextResponse.json({ ResultCode: 0, ResultDesc: 'Accepted' })
       }

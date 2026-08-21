@@ -242,7 +242,8 @@ export async function initMpesaPayment(config: PaymentConfig, params: PaymentIni
 
     const amountInKes = params.amount / 100 // Convert cents equivalent to KES
 
-    const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://yourdomain.com'}/api/webhooks/mpesa?orderId=${params.orderId}&type=${params.metadata?.type || 'ORDER'}`
+    const mpesaSecret = process.env.MPESA_WEBHOOK_SECRET ? `&secret=${encodeURIComponent(process.env.MPESA_WEBHOOK_SECRET)}` : ''
+    const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://yourdomain.com'}/api/webhooks/mpesa?orderId=${params.orderId}&type=${params.metadata?.type || 'ORDER'}${mpesaSecret}`
 
     const result = await initiateStkPush({
       amount: amountInKes,

@@ -1,11 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { 
-  CreditCard, Plus, Trash2, Settings, 
-  CheckCircle, XCircle, ToggleLeft, ToggleRight,
-  ShoppingCart, Globe, X, Sparkles
-} from 'lucide-react'
+import { CreditCard, Plus, Trash2, Settings, CircleCheck as CheckCircle, Circle as XCircle, ToggleLeft, ToggleRight, ShoppingCart, Globe, X, Sparkles } from 'lucide-react'
 import { 
   createPaymentProvider, 
   deletePaymentProvider, 
@@ -57,6 +53,7 @@ const PROVIDER_CONFIG_FIELDS: Record<string, { label: string, key: string, type:
   PAYSTACK: [
     { label: 'Public Key', key: 'publicKey', type: 'text' },
     { label: 'Secret Key', key: 'secretKey', type: 'password' },
+    { label: 'Webhook Secret (used for signature verification)', key: 'webhookSecret', type: 'password' },
   ],
   PAYPAL: [
     { label: 'Client ID', key: 'clientId', type: 'text' },
@@ -80,6 +77,7 @@ const PROVIDER_CONFIG_FIELDS: Record<string, { label: string, key: string, type:
   FLUTTERWAVE: [
     { label: 'Public Key', key: 'publicKey', type: 'text' },
     { label: 'Secret Key', key: 'secretKey', type: 'password' },
+    { label: 'Webhook Secret Hash (verif-hash)', key: 'secretHash', type: 'password' },
   ],
   INTASEND: [
     { label: 'API Key', key: 'apiKey', type: 'password' },
