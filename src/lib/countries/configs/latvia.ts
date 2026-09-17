@@ -17,9 +17,9 @@ export const latviaConfig: CountryConfig = {
   payments: {
     mobileMoney: {
       enabled: true,
-      providers: ['Mobilly', 'Paysera LV'],
+      providers: ['Mobilly', 'Revolut Pay Latvia'],
     },
-    cardGateways: ['Citadele Klix', 'EveryPay LV', 'Stripe'],
-    bankRails: ['SEPA Direct Debit', 'Banklink Direct Transfer'],
+    cardGateways: ['Swedbank BankLink', 'SEB eCommerce', 'Citadele', 'Stripe'],
+    bankRails: ['SEPA Direct Debit', 'Latvijas Banka Instant Transfer'],
   },
 }

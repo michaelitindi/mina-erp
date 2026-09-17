@@ -10,16 +10,16 @@ export const sloveniaConfig: CountryConfig = {
   tax: {
     name: 'DDV (Davek na dodano vrednost)',
     defaultRate: 22,
-    taxIdLabel: 'ID za DDV (Tax ID)',
+    taxIdLabel: 'ID za DDV / Davčna številka',
     complianceProvider: 'FURS_SLOVENIA',
     requiresFiscalSignature: true,
   },
   payments: {
     mobileMoney: {
       enabled: true,
-      providers: ['Flik Instant Payment'],
+      providers: ['Flik Instant Payments', 'mBills'],
     },
-    cardGateways: ['Bankart', 'Halcom', 'Stripe', 'NLB Klik'],
-    bankRails: ['SEPA Direct Debit', 'Halcom E-bank Transfer'],
+    cardGateways: ['Bankart', 'Stripe', 'Halcom Pay'],
+    bankRails: ['SEPA Direct Debit', 'UPN QR Direct Transfer'],
   },
 }
