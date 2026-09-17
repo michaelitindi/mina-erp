@@ -7,16 +7,9 @@ import { resolveModuleDependencies, MODULE_DEPENDENCIES } from '@/lib/module-dep
 import { ALL_MODULES, DEFAULT_MODULES, ModuleType } from '@/lib/modules'
 import { Check, ArrowRight, Sparkles, Building2, Globe, Settings, ArrowLeft, Factory, ShoppingCart, Briefcase, Globe2 } from 'lucide-react'
 
-const COUNTRIES = [
-  { code: 'KE', name: 'Kenya', currency: 'KES', flag: '🇰🇪', timezone: 'Africa/Nairobi' },
-  { code: 'US', name: 'United States', currency: 'USD', flag: '🇺🇸', timezone: 'America/New_York' },
-  { code: 'GB', name: 'United Kingdom', currency: 'GBP', flag: '🇬🇧', timezone: 'Europe/London' },
-  { code: 'CA', name: 'Canada', currency: 'CAD', flag: '🇨🇦', timezone: 'America/Toronto' },
-  { code: 'ZA', name: 'South Africa', currency: 'ZAR', flag: '🇿🇦', timezone: 'Africa/Johannesburg' },
-  { code: 'DE', name: 'Germany (Eurozone)', currency: 'EUR', flag: '🇩🇪', timezone: 'Europe/Berlin' },
-  { code: 'AE', name: 'United Arab Emirates', currency: 'AED', flag: '🇦🇪', timezone: 'Asia/Dubai' },
-  { code: 'IN', name: 'India', currency: 'INR', flag: '🇮🇳', timezone: 'Asia/Kolkata' },
-]
+import { getSupportedCountries, getCountryConfig } from '@/lib/countries/registry'
+
+const COUNTRIES = getSupportedCountries()
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1)
@@ -35,7 +28,7 @@ export default function OnboardingPage() {
   const [error, setError] = useState('')
   const router = useRouter()
 
-  const currentCountry = COUNTRIES.find(c => c.code === selectedCountryCode) || COUNTRIES[1]
+  const currentCountry = getCountryConfig(selectedCountryCode)
 
   const toggleModule = (moduleId: ModuleType) => {
     setSelectedModules(prev => {
@@ -199,18 +192,24 @@ export default function OnboardingPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-xs text-zinc-500">Base Currency</p>
-                    <p className="font-semibold text-white mt-0.5">{currentCountry.currency}</p>
+                    <p className="font-semibold text-white mt-0.5">{currentCountry.currency} ({currentCountry.currencySymbol})</p>
                   </div>
                   <div>
                     <p className="text-xs text-zinc-500">Base Timezone</p>
                     <p className="font-semibold text-white mt-0.5">{currentCountry.timezone}</p>
                   </div>
-                </div>
-                {currentCountry.code === 'KE' && (
-                  <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-3 text-xs text-blue-400">
-                    💡 **Kenya localization active**: Dynamic KRA eTIMS invoice generation, tax withholding, and local billing payment gateways will be enabled.
+                  <div>
+                    <p className="text-xs text-zinc-500">Tax System</p>
+                    <p className="font-semibold text-white mt-0.5">{currentCountry.tax.name} ({currentCountry.tax.defaultRate}%)</p>
                   </div>
-                )}
+                  <div>
+                    <p className="text-xs text-zinc-500">Tax ID Label</p>
+                    <p className="font-semibold text-white mt-0.5">{currentCountry.tax.taxIdLabel}</p>
+                  </div>
+                </div>
+                <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-3 text-xs text-blue-400">
+                  💡 <strong>{currentCountry.name} localization active</strong>: {currentCountry.tax.complianceProvider} e-invoicing compliance enabled. Supported payment rails: {[...(currentCountry.payments.mobileMoney.enabled ? currentCountry.payments.mobileMoney.providers : []), ...currentCountry.payments.cardGateways, ...currentCountry.payments.bankRails].slice(0, 4).join(', ')}.
+                </div>
               </div>
             </div>
           </div>
